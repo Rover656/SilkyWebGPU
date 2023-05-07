@@ -29,7 +29,7 @@ namespace Rover656.SilkyWebGPU.SourceGenerators
         /// This basically forces the full use of the abstraction layer.
         /// TODO: Decide how this should be configured :P
         /// </summary>
-        private const bool AllowStrayPointers = false;
+        private const bool AllowStrayPointers = true; // TODO: Needs to be enabled to be able to set null on userdatum nicely.
 
         /// <summary>
         /// List of Objects we want to consider as "Classes"

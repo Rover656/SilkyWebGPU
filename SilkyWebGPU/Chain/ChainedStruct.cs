@@ -1,5 +1,4 @@
 ﻿using Silk.NET.WebGPU;
-using Silk.NET.WebGPU.Extensions.WGPU;
 
 namespace Rover656.SilkyWebGPU.Chain;
 
@@ -7,28 +6,18 @@ namespace Rover656.SilkyWebGPU.Chain;
 public abstract class ChainedStruct<T> : ChainingStruct, IManagedChainable<T>
     where T : unmanaged
 {
-    protected T _native;
+    protected T Native;
 
     protected internal override unsafe void AddToChain(ChainedStruct* chainedStruct)
     {
-        chainedStruct = ChainHelper.AddToChain(chainedStruct, _native, GetSType());
+        chainedStruct = ChainHelper.AddToChain(chainedStruct, Native, ChainHelper.GetSType(this));
         Next?.AddToChain(chainedStruct);
-    }
-
-    private SType GetSType()
-    {
-        if (typeof(T) == typeof(AdapterExtras))
-        {
-            return (SType)NativeSType.STypeAdapterExtras;
-        }
-
-        return SType.Invalid;
     }
 
     public unsafe ChainHolder<T> Get()
     {
         // Copy the struct
-        var native = _native;
+        var native = Native;
         
         // Perform any chaining
         Next?.AddToChain((ChainedStruct*) &native);

@@ -1,6 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
+using Silk.NET.WebGPU.Extensions.WGPU;
 
 namespace Rover656.SilkyWebGPU.Chain;
 
@@ -25,7 +26,6 @@ public static class ChainHelper
 
         // Add as the next in the chain.
         self->Next = (ChainedStruct*)allocatedMem;
-
         return chain;
     }
 
@@ -35,6 +35,7 @@ public static class ChainHelper
      */
     public static unsafe void FreeChain(ChainedStruct* chain)
     {
+        // Ignore an empty chain
         if (chain == null)
             return;
         
@@ -49,5 +50,34 @@ public static class ChainHelper
         
         // Finally null it to ensure we don't try freeing randomly
         chain->Next = null;
+    }
+
+    public static SType GetSType<T>(ChainedStruct<T> chainedStruct) where T : unmanaged
+    {
+        return chainedStruct switch
+        {
+            ChainedStruct<SurfaceDescriptorFromMetalLayer> => SType.SurfaceDescriptorFromMetalLayer,
+            ChainedStruct<SurfaceDescriptorFromWindowsHWND> => SType.SurfaceDescriptorFromWindowsHwnd,
+            ChainedStruct<SurfaceDescriptorFromXlibWindow> => SType.SurfaceDescriptorFromXlibWindow,
+            ChainedStruct<SurfaceDescriptorFromCanvasHTMLSelector> => SType.SurfaceDescriptorFromCanvasHtmlselector,
+            ChainedStruct<ShaderModuleSPIRVDescriptor> => SType.ShaderModuleSpirvdescriptor,
+            ChainedStruct<ShaderModuleWGSLDescriptor> => SType.ShaderModuleWgsldescriptor,
+            ChainedStruct<PrimitiveDepthClipControl> => SType.PrimitiveDepthClipControl,
+            ChainedStruct<SurfaceDescriptorFromWaylandSurface> => SType.SurfaceDescriptorFromWaylandSurface,
+            ChainedStruct<SurfaceDescriptorFromAndroidNativeWindow> => SType.SurfaceDescriptorFromAndroidNativeWindow,
+            ChainedStruct<SurfaceDescriptorFromXcbWindow> => SType.SurfaceDescriptorFromXcbWindow,
+            ChainedStruct<RenderPassDescriptorMaxDrawCount> => SType.RenderPassDescriptorMaxDrawCount,
+            
+            // WGPU Extensions
+            ChainedStruct<DeviceExtras> => (SType)NativeSType.STypeDeviceExtras,
+            ChainedStruct<AdapterExtras> => (SType)NativeSType.STypeAdapterExtras,
+            ChainedStruct<RequiredLimitsExtras> => (SType)NativeSType.STypeRequiredLimitsExtras,
+            ChainedStruct<SupportedLimitsExtras> => (SType)NativeSType.STypeSupportedLimitsExtras,
+            ChainedStruct<PipelineLayoutExtras> => (SType)NativeSType.STypePipelineLayoutExtras,
+            ChainedStruct<ShaderModuleGLSLDescriptor> => (SType)NativeSType.STypeShaderModuleGlsldescriptor,
+            ChainedStruct<InstanceExtras> => (SType)NativeSType.STypeInstanceExtras,
+            ChainedStruct<SwapChainDescriptorExtras> => (SType)NativeSType.STypeSwapChainDescriptorExtras,
+            _ => SType.Invalid
+        };
     }
 }

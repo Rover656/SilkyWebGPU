@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
 
 namespace Rover656.SilkyWebGPU.SourceGenerators
 {
+    // TODO: This does quite well already. Will want to tap into the NativeType annotations to grab more data.
+    //       We want to atleast fix enums. The rest I'm happy to be manually controlled with partial classes.
+    
     /// <summary>
     /// Source generator for generating friendly struct wrappers.
     /// </summary>
@@ -19,7 +21,7 @@ namespace Rover656.SilkyWebGPU.SourceGenerators
             "RequestAdapterOptions", "SamplerDescriptor", "SurfaceDescriptor", "SwapChainDescriptor",
             "TextureViewDescriptor", "BindGroupDescriptor", "ComputePassDescriptor", "ProgrammableStageDescriptor",
             "ShaderModuleDescriptor", "TextureDescriptor", "ComputePipelineDescriptor",
-            "DeviceDescriptor", "RenderPassDescriptor", "RenderPipelineDescriptor",
+            "DeviceDescriptor", "RenderPassDescriptor", "RenderPipelineDescriptor", "ShaderModuleWGSLDescriptor",
 
             // Extensions
             "Extensions.WGPU.AdapterExtras",
@@ -53,9 +55,7 @@ using {Constants.ExtensionNS}.Chain;
 using Silk.NET.WebGPU;
 using Silk.NET.WebGPU.Extensions.WGPU;
 
-namespace {Constants.ExtensionNS};
-
-");
+namespace {Constants.ExtensionNS};");
 
                 outputWriter.Append($@"
 public class Managed{structFriendlyName} : ChainedStruct<{Constants.WebGpuNS}.{structName}>
@@ -76,8 +76,8 @@ public class Managed{structFriendlyName} : ChainedStruct<{Constants.WebGpuNS}.{s
                             outputWriter.Append($@"
      public {field.Type} {field.Name}
      {{
-         get => _native.{field.Name};
-         set => _native.{field.Name} = value;
+         get => Native.{field.Name};
+         set => Native.{field.Name} = value;
      }}
  ");
                         }
@@ -91,15 +91,22 @@ public class Managed{structFriendlyName} : ChainedStruct<{Constants.WebGpuNS}.{s
                                 outputWriter.Append($@"
      public unsafe {Constants.NativePtrType}<{pointerType.PointedAtType}> {field.Name}
      {{
-         /*get => _native.{field.Name};*/ // TODO: How do we do...
-         set => _native.{field.Name} = value;
+         /*get => Native.{field.Name};*/ // TODO: How do we do...
+         set => Native.{field.Name} = value;
      }}
  ");
                             }
                             else
                             {
                                 outputWriter.AppendLine($"    // {field.Type} : {field.Name}");
-                                outputWriter.AppendLine("    // Not supported yet.");
+                                outputWriter.AppendLine("    // Not properly supported yet.");
+                                outputWriter.Append($@"
+     public unsafe {field.Type} {field.Name}
+     {{
+         get => Native.{field.Name};
+         set => Native.{field.Name} = value;
+     }}
+ ");
                             }
                         }
                     }
