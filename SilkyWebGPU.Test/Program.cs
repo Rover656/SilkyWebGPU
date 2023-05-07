@@ -1,11 +1,8 @@
-﻿using Rover656.SilkyWebGPU.Structs;
-using Silk.NET.Core.Native;
+﻿using Silk.NET.Core.Native;
 using Silk.NET.Maths;
 using Silk.NET.WebGPU;
 using Silk.NET.WebGPU.Extensions.WGPU;
 using Silk.NET.Windowing;
-using InstanceDescriptor = Rover656.SilkyWebGPU.Structs.InstanceDescriptor;
-using RequestAdapterOptions = Rover656.SilkyWebGPU.Structs.RequestAdapterOptions;
 
 namespace Rover656.SilkyWebGPU.Test;
 
@@ -36,13 +33,12 @@ class Program
     private static async void OnLoad()
     {
         // Create instance
-        using var descriptor = new InstanceDescriptor
+        var descriptor = new ManagedInstanceDescriptor();
+        var extras = new ManagedInstanceExtras()
         {
-            WGpuExtras = new InstanceDescriptor.InstanceExtras
-            {
-                Backends = InstanceBackend.Primary
-            }
+            Backends = (uint)InstanceBackend.DX12 // TODO: Make enums type-aware.
         };
+        descriptor.Next = extras;
         _Instance = WGPU.CreateInstance(descriptor);
         
         // Create surface from window
@@ -52,17 +48,42 @@ class Program
         }
         
         // Request adapter
-        var requestAdapterOptions = new RequestAdapterOptions(compatibleSurface: _Surface)
+        var requestAdapterOptions = new ManagedRequestAdapterOptions
         {
-            WGpuExtras = new RequestAdapterOptions.AdapterExtras
-            {
-                Backend = BackendType.D3D12,
-            }
+            CompatibleSurface = _Surface
         };
+        var adapterExtras = new ManagedAdapterExtras
+        {
+            Backend = BackendType.D3D12
+        };
+        requestAdapterOptions.Next = adapterExtras;
+        
         _Adapter = await _Instance.RequestAdapter(requestAdapterOptions);
-        
+
+        // Write properties to console
+        var properties = _Adapter.GetProperties();
+        var features = _Adapter.EnumerateFeatures();
+
+        unsafe
+        {
+            Console.WriteLine($"Device: {SilkMarshal.PtrToString((nint)properties.Name)}. API: {properties.BackendType}");
+        }
+
+        Console.WriteLine("========");
+        Console.WriteLine("Adapter Features:");
+        Console.WriteLine("========");
+        foreach (var feature in features)
+        {
+            if ((int)feature >= (int)NativeFeature.PushConstants)
+                Console.WriteLine((NativeFeature)feature);
+            else Console.WriteLine(feature);
+        }
+        Console.WriteLine("========");
+
         // TODO: Device callbacks
-        
+
+        //_Adapter.GetProperties();
+
         // Load shader
         // TODO Finish the API surface for this bit.
     }

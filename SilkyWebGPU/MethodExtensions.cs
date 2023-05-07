@@ -5,7 +5,7 @@ using Silk.NET.WebGPU;
 namespace Rover656.SilkyWebGPU;
 
 // Some hand-written extension methods.
-public partial class Extensions
+public static partial class MethodExtensions
 {
     public static async Task<WebGPUPtr<Adapter>> RequestAdapter(this WebGPUPtr<Instance> instance,
         IManagedChainable<RequestAdapterOptions> adapterOptions)

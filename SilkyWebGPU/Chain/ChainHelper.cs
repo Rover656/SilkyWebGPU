@@ -13,17 +13,20 @@ public static class ChainHelper
      * Incredibly unsafe if used incorrectly.
      * <typeparam name="T">Must be a chainable struct.</typeparam>
      */
-    public static unsafe void AddToChain<T>(ChainedStruct* self, T toAdd, SType sType) where T : unmanaged
+    public static unsafe ChainedStruct* AddToChain<T>(ChainedStruct* self, T toAdd, SType sType) where T : unmanaged
     {
         // Allocate memory for this piece to go.
         var allocatedMem = SilkMarshal.Allocate(sizeof(T));
         Unsafe.CopyBlockUnaligned((void*)allocatedMem, &toAdd, (uint) sizeof(T));
 
         // Set SType.
-        ((ChainedStruct*)allocatedMem)->SType = sType;
+        var chain = (ChainedStruct*)allocatedMem;
+        chain->SType = sType;
 
         // Add as the next in the chain.
         self->Next = (ChainedStruct*)allocatedMem;
+
+        return chain;
     }
 
     /**

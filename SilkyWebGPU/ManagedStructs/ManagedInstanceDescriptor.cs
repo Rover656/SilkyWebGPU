@@ -3,29 +3,29 @@ using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
 using Silk.NET.WebGPU.Extensions.WGPU;
 
-namespace Rover656.SilkyWebGPU.Structs;
+namespace Rover656.SilkyWebGPU.ManagedStructs;
 
 // TODO: Deal with namings, overshadowing is evidently messy
-public class InstanceDescriptor : IDisposable, IManagedChainable<Silk.NET.WebGPU.InstanceDescriptor>
+public class ManagedInstanceDescriptor : IDisposable, IManagedChainable<InstanceDescriptor>
 {
-    private Silk.NET.WebGPU.InstanceDescriptor _instanceDescriptor;
+    private InstanceDescriptor _instanceDescriptor;
 
-    public InstanceExtras? WGpuExtras = null!;
+    public ManagedInstanceExtras? WGpuExtras = null!;
     
-    public unsafe ChainHolder<Silk.NET.WebGPU.InstanceDescriptor> Get()
+    public unsafe ChainHolder<InstanceDescriptor> Get()
     {
         if (WGpuExtras == null)
-            return new ChainHolder<Silk.NET.WebGPU.InstanceDescriptor>(_instanceDescriptor);
+            return new ChainHolder<InstanceDescriptor>(_instanceDescriptor);
         
         // Add extras to the chain.
         var e = WGpuExtras._instanceExtras;
 
-        fixed (Silk.NET.WebGPU.InstanceDescriptor* instanceDescriptorPtr = &_instanceDescriptor)
+        fixed (InstanceDescriptor* instanceDescriptorPtr = &_instanceDescriptor)
         {
             ChainHelper.AddToChain((ChainedStruct*)instanceDescriptorPtr, e, (SType) NativeSType.STypeInstanceExtras);
         }
         
-        return new ChainHolder<Silk.NET.WebGPU.InstanceDescriptor>(_instanceDescriptor);
+        return new ChainHolder<InstanceDescriptor>(_instanceDescriptor);
     }
 
     public void Dispose()
@@ -33,11 +33,11 @@ public class InstanceDescriptor : IDisposable, IManagedChainable<Silk.NET.WebGPU
         WGpuExtras?.Dispose();
     }
 
-    public class InstanceExtras : IDisposable
+    public class ManagedInstanceExtras : IDisposable
     {
-        internal Silk.NET.WebGPU.Extensions.WGPU.InstanceExtras _instanceExtras;
+        internal InstanceExtras _instanceExtras;
 
-        public InstanceExtras(InstanceBackend? backends = null, Dx12Compiler? dx12ShaderCompiler = null, string? dxilPath = null, string? dxcPath = null)
+        public ManagedInstanceExtras(InstanceBackend? backends = null, Dx12Compiler? dx12ShaderCompiler = null, string? dxilPath = null, string? dxcPath = null)
         {
             if (backends.HasValue)
                 Backends = backends.Value;
@@ -100,7 +100,7 @@ public class InstanceDescriptor : IDisposable, IManagedChainable<Silk.NET.WebGPU
             }
         }
 
-        ~InstanceExtras() => ReleaseUnmanagedResources();
+        ~ManagedInstanceExtras() => ReleaseUnmanagedResources();
 
         public void Dispose()
         {
