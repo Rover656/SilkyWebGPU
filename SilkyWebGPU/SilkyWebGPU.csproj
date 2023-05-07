@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Rover656.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+    <Title>Rover656.SilkyWebGPU</Title>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SilkyWebGPU.SourceGenerator\SilkyWebGPU.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Silk.NET.WebGPU" Version="2.17.1-build3398.0" />
+    <PackageReference Include="Silk.NET.WebGPU.Extensions.Dawn" Version="2.17.1-build3398.0" />
+    <PackageReference Include="Silk.NET.WebGPU.Extensions.Disposal" Version="2.17.1-build3398.0" />
+    <PackageReference Include="Silk.NET.WebGPU.Extensions.WGPU" Version="2.17.1-build3398.0" />
+    <PackageReference Include="Silk.NET.WebGPU.Native.WGPU" Version="2.17.1-build3398.0" />
+  </ItemGroup>
+
+</Project>
