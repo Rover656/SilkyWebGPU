@@ -86,6 +86,33 @@ fn fs_main() -> @location(0) vec4<f32> {
         
         _Adapter = await _Instance.RequestAdapter(requestAdapterOptions);
 
+        {
+            var limits = new ManagedSupportedLimits
+            {
+                Next = new ManagedSupportedLimitsExtras()
+            };
+
+            // Get the limits from the gpu
+            // using (var limitsHolder = limits.GetMutable())
+            // {
+            //     unsafe
+            //     {
+            //         fixed (void* ptr = &limitsHolder.Chainable)
+            //         {
+            //             _Adapter.GetLimits((SupportedLimits*) ptr);
+            //         }
+            //     }
+            // }
+
+            _Adapter.GetLimits(ref limits);
+
+            Console.WriteLine(limits.Limits);
+        }
+
+        var properties = new ManagedAdapterProperties();
+
+        _Adapter.GetProperties(ref properties);
+
         // Write properties to console
         PrintAdapterFeatures();
         

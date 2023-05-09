@@ -8,7 +8,7 @@ namespace Rover656.SilkyWebGPU;
 public static partial class MethodExtensions
 {
     public static async Task<WebGPUPtr<Adapter>> RequestAdapter(this WebGPUPtr<Instance> instance,
-        IManagedChainable<RequestAdapterOptions> adapterOptions)
+        ManagedRequestAdapterOptions adapterOptions)
     {
         WebGPUPtr<Adapter> adapter = null!;
 
@@ -36,7 +36,7 @@ public static partial class MethodExtensions
     }
     
     public static async Task<WebGPUPtr<Device>> RequestDevice(this WebGPUPtr<Adapter> adapter,
-        DeviceDescriptor? deviceDescriptor = null)
+        ManagedDeviceDescriptor? deviceDescriptor = null)
     {
         WebGPUPtr<Device> device = null!;
         
@@ -49,12 +49,7 @@ public static partial class MethodExtensions
                 sem.Release();
             });
 
-            if (deviceDescriptor.HasValue)
-            {
-                var descriptor = deviceDescriptor.Value;
-                WGPU.API.AdapterRequestDevice(adapter, &descriptor, callback, null);
-            }
-            else WGPU.API.AdapterRequestDevice(adapter, null, callback, null);
+            adapter.RequestDevice(deviceDescriptor, callback, null);
         }
 
         await sem.WaitAsync();
@@ -82,4 +77,11 @@ public static partial class MethodExtensions
         WGPU.API.AdapterGetProperties(adapter, &properties);
         return properties;
     }
+    
+    // public static unsafe ManagedAdapterProperties GetPropertiesManaged(this WebGPUPtr<Adapter> adapter)
+    // {
+    //     var properties = new AdapterProperties();
+    //     WGPU.API.AdapterGetProperties(adapter, &properties);
+    //     return properties;
+    // }
 }

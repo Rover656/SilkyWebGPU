@@ -42,19 +42,6 @@ namespace Rover656.SilkyWebGPU.SourceGenerators
             "SwapChain", "Texture", "TextureView"
         };
 
-        /// <summary>
-        /// Chainable structs we are going to allow safe use of in the API.
-        /// </summary>
-        private static readonly string[] ChainableRoots =
-        {
-            "BufferDescriptor", "CommandBufferDescriptor", "CommandEncoderDescriptor", "InstanceDescriptor",
-            "PipelineLayoutDescriptor", "QuerySetDescriptor", "RenderBundleDescriptor", "RenderBundleEncoderDescriptor",
-            "RequestAdapterOptions", "SamplerDescriptor", "SurfaceDescriptor", "SwapChainDescriptor",
-            "TextureViewDescriptor", "BindGroupDescriptor", "ComputePassDescriptor", "ProgrammableStageDescriptor",
-            "ShaderModuleDescriptor", "TextureDescriptor", "BindGroupLayoutDescriptor", "ComputePipelineDescriptor",
-            "DeviceDescriptor", "RenderPassDescriptor", "RenderPipelineDescriptor"
-        };
-
         public void Execute(GeneratorExecutionContext context)
         {
             var webGpu = context.Compilation.GetTypeByMetadataName($"{Constants.WebGpuNS}.WebGPU");
@@ -122,54 +109,89 @@ public static partial class {ClassName}
                     }
                 }
             }
+            
+            // TODO: For any methods that have ref parameters, we should generate additional methods that omit them and pass null to the original method.
 
             // Write 1:1 translation
             if (generatePrimitive)
             {
-                if (method.ReturnType is IPointerTypeSymbol pointerReturnType)
+                var typeParameterList = GetTypeParameterList(method);
+                var typeParameterConstraints = GetTypeParameterConstraints(method);
+                var parameterList = GetParameterList(method, 1);
+                var argumentList = GetArgumentList(method, 1);
+                
+                if (method.ReturnType is IPointerTypeSymbol pointerReturnType && pointerReturnType.PointedAtType.ToString() != "void")
                 {
-                    if (pointerReturnType.PointedAtType.ToString() != "void")
-                    {
-                        WriteObjectMethod(outputWriter, method, objectType, methodName);
-                    }
-                    else
-                    {
-                        // Love for those few void pointers out there
-                        WritePointerMethod(outputWriter, method, objectType, methodName);
-                    }
+                    outputWriter.Append($@"
+    {GetMethodDocString(method)}
+    {GetObjectMethodSignature(method, objectType, methodName, typeParameterList, typeParameterConstraints, parameterList)}
+    {{
+        {GetObjectMethodBody(method, argumentList)}
+    }}
+");
+
                 }
                 else if (method.ReturnsVoid)
                 {
-                    WriteVoidMethod(outputWriter, method, objectType, methodName);
+                    outputWriter.Append($@"
+    {GetMethodDocString(method)}
+    {GetVoidMethodSignature(method, objectType, methodName, typeParameterList, typeParameterConstraints, parameterList)}
+    {{
+        {GetVoidMethodBody(method, argumentList)}
+    }}
+");
                 }
                 else
                 {
-                    WritePlainMethod(outputWriter, method, objectType, methodName);
+                    outputWriter.Append($@"
+    {GetMethodDocString(method)}
+    {GetPlainMethodSignature(method, objectType, methodName, typeParameterList, typeParameterConstraints, parameterList)}
+    {{
+        {GetPlainMethodBody(method, argumentList)}
+    }}
+");
                 }
             }
 
             // Chainable extras
             if (chainablePresent)
             {
-                if (method.ReturnType is IPointerTypeSymbol pointerReturnType)
+                var typeParameterList = GetTypeParameterList(method);
+                var typeParameterConstraints = GetTypeParameterConstraints(method);
+                var parameterList = GetParameterList(method, 1, true);
+                var argumentList = GetArgumentList(method, 1, true);
+
+                // First pass
+                if (method.ReturnType is IPointerTypeSymbol pointerReturnType && pointerReturnType.PointedAtType.ToString() != "void")
                 {
-                    if (pointerReturnType.PointedAtType.ToString() != "void")
-                    {
-                        WriteObjectMethod(outputWriter, method, objectType, methodName, true);
-                    }
-                    else
-                    {
-                        // Love for those few void pointers out there
-                        WritePointerMethod(outputWriter, method, objectType, methodName, true);
-                    }
+                    outputWriter.Append($@"
+    {GetMethodDocString(method)}
+    {GetObjectMethodSignature(method, objectType, methodName, typeParameterList, typeParameterConstraints, parameterList)}
+    {{
+        {GetChainableBody(method, GetObjectMethodRetType(method), GetObjectMethodBody(method, argumentList), 1)}
+    }}
+");
+
                 }
                 else if (method.ReturnsVoid)
                 {
-                    WriteVoidMethod(outputWriter, method, objectType, methodName, true);
+                    outputWriter.Append($@"
+    {GetMethodDocString(method)}
+    {GetVoidMethodSignature(method, objectType, methodName, typeParameterList, typeParameterConstraints, parameterList)}
+    {{
+        {GetChainableBody(method, GetVoidMethodRetType(method), GetVoidMethodBody(method, argumentList), 1)}
+    }}
+");
                 }
                 else
                 {
-                    WritePlainMethod(outputWriter, method, objectType, methodName, true);
+                    outputWriter.Append($@"
+    {GetMethodDocString(method)}
+    {GetPlainMethodSignature(method, objectType, methodName, typeParameterList, typeParameterConstraints, parameterList)}
+    {{
+        {GetChainableBody(method, GetPlainMethodRetType(method), GetPlainMethodBody(method, argumentList), 1)}
+    }}
+");
                 }
             }
         }
@@ -178,115 +200,151 @@ public static partial class {ClassName}
 
         // TODO: Modularise Writers. Then we can start to work on automatically unpacking the out parameters into return types
 
-        /// <summary>
-        /// </summary>
-        /// <param name="outputWriter"></param>
-        /// <param name="method"></param>
-        /// <param name="objectType"></param>
-        /// <param name="methodName"></param>
-        /// <param name="resolveChainable"></param>
-        private void WriteObjectMethod(StringBuilder outputWriter, IMethodSymbol method, ITypeSymbol objectType,
-            string methodName, bool resolveChainable = false)
+        private string GetMethodDocString(IMethodSymbol method)
         {
-            var parameterList = GetParameterList(method, 1, resolveChainable);
-            var argumentList = GetArgumentList(method, 1, resolveChainable);
-            var typeParameterList = GetTypeParameterList(method);
-            var typeParameterConstraints = GetTypeParameterConstraints(method);
-
-            var chainableHeader = GetChainableHeader(method, 1, resolveChainable);
-
-            var returnType = (method.ReturnType as IPointerTypeSymbol).PointedAtType;
-            outputWriter.Append($@"
+            // TODO /// <inheritdoc cref=""{Constants.WebGpuNS}.WebGPU.{method.Name}""/>
+            return $@"/// NEW STYLE
     /// <summary>
     /// {method.Name}
     /// Generated from <see cref=""{Constants.WebGpuNS}.WebGPU""/>.
-    /// </summary>
-    public static unsafe {Constants.NativePtrType}<{returnType}> {methodName}{typeParameterList}(this {Constants.NativePtrType}<{objectType}> {method.Parameters[0].Name}{parameterList}) {typeParameterConstraints}
-    {{{chainableHeader}
-        return new {Constants.NativePtrType}<{returnType}>(WGPU.API.{method.Name}({method.Parameters[0].Name}{argumentList}));
-    }}
-");
+    /// </summary>";
         }
 
-        private void WritePointerMethod(StringBuilder outputWriter, IMethodSymbol method, ITypeSymbol objectType,
-            string methodName, bool resolveChainable = false)
+        private string GetObjectMethodRetType(IMethodSymbol method)
         {
-            var parameterList = GetParameterList(method, 1, resolveChainable);
-            var argumentList = GetArgumentList(method, 1, resolveChainable);
-            var typeParameterList = GetTypeParameterList(method);
-            var typeParameterConstraints = GetTypeParameterConstraints(method);
-
-            var chainableHeader = GetChainableHeader(method, 1, resolveChainable);
-
-            outputWriter.Append($@"
-    /// <summary>
-    /// {method.Name}
-    /// Generated from <see cref=""{Constants.WebGpuNS}.WebGPU""/>
-    /// </summary>
-    public static unsafe {method.ReturnType} {methodName}{typeParameterList}(this {Constants.NativePtrType}<{objectType}> {method.Parameters[0].Name}{parameterList}) {typeParameterConstraints}
-    {{{chainableHeader}
-        return WGPU.API.{method.Name}({method.Parameters[0].Name}{argumentList});
-    }}
-");
+            return $"{Constants.NativePtrType}<{(method.ReturnType as IPointerTypeSymbol).PointedAtType}>";
+        }
+        
+        private string GetPlainMethodRetType(IMethodSymbol method)
+        {
+            return method.ReturnType.ToString();
         }
 
-        private void WriteVoidMethod(StringBuilder outputWriter, IMethodSymbol method, ITypeSymbol objectType,
-            string methodName, bool resolveChainable = false)
+        private string GetVoidMethodRetType(IMethodSymbol method)
         {
-            var parameterList = GetParameterList(method, 1, resolveChainable);
-            var argumentList = GetArgumentList(method, 1, resolveChainable);
-            var typeParameterList = GetTypeParameterList(method);
-            var typeParameterConstraints = GetTypeParameterConstraints(method);
-
-            var chainableHeader = GetChainableHeader(method, 1, resolveChainable);
-
-            outputWriter.Append($@"
-    /// <summary>
-    /// {method.Name}
-    /// Generated from <see cref=""{Constants.WebGpuNS}.WebGPU""/>
-    /// </summary>
-    public static unsafe void {methodName}{typeParameterList}(this {Constants.NativePtrType}<{objectType}> {method.Parameters[0].Name}{parameterList}) {typeParameterConstraints}
-    {{{chainableHeader}
-        WGPU.API.{method.Name}({method.Parameters[0].Name}{argumentList});
-    }}
-");
+            return "void";
         }
 
-        private void WritePlainMethod(StringBuilder outputWriter, IMethodSymbol method, ITypeSymbol objectType,
-            string methodName, bool resolveChainable = false)
+        private string GetObjectMethodSignature(IMethodSymbol method, ITypeSymbol objectType, string methodName, StringBuilder typeParameterList, StringBuilder typeParameterConstraints, StringBuilder parameterList)
         {
-            var parameterList = GetParameterList(method, 1, resolveChainable);
-            var argumentList = GetArgumentList(method, 1, resolveChainable);
-            var typeParameterList = GetTypeParameterList(method);
-            var typeParameterConstraints = GetTypeParameterConstraints(method);
-
-            var chainableHeader = GetChainableHeader(method, 1, resolveChainable);
-
-            outputWriter.Append($@"
-    /// <summary>
-    /// {method.Name}
-    /// Generated from <see cref=""{Constants.WebGpuNS}.WebGPU""/>
-    /// </summary>
-    public static unsafe {method.ReturnType} {methodName}{typeParameterList}(this {Constants.NativePtrType}<{objectType}> {method.Parameters[0].Name}{parameterList}) {typeParameterConstraints}
-    {{{chainableHeader}
-        return WGPU.API.{method.Name}({method.Parameters[0].Name}{argumentList});
-    }}
-");
+            // var returnType = (method.ReturnType as IPointerTypeSymbol).PointedAtType;
+            // return $"public static unsafe {Constants.NativePtrType}<{returnType}> {methodName}{typeParameterList}(this {Constants.NativePtrType}<{objectType}> {method.Parameters[0].Name}{parameterList}) {typeParameterConstraints}";
+            return GetMethodSignature(method, GetObjectMethodRetType(method), objectType, methodName, typeParameterList,
+                typeParameterConstraints, parameterList);
+        }
+        
+        private string GetPlainMethodSignature(IMethodSymbol method, ITypeSymbol objectType, string methodName, StringBuilder typeParameterList, StringBuilder typeParameterConstraints, StringBuilder parameterList)
+        {
+            // return $"public static unsafe {method.ReturnType} {methodName}{typeParameterList}(this {Constants.NativePtrType}<{objectType}> {method.Parameters[0].Name}{parameterList}) {typeParameterConstraints}";
+            return GetMethodSignature(method, GetPlainMethodRetType(method), objectType, methodName, typeParameterList,
+                typeParameterConstraints, parameterList);
+        }
+        
+        private string GetVoidMethodSignature(IMethodSymbol method, ITypeSymbol objectType, string methodName, StringBuilder typeParameterList, StringBuilder typeParameterConstraints, StringBuilder parameterList)
+        {
+            // return $"public static unsafe void {methodName}{typeParameterList}(this {Constants.NativePtrType}<{objectType}> {method.Parameters[0].Name}{parameterList}) {typeParameterConstraints}";
+            return GetMethodSignature(method, GetVoidMethodRetType(method), objectType, methodName, typeParameterList,
+                typeParameterConstraints, parameterList);
+        }
+        
+        private string GetMethodSignature(IMethodSymbol method, string returnType, ITypeSymbol objectType, string methodName, StringBuilder typeParameterList, StringBuilder typeParameterConstraints, StringBuilder parameterList)
+        {
+            return $"public static unsafe {returnType} {methodName}{typeParameterList}(this {Constants.NativePtrType}<{objectType}> {method.Parameters[0].Name}{parameterList}) {typeParameterConstraints}";
+        }
+        
+        private string GetObjectMethodBody(IMethodSymbol method, StringBuilder argumentList)
+        {
+            var returnType = (method.ReturnType as IPointerTypeSymbol).PointedAtType;
+            return $"return new {Constants.NativePtrType}<{returnType}>(WGPU.API.{method.Name}({method.Parameters[0].Name}{argumentList}));";
         }
 
-        private StringBuilder GetChainableHeader(IMethodSymbol method, int startIndex = 0, bool generate = false)
+        private string GetPlainMethodBody(IMethodSymbol method, StringBuilder argumentList)
         {
+            return $"return WGPU.API.{method.Name}({method.Parameters[0].Name}{argumentList});";
+        }
+        
+        private string GetVoidMethodBody(IMethodSymbol method, StringBuilder argumentList)
+        {
+            return $"WGPU.API.{method.Name}({method.Parameters[0].Name}{argumentList});";
+        }
+        
+        // TODO: Now we're unable to pass null to these methods :(
+        // One way could be to do the null check and pass along to an alternative body
+        private StringBuilder GetChainableBody(IMethodSymbol method, string returnType, string body, int startIndex = 0)
+        {
+            // Count the number of chainable parameters.
+            // Basically this generator *can* support multiple without optimisations, but is able to apply additional optimisations if there is only one.
+            // Currently there is no known method that would have multiple chainables, but this is a safety case for future
+            var chainableCount = method.Parameters.Count(IsChainableParameter);
+
             var stringBuilder = new StringBuilder();
-            if (!generate)
-                return stringBuilder;
+            
+            // Forward declare return variable
+            if (!method.ReturnsVoid)
+                stringBuilder.AppendLine($"{returnType} ret;"); // TODO: Handle the return type better. Take it as a parameter and split off the 
+            
             for (int i = startIndex; i < method.Parameters.Length; i++)
             {
                 var parameter = method.Parameters[i];
                 if (IsChainableParameter(parameter))
                 {
-                    stringBuilder.Append($"\n        using var {parameter.Name}{ChainableUnmanagedSuffix} = {parameter.Name}.Get();");
+                    if (i > startIndex)
+                        stringBuilder.Append("        ");
+                    if (parameter.RefKind == RefKind.Ref)
+                    {
+                        // ref types cannot be null so we can write straight to them, then call mutate.
+                        stringBuilder.AppendLine($"fixed ({parameter.Type}* {parameter.Name}{ChainableUnmanagedSuffix} = &{parameter.Name}.Native) {{");
+                    }
+                    else
+                    {
+                        if (chainableCount == 1)
+                        {
+                            stringBuilder.AppendLine($@"        if ({parameter.Name} == null) {{
+        {body.Replace("return", "ret =").Replace($"{parameter.Name}{ChainableUnmanagedSuffix}", "null")}
+        }}
+        else
+        {{
+        var {parameter.Name}{ChainableUnmanagedSuffix} = {parameter.Name}.GetWithChain();");
+                        }
+                        else
+                        {
+                            stringBuilder.AppendLine($@"        // ISSUE: This wouldn't have generated when the generator was designed. This is an ugly and slow way of not slowing down the source generator.
+        var {parameter.Name}{ChainableUnmanagedSuffix} = {parameter.Name} != null ? {parameter.Name}.Alloc() : null;");
+                        }
+                    }
                 }
             }
+
+            stringBuilder.AppendLine($"        {body.Replace("return", "ret =")}");
+
+            for (int i = startIndex; i < method.Parameters.Length; i++)
+            {
+                var parameter = method.Parameters[i];
+                if (IsChainableParameter(parameter))
+                {
+                    if (parameter.RefKind == RefKind.Ref)
+                    {
+                        // Now propagate mutations through the chain
+                        stringBuilder.AppendLine($"        {parameter.Name}.Next?.Mutate(((ChainedStruct*){parameter.Name}{ChainableUnmanagedSuffix})->Next);");
+                        stringBuilder.AppendLine("        }");
+                    }
+                    else
+                    {
+                        if (chainableCount == 1)
+                        {
+                            stringBuilder.AppendLine($@"        {parameter.Name}.FreeChain(ref {parameter.Name}{ChainableUnmanagedSuffix});
+        }}");
+                        }
+                        else
+                        {
+                            stringBuilder.AppendLine($"        {parameter.Name}?.Free({parameter.Name}{ChainableUnmanagedSuffix});");
+                        }
+                    }
+                }
+            }
+
+            if (!method.ReturnsVoid)
+                stringBuilder.AppendLine("        return ret;");
 
             return stringBuilder;
         }
@@ -297,14 +355,14 @@ public static partial class {ClassName}
 
         private bool IsChainableParameter(IParameterSymbol parameter)
         {
-            if (parameter.Type is IPointerTypeSymbol pointerType)
-            {
-                if (ChainableRoots.Contains(pointerType.PointedAtType.Name))
-                {
-                    return true;
-                }
-            }
-            else if (ChainableRoots.Contains(parameter.Type.Name))
+            // if (parameter.Type is IPointerTypeSymbol pointerType)
+            // {
+            //     if (Constants.ManagedStructs.Contains(pointerType.PointedAtType.Name))
+            //     {
+            //         return true;
+            //     }
+            // }
+            /*else */if (Constants.ManagedStructs.Contains(parameter.Type.Name))
             {
                 return true;
             }
@@ -321,24 +379,29 @@ public static partial class {ClassName}
                     return $"{Constants.NativePtrType}<{pointerType.PointedAtType}>";
                 }
 
-                if (resolveChainable && ChainableRoots.Contains(pointerType.PointedAtType.Name))
+                if (resolveChainable && Constants.ManagedStructs.Contains(pointerType.PointedAtType.Name))
                 {
-                    return $"{ChainableSafetyInterface}<{pointerType.PointedAtType}>";
+                    // return $"{ChainableSafetyInterface}<{pointerType.PointedAtType}>";
+                    return $"{Constants.ManagedStructPrefix}{pointerType.PointedAtType.Name}";
                 }
             }
-            else if (resolveChainable && ChainableRoots.Contains(parameter.Type.Name))
+            else if (resolveChainable && Constants.ManagedStructs.Contains(parameter.Type.Name))
             {
-                return $"{ChainableSafetyInterface}<{parameter.Type}>";
+                // return $"{ChainableSafetyInterface}<{parameter.Type}>";
+                return $"{Constants.ManagedStructPrefix}{parameter.Type.Name}";
             }
 
             return parameter.Type.ToString();
         }
 
-        private string GetArgumentPrefix(IParameterSymbol parameterSymbol)
+        private string GetArgumentPrefix(IParameterSymbol parameterSymbol, bool resolveChainable)
         {
             switch (parameterSymbol.RefKind)
             {
                 case RefKind.Ref:
+                    // We don't enable ref for chainable's as we use fixed.
+                    if (resolveChainable && IsChainableParameter(parameterSymbol))
+                        return "";
                     return "ref ";
                 case RefKind.Out:
                     return "out ";
@@ -389,12 +452,16 @@ public static partial class {ClassName}
         /**
          * Get parameter list for new method, includes initial ", "
          */
-        private StringBuilder GetParameterList(IMethodSymbol method, int startIndex = 0, bool resolveChainable = false)
+        private StringBuilder GetParameterList(IMethodSymbol method, int startIndex = 0, bool resolveChainable = false, bool nullChainables = false)
         {
             var parameterList = new StringBuilder();
             for (int i = startIndex; i < method.Parameters.Length; i++)
             {
                 var parameter = method.Parameters[i];
+
+                if (nullChainables && IsChainableParameter(parameter))
+                    continue;
+                
                 parameterList.Append(
                     $", {GetParameterPrefix(parameter)}{GetParameterType(parameter, resolveChainable)} {parameter.Name}");
             }
@@ -402,17 +469,20 @@ public static partial class {ClassName}
             return parameterList;
         }
 
-        private StringBuilder GetArgumentList(IMethodSymbol method, int startIndex = 0, bool resolveChainable = false)
+        private StringBuilder GetArgumentList(IMethodSymbol method, int startIndex = 0, bool resolveChainable = false, bool nullChainables = false)
         {
             // TODO: Is this where we will add the replacement for the descriptors?
             var argumentList = new StringBuilder();
             for (var i = startIndex; i < method.Parameters.Length; i++)
             {
                 var parameter = method.Parameters[i];
-                var parameterName = parameter.Name;
+                
+                string parameterName;
                 if (resolveChainable && IsChainableParameter(parameter))
-                    parameterName += ChainableUnmanagedSuffix;
-                argumentList.Append($", {GetArgumentPrefix(parameter)}{parameterName}{GetArgumentSuffix(parameter)}");
+                    parameterName = nullChainables ? "null" : $"{parameter.Name}{ChainableUnmanagedSuffix}";
+                else parameterName = parameter.Name;
+                
+                argumentList.Append($", {GetArgumentPrefix(parameter, resolveChainable)}{parameterName}{GetArgumentSuffix(parameter)}");
             }
 
             return argumentList;

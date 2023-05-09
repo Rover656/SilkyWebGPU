@@ -10,23 +10,27 @@ public static class WGPU
     public static WebGPU API = null!;
     public static WebGPUDisposal Disposal = null!;
 
-    public static unsafe WebGPUPtr<Instance> CreateInstance(InstanceDescriptor descriptor)
+    public static unsafe WebGPUPtr<Instance> CreateInstance(ManagedInstanceDescriptor descriptor)
     {
         if (API == null!)
         {
             API = WebGPU.GetApi();
             Disposal = new WebGPUDisposal(API);
         }
-        return new WebGPUPtr<Instance>(API.CreateInstance(descriptor));
-    }
-    
-    public static WebGPUPtr<Instance> CreateInstance(IManagedChainable<InstanceDescriptor> instanceDescriptor)
-    {
-        // Construct and send
-        using var descriptor = instanceDescriptor.Get();
-        return CreateInstance(descriptor);
+
+        // using var descriptorUnmanaged = descriptor.Get();
+
+        var descriptorUnmanaged = descriptor.GetWithChain();
+        var ret = new WebGPUPtr<Instance>(API.CreateInstance(descriptorUnmanaged));
+        descriptor.FreeChain(ref descriptorUnmanaged);
+        return ret;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="webGpuPtr"></param>
+    /// <typeparam name="T"></typeparam>
     public static unsafe void Dispose<T>(WebGPUPtr<T> webGpuPtr) where T : unmanaged
     {
         // TODO: It appears these are missing from the Disposal extension..

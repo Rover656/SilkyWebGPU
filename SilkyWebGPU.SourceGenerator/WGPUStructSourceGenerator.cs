@@ -20,7 +20,7 @@ namespace Rover656.SilkyWebGPU.SourceGenerators
             "PipelineLayoutDescriptor", "QuerySetDescriptor", "RenderBundleDescriptor", "RenderBundleEncoderDescriptor",
             "RequestAdapterOptions", "SamplerDescriptor", "SurfaceDescriptor", "SwapChainDescriptor",
             "TextureViewDescriptor", "BindGroupDescriptor", "ComputePassDescriptor", "ProgrammableStageDescriptor",
-            "ShaderModuleDescriptor", "TextureDescriptor", "ComputePipelineDescriptor",
+            "ShaderModuleDescriptor", "TextureDescriptor", "ComputePipelineDescriptor", "SupportedLimits",
             "DeviceDescriptor", "RenderPassDescriptor", "RenderPipelineDescriptor", "ShaderModuleWGSLDescriptor",
 
             // Extensions
@@ -55,7 +55,8 @@ using {Constants.ExtensionNS}.Chain;
 using Silk.NET.WebGPU;
 using Silk.NET.WebGPU.Extensions.WGPU;
 
-namespace {Constants.ExtensionNS};");
+namespace {Constants.ExtensionNS};
+");
 
                 outputWriter.Append($@"
 public class Managed{structFriendlyName} : ChainedStruct<{Constants.WebGpuNS}.{structName}>
