@@ -42,13 +42,4 @@ public class ManagedRequestAdapterOptions : ChainedStruct<Silk.NET.WebGPU.Reques
     ForceFallbackAdapter = ""{ForceFallbackAdapter}""
 }}";
     }
-
-    public override unsafe void Dispose()
-    {
-        base.Dispose();
-    }
-
-    protected override unsafe void ReleaseUnmanagedResources()
-    {
-    }
 }

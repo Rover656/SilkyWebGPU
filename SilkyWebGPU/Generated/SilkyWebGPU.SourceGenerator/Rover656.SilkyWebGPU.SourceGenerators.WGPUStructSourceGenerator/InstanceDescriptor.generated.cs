@@ -19,13 +19,4 @@ public class ManagedInstanceDescriptor : ChainedStruct<Silk.NET.WebGPU.InstanceD
         return $@"InstanceDescriptor {{
 }}";
     }
-
-    public override unsafe void Dispose()
-    {
-        base.Dispose();
-    }
-
-    protected override unsafe void ReleaseUnmanagedResources()
-    {
-    }
 }

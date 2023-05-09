@@ -82,11 +82,6 @@ public class ManagedVertexState : ChainedStruct<Silk.NET.WebGPU.VertexState>
 }}";
     }
 
-    public override unsafe void Dispose()
-    {
-        base.Dispose();
-    }
-
     protected override unsafe void ReleaseUnmanagedResources()
     {
         SilkMarshal.Free((nint) Native.EntryPoint);

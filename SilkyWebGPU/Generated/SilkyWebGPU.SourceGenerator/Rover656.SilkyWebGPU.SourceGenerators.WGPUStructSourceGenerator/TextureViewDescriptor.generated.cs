@@ -89,11 +89,6 @@ public class ManagedTextureViewDescriptor : ChainedStruct<Silk.NET.WebGPU.Textur
 }}";
     }
 
-    public override unsafe void Dispose()
-    {
-        base.Dispose();
-    }
-
     protected override unsafe void ReleaseUnmanagedResources()
     {
         SilkMarshal.Free((nint) Native.Label);

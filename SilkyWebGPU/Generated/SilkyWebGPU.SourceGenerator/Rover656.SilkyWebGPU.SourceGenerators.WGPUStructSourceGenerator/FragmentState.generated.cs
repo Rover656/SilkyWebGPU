@@ -82,11 +82,6 @@ public class ManagedFragmentState : ChainedStruct<Silk.NET.WebGPU.FragmentState>
 }}";
     }
 
-    public override unsafe void Dispose()
-    {
-        base.Dispose();
-    }
-
     protected override unsafe void ReleaseUnmanagedResources()
     {
         SilkMarshal.Free((nint) Native.EntryPoint);

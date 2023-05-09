@@ -51,13 +51,4 @@ public class ManagedPrimitiveState : ChainedStruct<Silk.NET.WebGPU.PrimitiveStat
     CullMode = ""{CullMode}""
 }}";
     }
-
-    public override unsafe void Dispose()
-    {
-        base.Dispose();
-    }
-
-    protected override unsafe void ReleaseUnmanagedResources()
-    {
-    }
 }

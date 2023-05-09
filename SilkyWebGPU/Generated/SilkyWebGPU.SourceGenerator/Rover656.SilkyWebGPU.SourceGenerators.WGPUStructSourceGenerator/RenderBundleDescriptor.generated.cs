@@ -33,11 +33,6 @@ public class ManagedRenderBundleDescriptor : ChainedStruct<Silk.NET.WebGPU.Rende
 }}";
     }
 
-    public override unsafe void Dispose()
-    {
-        base.Dispose();
-    }
-
     protected override unsafe void ReleaseUnmanagedResources()
     {
         SilkMarshal.Free((nint) Native.Label);

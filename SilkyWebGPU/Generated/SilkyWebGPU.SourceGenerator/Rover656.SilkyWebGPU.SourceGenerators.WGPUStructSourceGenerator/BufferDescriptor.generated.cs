@@ -57,11 +57,6 @@ public class ManagedBufferDescriptor : ChainedStruct<Silk.NET.WebGPU.BufferDescr
 }}";
     }
 
-    public override unsafe void Dispose()
-    {
-        base.Dispose();
-    }
-
     protected override unsafe void ReleaseUnmanagedResources()
     {
         SilkMarshal.Free((nint) Native.Label);

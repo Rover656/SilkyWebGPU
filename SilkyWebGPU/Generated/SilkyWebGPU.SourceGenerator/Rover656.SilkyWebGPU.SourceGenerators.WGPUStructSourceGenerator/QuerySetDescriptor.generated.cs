@@ -70,11 +70,6 @@ public class ManagedQuerySetDescriptor : ChainedStruct<Silk.NET.WebGPU.QuerySetD
 }}";
     }
 
-    public override unsafe void Dispose()
-    {
-        base.Dispose();
-    }
-
     protected override unsafe void ReleaseUnmanagedResources()
     {
         SilkMarshal.Free((nint) Native.Label);

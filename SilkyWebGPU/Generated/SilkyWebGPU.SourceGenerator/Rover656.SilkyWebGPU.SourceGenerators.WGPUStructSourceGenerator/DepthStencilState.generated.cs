@@ -99,13 +99,4 @@ public class ManagedDepthStencilState : ChainedStruct<Silk.NET.WebGPU.DepthStenc
     DepthBiasClamp = ""{DepthBiasClamp}""
 }}";
     }
-
-    public override unsafe void Dispose()
-    {
-        base.Dispose();
-    }
-
-    protected override unsafe void ReleaseUnmanagedResources()
-    {
-    }
 }

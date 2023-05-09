@@ -33,11 +33,6 @@ public class ManagedShaderModuleWGSLDescriptor : ChainedStruct<Silk.NET.WebGPU.S
 }}";
     }
 
-    public override unsafe void Dispose()
-    {
-        base.Dispose();
-    }
-
     protected override unsafe void ReleaseUnmanagedResources()
     {
         SilkMarshal.Free((nint) Native.Code);

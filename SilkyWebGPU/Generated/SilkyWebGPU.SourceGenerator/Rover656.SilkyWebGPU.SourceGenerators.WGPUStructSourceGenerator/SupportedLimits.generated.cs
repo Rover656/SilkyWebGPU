@@ -27,13 +27,4 @@ public class ManagedSupportedLimits : ChainedStruct<Silk.NET.WebGPU.SupportedLim
     Limits = ""{Limits}""
 }}";
     }
-
-    public override unsafe void Dispose()
-    {
-        base.Dispose();
-    }
-
-    protected override unsafe void ReleaseUnmanagedResources()
-    {
-    }
 }

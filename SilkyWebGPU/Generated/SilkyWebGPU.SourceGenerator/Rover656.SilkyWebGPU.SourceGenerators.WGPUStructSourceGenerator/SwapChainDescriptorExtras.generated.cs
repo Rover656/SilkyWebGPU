@@ -48,13 +48,4 @@ public class ManagedSwapChainDescriptorExtras : ChainedStruct<Silk.NET.WebGPU.Ex
     ViewFormatCount = ""{ViewFormatCount}""
 }}";
     }
-
-    public override unsafe void Dispose()
-    {
-        base.Dispose();
-    }
-
-    protected override unsafe void ReleaseUnmanagedResources()
-    {
-    }
 }

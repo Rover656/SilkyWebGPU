@@ -33,11 +33,6 @@ public class ManagedDeviceExtras : ChainedStruct<Silk.NET.WebGPU.Extensions.WGPU
 }}";
     }
 
-    public override unsafe void Dispose()
-    {
-        base.Dispose();
-    }
-
     protected override unsafe void ReleaseUnmanagedResources()
     {
         SilkMarshal.Free((nint) Native.TracePath);

@@ -61,11 +61,6 @@ public class ManagedBindGroupDescriptor : ChainedStruct<Silk.NET.WebGPU.BindGrou
 }}";
     }
 
-    public override unsafe void Dispose()
-    {
-        base.Dispose();
-    }
-
     protected override unsafe void ReleaseUnmanagedResources()
     {
         SilkMarshal.Free((nint) Native.Label);

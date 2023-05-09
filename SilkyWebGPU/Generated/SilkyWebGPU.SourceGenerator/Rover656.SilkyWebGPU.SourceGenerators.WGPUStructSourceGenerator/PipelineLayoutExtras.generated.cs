@@ -40,13 +40,4 @@ public class ManagedPipelineLayoutExtras : ChainedStruct<Silk.NET.WebGPU.Extensi
     PushConstantRangeCount = ""{PushConstantRangeCount}""
 }}";
     }
-
-    public override unsafe void Dispose()
-    {
-        base.Dispose();
-    }
-
-    protected override unsafe void ReleaseUnmanagedResources()
-    {
-    }
 }

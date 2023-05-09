@@ -33,11 +33,6 @@ public class ManagedSurfaceDescriptor : ChainedStruct<Silk.NET.WebGPU.SurfaceDes
 }}";
     }
 
-    public override unsafe void Dispose()
-    {
-        base.Dispose();
-    }
-
     protected override unsafe void ReleaseUnmanagedResources()
     {
         SilkMarshal.Free((nint) Native.Label);

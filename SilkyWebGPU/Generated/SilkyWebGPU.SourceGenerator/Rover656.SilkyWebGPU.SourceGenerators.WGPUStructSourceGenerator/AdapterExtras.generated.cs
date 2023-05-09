@@ -27,13 +27,4 @@ public class ManagedAdapterExtras : ChainedStruct<Silk.NET.WebGPU.Extensions.WGP
     Backend = ""{Backend}""
 }}";
     }
-
-    public override unsafe void Dispose()
-    {
-        base.Dispose();
-    }
-
-    protected override unsafe void ReleaseUnmanagedResources()
-    {
-    }
 }

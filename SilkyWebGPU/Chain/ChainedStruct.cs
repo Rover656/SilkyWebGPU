@@ -27,30 +27,30 @@ public abstract class ChainedStruct<T> : ChainableStruct, IDisposable
         // If there's no chain, return a copy immediately
         if (Next == null)
             return Native;
-        
+
         // Copy the struct so we don't modify underlying
         var nativeCopy = Native;
-        
+
         // Build the chain
-        Next?.AddToChain((ChainedStruct*) &nativeCopy);
+        Next?.AddToChain((ChainedStruct*)&nativeCopy);
 
         // Return the copy.
         return nativeCopy;
     }
-    
+
     /// <inheritdoc/>
     internal override unsafe void Mutate(ChainedStruct* native)
     {
         // Ignore nulls
         if (native == null)
             return;
-        
+
         // We can just set Native to the value at the pointer.
         // You might think this is a bad idea considering it'll hold non-existant pointers, but we're wrapping the type.
         // Whenever a pointer to this is acquired, the old pointer is overwritten before its given to anything, so no risk.
         // To ensure this is the case, if Next somehow becomes null in the lifetime, we'll also set Next to null.
         Native = *(T*)native;
-        
+
         // Now we do the same again on the chain
         if (Next != null && native->Next != null)
         {
@@ -68,14 +68,14 @@ public abstract class ChainedStruct<T> : ChainableStruct, IDisposable
         var native = SilkMarshal.Allocate(sizeof(T));
         fixed (void* nativePtr = &Native)
         {
-            Unsafe.CopyBlockUnaligned((void*)native, nativePtr, (uint) sizeof(T));
+            Unsafe.CopyBlockUnaligned((void*)native, nativePtr, (uint)sizeof(T));
         }
-        
+
         // Allocate the chain
         if (Next != null)
             Next.AddToChain((ChainedStruct*)native);
         else ((ChainedStruct*)native)->Next = null; // Ensure no old pointers are left lying around
-        
+
         // Return pointer :D
         return (T*)native;
     }
@@ -85,19 +85,19 @@ public abstract class ChainedStruct<T> : ChainableStruct, IDisposable
         // Ignore nulls
         if (native == null)
             return;
-        
+
         // Free any chained memory
         ChainHelper.FreeChain((ChainedStruct*)native);
-        
+
         // Now free the main object
-        SilkMarshal.Free((nint) native);
+        SilkMarshal.Free((nint)native);
     }
 
     protected internal override unsafe void AddToChain(ChainedStruct* chainedStruct)
     {
         // Add self to chain
         chainedStruct = ChainHelper.AddToChain(chainedStruct, Native, ChainHelper.GetSType(this));
-        
+
         // Add next to self
         Next?.AddToChain(chainedStruct);
     }
@@ -105,7 +105,9 @@ public abstract class ChainedStruct<T> : ChainableStruct, IDisposable
     /// <summary>
     /// Release native resources required by the structure.
     /// </summary>
-    protected abstract void ReleaseUnmanagedResources();
+    protected virtual void ReleaseUnmanagedResources()
+    {
+    }
 
     ~ChainedStruct() => ReleaseUnmanagedResources();
 

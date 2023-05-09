@@ -62,11 +62,6 @@ public class ManagedInstanceExtras : ChainedStruct<Silk.NET.WebGPU.Extensions.WG
 }}";
     }
 
-    public override unsafe void Dispose()
-    {
-        base.Dispose();
-    }
-
     protected override unsafe void ReleaseUnmanagedResources()
     {
         SilkMarshal.Free((nint) Native.DxilPath);

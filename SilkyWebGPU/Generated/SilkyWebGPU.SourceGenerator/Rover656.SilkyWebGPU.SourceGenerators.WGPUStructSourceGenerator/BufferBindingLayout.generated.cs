@@ -43,13 +43,4 @@ public class ManagedBufferBindingLayout : ChainedStruct<Silk.NET.WebGPU.BufferBi
     MinBindingSize = ""{MinBindingSize}""
 }}";
     }
-
-    public override unsafe void Dispose()
-    {
-        base.Dispose();
-    }
-
-    protected override unsafe void ReleaseUnmanagedResources()
-    {
-    }
 }

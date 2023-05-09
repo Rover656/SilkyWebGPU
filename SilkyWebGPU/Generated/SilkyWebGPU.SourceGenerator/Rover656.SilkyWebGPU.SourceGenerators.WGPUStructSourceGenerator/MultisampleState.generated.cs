@@ -43,13 +43,4 @@ public class ManagedMultisampleState : ChainedStruct<Silk.NET.WebGPU.Multisample
     AlphaToCoverageEnabled = ""{AlphaToCoverageEnabled}""
 }}";
     }
-
-    public override unsafe void Dispose()
-    {
-        base.Dispose();
-    }
-
-    protected override unsafe void ReleaseUnmanagedResources()
-    {
-    }
 }

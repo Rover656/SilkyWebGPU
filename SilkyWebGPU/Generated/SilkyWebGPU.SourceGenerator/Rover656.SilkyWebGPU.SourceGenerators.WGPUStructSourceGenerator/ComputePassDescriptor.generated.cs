@@ -54,11 +54,6 @@ public class ManagedComputePassDescriptor : ChainedStruct<Silk.NET.WebGPU.Comput
 }}";
     }
 
-    public override unsafe void Dispose()
-    {
-        base.Dispose();
-    }
-
     protected override unsafe void ReleaseUnmanagedResources()
     {
         SilkMarshal.Free((nint) Native.Label);

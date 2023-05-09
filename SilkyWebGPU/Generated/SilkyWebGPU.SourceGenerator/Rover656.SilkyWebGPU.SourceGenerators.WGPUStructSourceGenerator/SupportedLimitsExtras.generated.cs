@@ -27,13 +27,4 @@ public class ManagedSupportedLimitsExtras : ChainedStruct<Silk.NET.WebGPU.Extens
     MaxPushConstantSize = ""{MaxPushConstantSize}""
 }}";
     }
-
-    public override unsafe void Dispose()
-    {
-        base.Dispose();
-    }
-
-    protected override unsafe void ReleaseUnmanagedResources()
-    {
-    }
 }

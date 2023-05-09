@@ -255,39 +255,46 @@ public class {Constants.ManagedStructPrefix}{structFriendlyName} : ChainedStruct
     }");
 
                 // Dispose method
-                outputWriter.AppendLine(@"
+                if (managedDispose.Count > 0)
+                {
+                    outputWriter.AppendLine(@"
     public override unsafe void Dispose()
     {");
-                // Chain frees
-                foreach (var fieldName in managedDispose)
-                {
-                    outputWriter.AppendLine($"        _{fieldName}?.Dispose();");
+                    // Chain frees
+                    foreach (var fieldName in managedDispose)
+                    {
+                        outputWriter.AppendLine($"        _{fieldName}?.Dispose();");
+                    }
+
+                    outputWriter.AppendLine(@"        base.Dispose();
+    }");
                 }
 
-                outputWriter.AppendLine(@"        base.Dispose();
-    }");
-                
-                outputWriter.AppendLine(@"
+                if (chainFreeRef.Count > 0 || chainFreePtr.Count > 0 || marshalFree.Count > 0)
+                {
+                    outputWriter.AppendLine(@"
     protected override unsafe void ReleaseUnmanagedResources()
     {");
-                // Chain frees
-                foreach (var fieldName in chainFreeRef)
-                {
-                    outputWriter.AppendLine($"        ChainHelper.FreeChain(ref Native.{fieldName});");
-                }
-                foreach (var fieldName in chainFreePtr)
-                {
-                    outputWriter.AppendLine($"        ChainHelper.FreeChain((ChainedStruct*) Native.{fieldName});");
-                }
+                    // Chain frees
+                    foreach (var fieldName in chainFreeRef)
+                    {
+                        outputWriter.AppendLine($"        ChainHelper.FreeChain(ref Native.{fieldName});");
+                    }
+                    foreach (var fieldName in chainFreePtr)
+                    {
+                        outputWriter.AppendLine($"        ChainHelper.FreeChain((ChainedStruct*) Native.{fieldName});");
+                    }
                 
-                // Marshal frees
-                foreach (var fieldName in marshalFree)
-                {
-                    outputWriter.AppendLine($"        SilkMarshal.Free((nint) Native.{fieldName});");
-                }
+                    // Marshal frees
+                    foreach (var fieldName in marshalFree)
+                    {
+                        outputWriter.AppendLine($"        SilkMarshal.Free((nint) Native.{fieldName});");
+                    }
                 
-                outputWriter.AppendLine(@"    }
-}");
+                    outputWriter.AppendLine(@"    }");
+                }
+
+                outputWriter.AppendLine("}");
 
                 context.AddSource($"{structFriendlyName}.generated.cs", outputWriter.ToString());
             }
