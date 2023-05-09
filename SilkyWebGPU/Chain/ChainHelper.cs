@@ -14,7 +14,7 @@ public static class ChainHelper
      * Incredibly unsafe if used incorrectly.
      * <typeparam name="T">Must be a chainable struct.</typeparam>
      */
-    public static unsafe ChainedStruct* AddToChain<T>(ChainedStruct* self, T toAdd, SType sType) where T : unmanaged
+    internal static unsafe ChainedStruct* AddToChain<T>(ChainedStruct* self, T toAdd, SType sType) where T : unmanaged
     {
         // Allocate memory for this piece to go.
         var allocatedMem = SilkMarshal.Allocate(sizeof(T));
@@ -29,11 +29,21 @@ public static class ChainHelper
         return chain;
     }
 
+    /// <inheritdoc cref="FreeChain(ChainedStruct*)"/>
+    internal static unsafe void FreeChain<T>(ref T chain) where T : unmanaged
+    {
+        // Fix the ref and run with it.
+        fixed (void* chained = &chain)
+        {
+            FreeChain((ChainedStruct*)chained);
+        }
+    }
+
     /**
      * Free the allocated memory of a chained struct.
-     * This will not free the main chain, as that is normally managed by C#
+     * This will not free the main chain, as that is normally managed.
      */
-    public static unsafe void FreeChain(ChainedStruct* chain)
+    internal static unsafe void FreeChain(ChainedStruct* chain)
     {
         // Ignore an empty chain
         if (chain == null)
@@ -52,7 +62,7 @@ public static class ChainHelper
         chain->Next = null;
     }
 
-    public static SType GetSType<T>(ChainedStruct<T> chainedStruct) where T : unmanaged
+    internal static SType GetSType<T>(ChainedStruct<T> chainedStruct) where T : unmanaged
     {
         return chainedStruct switch
         {

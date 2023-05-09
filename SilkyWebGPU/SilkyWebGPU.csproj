@@ -7,7 +7,13 @@
     <RootNamespace>Rover656.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
     <Title>Rover656.SilkyWebGPU</Title>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
   </PropertyGroup>
+
+  <ItemGroup>
+	<Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\SilkyWebGPU.SourceGenerator\SilkyWebGPU.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />

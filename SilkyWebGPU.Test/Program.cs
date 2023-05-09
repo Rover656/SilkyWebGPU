@@ -56,11 +56,16 @@ fn fs_main() -> @location(0) vec4<f32> {
         CreateSwapChain();
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <remarks></remarks>
+    /// <inheritdoc cref=""/>
     private static async void WindowOnLoad()
     {
         // Create instance
-        var descriptor = new ManagedInstanceDescriptor();
-        var extras = new ManagedInstanceExtras
+        using var descriptor = new ManagedInstanceDescriptor();
+        using var extras = new ManagedInstanceExtras
         {
             Backends = (uint)InstanceBackend.DX12 // TODO: Make enums type-aware.
         };
@@ -68,17 +73,18 @@ fn fs_main() -> @location(0) vec4<f32> {
         _Instance = WGPU.CreateInstance(descriptor);
         
         // Create surface from window
+        // TODO: Provide a light extension for hiding the creation of a WebGPUPtr.
         unsafe
         {
             _Surface = new WebGPUPtr<Surface>(_window.CreateWebGPUSurface(WGPU.API, _Instance));
         }
-        
+
         // Request adapter
-        var requestAdapterOptions = new ManagedRequestAdapterOptions
+        using var requestAdapterOptions = new ManagedRequestAdapterOptions
         {
             CompatibleSurface = _Surface
         };
-        var adapterExtras = new ManagedAdapterExtras
+        using var adapterExtras = new ManagedAdapterExtras
         {
             Backend = BackendType.D3D12
         };
@@ -87,31 +93,24 @@ fn fs_main() -> @location(0) vec4<f32> {
         _Adapter = await _Instance.RequestAdapter(requestAdapterOptions);
 
         {
+            // Create limits object to populate
             var limits = new ManagedSupportedLimits
             {
                 Next = new ManagedSupportedLimitsExtras()
             };
 
-            // Get the limits from the gpu
-            // using (var limitsHolder = limits.GetMutable())
-            // {
-            //     unsafe
-            //     {
-            //         fixed (void* ptr = &limitsHolder.Chainable)
-            //         {
-            //             _Adapter.GetLimits((SupportedLimits*) ptr);
-            //         }
-            //     }
-            // }
-
+            // Get limits
             _Adapter.GetLimits(ref limits);
 
-            Console.WriteLine(limits.Limits);
+            // Breakpoint here to take a look.
+            limits.Dispose();
         }
 
         var properties = new ManagedAdapterProperties();
-
         _Adapter.GetProperties(ref properties);
+        Console.WriteLine(properties);
+        Console.WriteLine(properties.Next);
+        properties.Dispose();
 
         // Write properties to console
         PrintAdapterFeatures();
@@ -127,19 +126,16 @@ fn fs_main() -> @location(0) vec4<f32> {
         }
 
         // Load shader
-        unsafe
+        using var wgslDescriptor = new ManagedShaderModuleWGSLDescriptor
         {
-            var wgslDescriptor = new ManagedShaderModuleWGSLDescriptor
-            {
-                Code = (byte*) SilkMarshal.StringToPtr(SHADER)
-            };
-            var shaderModuleDescriptor = new ManagedShaderModuleDescriptor
-            {
-                Next = wgslDescriptor
-            };
+            Code = SHADER
+        };
+        using var shaderModuleDescriptor = new ManagedShaderModuleDescriptor
+        {
+            Next = wgslDescriptor
+        };
 
-            _Shader = _Device.CreateShaderModule(shaderModuleDescriptor);
-        }
+        _Shader = _Device.CreateShaderModule(shaderModuleDescriptor);
 
         _SwapChainFormat = _Surface.GetPreferredFormat(_Adapter);
 
@@ -161,6 +157,7 @@ fn fs_main() -> @location(0) vec4<f32> {
                 }
             };
 
+            // This needs to be wrapped
             var colorTargetState = new ColorTargetState
             {
                 Format    = _SwapChainFormat,
@@ -168,35 +165,37 @@ fn fs_main() -> @location(0) vec4<f32> {
                 WriteMask = ColorWriteMask.All
             };
 
-            var fragmentState = new FragmentState
+            // This needs wrapped
+            var fragmentState = new ManagedFragmentState
             {
                 Module      = _Shader,
                 TargetCount = 1,
                 Targets     = &colorTargetState,
-                EntryPoint  = (byte*) SilkMarshal.StringToPtr("fs_main")
+                EntryPoint  = "fs_main"
             };
 
-            var renderPipelineDescriptor = new ManagedRenderPipelineDescriptor
+            // And this needs to be able to accept wrapped values...
+            using var renderPipelineDescriptor = new ManagedRenderPipelineDescriptor
             {
-                Vertex = new VertexState
+                Vertex = new ManagedVertexState
                 {
                     Module     = _Shader,
-                    EntryPoint = (byte*) SilkMarshal.StringToPtr("vs_main"),
+                    EntryPoint = "vs_main",
                 },
-                Primitive = new PrimitiveState
+                Primitive = new ManagedPrimitiveState
                 {
                     Topology         = PrimitiveTopology.TriangleList,
                     StripIndexFormat = IndexFormat.Undefined,
                     FrontFace        = FrontFace.Ccw,
                     CullMode         = CullMode.None
                 },
-                Multisample = new MultisampleState
+                Multisample = new ManagedMultisampleState
                 {
                     Count                  = 1,
                     Mask                   = ~0u,
                     AlphaToCoverageEnabled = false
                 },
-                Fragment     = &fragmentState,
+                Fragment     = fragmentState,
                 DepthStencil = null
             };
 

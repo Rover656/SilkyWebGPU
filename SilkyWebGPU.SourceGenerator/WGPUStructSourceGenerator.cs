@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
 
@@ -13,26 +14,9 @@ namespace Rover656.SilkyWebGPU.SourceGenerators
     [Generator]
     public class WGPUStructSourceGenerator : ISourceGenerator
     {
-        private static readonly string[] Structs =
-        {
-            "AdapterProperties", "BindGroupLayoutDescriptor", "BufferBindingLayout",
-            "BufferDescriptor", "CommandBufferDescriptor", "CommandEncoderDescriptor", "InstanceDescriptor",
-            "PipelineLayoutDescriptor", "QuerySetDescriptor", "RenderBundleDescriptor", "RenderBundleEncoderDescriptor",
-            "RequestAdapterOptions", "SamplerDescriptor", "SurfaceDescriptor", "SwapChainDescriptor",
-            "TextureViewDescriptor", "BindGroupDescriptor", "ComputePassDescriptor", "ProgrammableStageDescriptor",
-            "ShaderModuleDescriptor", "TextureDescriptor", "ComputePipelineDescriptor", "SupportedLimits",
-            "DeviceDescriptor", "RenderPassDescriptor", "RenderPipelineDescriptor", "ShaderModuleWGSLDescriptor",
-
-            // Extensions
-            "Extensions.WGPU.AdapterExtras",
-            "Extensions.WGPU.DeviceExtras", "Extensions.WGPU.InstanceExtras",
-            "Extensions.WGPU.PipelineLayoutExtras", "Extensions.WGPU.ShaderModuleGLSLDescriptor",
-            "Extensions.WGPU.SupportedLimitsExtras", "Extensions.WGPU.SwapChainDescriptorExtras"
-        };
-
         public void Execute(GeneratorExecutionContext context)
         {
-            foreach (var structName in Structs)
+            foreach (var structName in Constants.ManagedStructs)
             {
                 var structSymbol = context.Compilation.GetTypeByMetadataName($"{Constants.WebGpuNS}.{structName}");
                 if (structSymbol == null)
@@ -52,6 +36,7 @@ namespace Rover656.SilkyWebGPU.SourceGenerators
 using {Constants.ExtensionNS};
 using {Constants.ExtensionNS}.Chain;
 
+using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
 using Silk.NET.WebGPU.Extensions.WGPU;
 
@@ -59,61 +44,250 @@ namespace {Constants.ExtensionNS};
 ");
 
                 outputWriter.Append($@"
-public class Managed{structFriendlyName} : ChainedStruct<{Constants.WebGpuNS}.{structName}>
+/// <seealso cref=""{Constants.WebGpuNS}.{structName}""/>
+public class {Constants.ManagedStructPrefix}{structFriendlyName} : ChainedStruct<{Constants.WebGpuNS}.{structName}>
 {{
 ");
 
                 // Get fields
-                foreach (var member in structSymbol.GetMembers())
+                var members = structSymbol.GetMembers();
+                var managedDispose = new List<string>(); // private fields that need disposing.
+                var chainFreePtr = new List<string>(); // chained structs to free (alloc'd)
+                var chainFreeRef = new List<string>(); // chained structs to free (getwithchain)
+                var marshalFree = new List<string>(); // native memory to free
+                foreach (var member in members)
                 {
                     if (member is IFieldSymbol field)
                     {
                         // Skip anything to do with the chain.
                         if (field.Name == "Chain" || field.Name == "NextInChain")
                             continue;
+                        
+                        // TODO: What is the strategy for structures like Vertex and Primitive, which can also be chained...
+                        // And also for DepthStencil and Fragment. All in RenderPipelineDescriptor.
 
                         if (field.Type.Kind != SymbolKind.PointerType)
                         {
-                            outputWriter.Append($@"
-     public {field.Type} {field.Name}
-     {{
-         get => Native.{field.Name};
-         set => Native.{field.Name} = value;
-     }}
+                            if (Constants.ManagedStructs.Contains(field.Type.Name))
+                            {
+                                outputWriter.Append($@"
+    // Keep a copy around for disposal.
+    private {Constants.ManagedStructPrefix}{field.Type.Name} _{field.Name};
+
+    /// <seealso cref=""{Constants.WebGpuNS}.{structName}.{field.Name}"" />
+    /// <remarks>
+    /// Using this setter will take ownership of the provided object and will copy its data by value.
+    /// This means you can no longer modify the contents of the object and have them update as a part of this one.
+    /// This also means, when this object is disposed (or when you replace the value of this property with another value), the old value will be disposed.
+    /// This is to ensure disposal occurs at the right time.
+    /// </remarks>
+    public unsafe {Constants.ManagedStructPrefix}{field.Type.Name} {field.Name}
+    {{
+        // TODO: Due to limitations, these are only writeable for now... Use the Raw field instead for reading.
+        //get => Native.{field.Name};
+        set
+        {{
+            // Dispose any existing object.
+            _{field.Name}?.Dispose();
+
+            // Attempt to free any existing chains
+            ChainHelper.FreeChain(ref Native.{field.Name});
+
+            // Allocate new chain -OR- set to default
+            if (value != null)
+                Native.{field.Name} = value.GetWithChain();
+            else Native.{field.Name} = default;
+
+            // Save
+            _{field.Name} = value;
+        }}
+    }}
  ");
+                                // Setup for freeing resources
+                                managedDispose.Add(field.Name);
+                                chainFreeRef.Add(field.Name);
+                            }
+                            else
+                            {
+                                outputWriter.Append($@"
+    /// <seealso cref=""{Constants.WebGpuNS}.{structName}.{field.Name}"" />
+    public {field.Type} {field.Name}
+    {{
+        get => Native.{field.Name};
+        set => Native.{field.Name} = value;
+    }}
+ ");
+                            }
                         }
                         else
                         {
                             var pointerType = field.Type as IPointerTypeSymbol;
 
+                            // Really garbage but for now should suffice.
+                            var isArray = false;
+                            foreach (var searchMember in members)
+                            {
+                                if (searchMember is IFieldSymbol searchField)
+                                {
+                                    if (searchField.Name == field.Name.TrimEnd('s') + "Count" || searchField.Name == field.Name.Replace("ies", "y") + "Count")
+                                    {
+                                        isArray = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            
                             if (WGPUExtensionSourceGenerator.Objects.Contains(pointerType.PointedAtType.Name))
                             {
                                 // We ball
                                 outputWriter.Append($@"
-     public unsafe {Constants.NativePtrType}<{pointerType.PointedAtType}> {field.Name}
-     {{
-         /*get => Native.{field.Name};*/ // TODO: How do we do...
-         set => Native.{field.Name} = value;
-     }}
+    /// <seealso cref=""{Constants.WebGpuNS}.{structName}.{field.Name}"" />
+    public unsafe {Constants.NativePtrType}<{pointerType.PointedAtType}> {field.Name}
+    {{
+        get => {Constants.NativePtrType}<{pointerType.PointedAtType}>.Weak(Native.{field.Name});
+        set => Native.{field.Name} = value;
+    }}
  ");
+                            }
+                            else if (Constants.ManagedStructs.Contains(pointerType.PointedAtType.Name) && !isArray)
+                            {
+                                outputWriter.Append($@"
+    /// <summary>
+    /// This is raw access to the underlying field at its native type. This will likely be removed.
+    /// <summary/>
+    /// <seealso cref=""{Constants.WebGpuNS}.{structName}.{field.Name}"" />
+    public unsafe {field.Type} {field.Name}Raw
+    {{
+        get => Native.{field.Name};
+        set => Native.{field.Name} = value;
+    }}
+ ");
+                                
+                                outputWriter.Append($@"
+    /// <seealso cref=""{Constants.WebGpuNS}.{structName}.{field.Name}"" />
+    /// <remarks>While this property is a reference type, this property will set by value.</remarks>
+    public unsafe {Constants.ManagedStructPrefix}{pointerType.PointedAtType.Name} {field.Name}
+    {{
+        // TODO: Due to limitations, these are only writeable for now... Use the Raw field instead for reading.
+        //get => Native.{field.Name};
+        set
+        {{
+            // Release any existing native pointer.
+            if (Native.{field.Name} != null)
+            {{
+                ChainHelper.FreeChain((ChainedStruct*) Native.{field.Name});
+                SilkMarshal.Free((nint) Native.{field.Name});
+            }}
+
+            // Allocate new!
+            if (value != null)
+                Native.{field.Name} = value.Alloc();
+            else Native.{field.Name} = null;
+        }}
+    }}
+ ");
+                                
+                                // Add to both the marshal and chain free list
+                                chainFreePtr.Add(field.Name);
+                                marshalFree.Add(field.Name);
+                            }
+                            else if (pointerType.PointedAtType.Name == "Byte")
+                            {
+                                // This is a *string*
+                                outputWriter.Append($@"
+    /// <seealso cref=""{Constants.WebGpuNS}.{structName}.{field.Name}"" />
+    public unsafe string {field.Name}
+    {{
+        get => SilkMarshal.PtrToString((nint) Native.{field.Name});
+        set
+       {{
+           if (Native.{field.Name} != null)
+               SilkMarshal.Free((nint) Native.{field.Name});
+           Native.{field.Name} = (byte *) SilkMarshal.StringToPtr(value);
+        }}
+    }}
+ ");
+                                
+                                // Remember to free this with the marshal!
+                                marshalFree.Add(field.Name);
                             }
                             else
                             {
-                                outputWriter.AppendLine($"    // {field.Type} : {field.Name}");
-                                outputWriter.AppendLine("    // Not properly supported yet.");
                                 outputWriter.Append($@"
-     public unsafe {field.Type} {field.Name}
-     {{
-         get => Native.{field.Name};
-         set => Native.{field.Name} = value;
-     }}
+    /// <summary>
+    /// This is a currently unsupported type.
+    /// Native type: {field.Type}.
+    /// Original name: {field.Name}.
+    /// Is array type?: {isArray}.
+    /// </summary>
+    /// <seealso cref=""{Constants.WebGpuNS}.{structName}.{field.Name}"" />
+    public unsafe {field.Type} {field.Name}
+    {{
+        get => Native.{field.Name};
+        set => Native.{field.Name} = value;
+    }}
  ");
                             }
                         }
                     }
                 }
+                
+                outputWriter.AppendLine($@"
+    public override unsafe string ToString()
+    {{
+        // Write anything to the console we deem writable. This might not be accurate but its good enough for debug purposes :)
+        return $@""{structFriendlyName} {{{{");
+                
+                // Write a ToString method for debugging
+                foreach (var member in structSymbol.GetMembers())
+                {
+                    if (member is IFieldSymbol field)
+                    {
+                        // Skip anything to do with the chain.
+                        if (field.Name == "Chain" || field.Name == "NextInChain" || (field.Type.Kind == SymbolKind.PointerType  && (field.Type as IPointerTypeSymbol).PointedAtType.Name != "Byte") || chainFreeRef.Contains(field.Name) || chainFreePtr.Contains(field.Name))
+                            continue;
 
-                outputWriter.AppendLine("}");
+                        outputWriter.AppendLine($"    {field.Name} = \"\"{{{field.Name}}}\"\"");
+                    }
+                }
+                
+                outputWriter.AppendLine(@"}}"";
+    }");
+
+                // Dispose method
+                outputWriter.AppendLine(@"
+    public override unsafe void Dispose()
+    {");
+                // Chain frees
+                foreach (var fieldName in managedDispose)
+                {
+                    outputWriter.AppendLine($"        _{fieldName}?.Dispose();");
+                }
+
+                outputWriter.AppendLine(@"        base.Dispose();
+    }");
+                
+                outputWriter.AppendLine(@"
+    protected override unsafe void ReleaseUnmanagedResources()
+    {");
+                // Chain frees
+                foreach (var fieldName in chainFreeRef)
+                {
+                    outputWriter.AppendLine($"        ChainHelper.FreeChain(ref Native.{fieldName});");
+                }
+                foreach (var fieldName in chainFreePtr)
+                {
+                    outputWriter.AppendLine($"        ChainHelper.FreeChain((ChainedStruct*) Native.{fieldName});");
+                }
+                
+                // Marshal frees
+                foreach (var fieldName in marshalFree)
+                {
+                    outputWriter.AppendLine($"        SilkMarshal.Free((nint) Native.{fieldName});");
+                }
+                
+                outputWriter.AppendLine(@"    }
+}");
 
                 context.AddSource($"{structFriendlyName}.generated.cs", outputWriter.ToString());
             }

@@ -4,13 +4,30 @@ using Silk.NET.WebGPU;
 
 namespace Rover656.SilkyWebGPU.Chain;
 
-public abstract class ChainedStruct<T> : ChainableStruct
+/// <summary>
+/// A base class for auto generated wrappers of chained structs.
+/// This takes control of storage of the internal data and management of the chain.
+/// </summary>
+/// <typeparam name="T"></typeparam>
+public abstract class ChainedStruct<T> : ChainableStruct, IDisposable
     where T : unmanaged
 {
+    /// <summary>
+    /// The wrapped native structure.
+    /// </summary>
     internal T Native;
 
+    /// <summary>
+    /// Get the Native instance with the chain allocated
+    /// Must be deallocated with <see cref="ChainHelper.FreeChain{T}(ref T)"/>
+    /// </summary>
+    /// <returns></returns>
     internal unsafe T GetWithChain()
     {
+        // If there's no chain, return a copy immediately
+        if (Next == null)
+            return Native;
+        
         // Copy the struct so we don't modify underlying
         var nativeCopy = Native;
         
@@ -20,14 +37,24 @@ public abstract class ChainedStruct<T> : ChainableStruct
         // Return the copy.
         return nativeCopy;
     }
-
-    // TODO: Maybe just make this a ChainHelper method.
-    // It doesn't need to be an instance method at all.
-    internal unsafe void FreeChain(ref T copy)
+    
+    /// <inheritdoc/>
+    internal override unsafe void Mutate(ChainedStruct* native)
     {
-        fixed (void* chained = &copy)
+        // Ignore nulls
+        if (native == null)
+            return;
+        
+        // We can just set Native to the value at the pointer.
+        // You might think this is a bad idea considering it'll hold non-existant pointers, but we're wrapping the type.
+        // Whenever a pointer to this is acquired, the old pointer is overwritten before its given to anything, so no risk.
+        // To ensure this is the case, if Next somehow becomes null in the lifetime, we'll also set Next to null.
+        Native = *(T*)native;
+        
+        // Now we do the same again on the chain
+        if (Next != null && native->Next != null)
         {
-            ChainHelper.FreeChain((ChainedStruct*) chained);
+            Next.Mutate(native->Next);
         }
     }
 
@@ -53,25 +80,6 @@ public abstract class ChainedStruct<T> : ChainableStruct
         return (T*)native;
     }
 
-    internal override unsafe void Mutate(ChainedStruct* native)
-    {
-        // Ignore nulls
-        if (native == null)
-            return;
-        
-        // We can just set Native to the value at the pointer.
-        // You might think this is a bad idea considering it'll hold non-existant pointers, but we're wrapping the type.
-        // Whenever a pointer to this is acquired, the old pointer is overwritten before its given to anything, so no risk.
-        // To ensure this is the case, if Next somehow becomes null in the lifetime, we'll also set Next to null.
-        Native = *(T*)native;
-        
-        // Now we do the same again on the chain
-        if (Next != null && native->Next != null)
-        {
-            Next.Mutate(native->Next);
-        }
-    }
-
     internal unsafe void Free(T* native)
     {
         // Ignore nulls
@@ -92,5 +100,18 @@ public abstract class ChainedStruct<T> : ChainableStruct
         
         // Add next to self
         Next?.AddToChain(chainedStruct);
+    }
+
+    /// <summary>
+    /// Release native resources required by the structure.
+    /// </summary>
+    protected abstract void ReleaseUnmanagedResources();
+
+    ~ChainedStruct() => ReleaseUnmanagedResources();
+
+    public virtual void Dispose()
+    {
+        ReleaseUnmanagedResources();
+        GC.SuppressFinalize(this);
     }
 }

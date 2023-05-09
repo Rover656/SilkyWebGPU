@@ -14,12 +14,14 @@ public abstract class ChainableStruct
      */
     public ChainableStruct? Next = null;
     
+    /// <summary>
+    /// Add this chainable to the chained struct.
+    /// </summary>
     protected internal abstract unsafe void AddToChain(ChainedStruct *chainedStruct);
 
     /// <summary>
     /// Any use of this method MUST ensure that the native pointer is of the correct type.
     /// If it is not, really bad things will happen!
     /// </summary>
-    /// <param name="native"></param>
     internal abstract unsafe void Mutate(ChainedStruct* native);
 }

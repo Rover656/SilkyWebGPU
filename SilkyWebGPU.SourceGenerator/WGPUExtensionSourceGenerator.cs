@@ -126,7 +126,7 @@ public static partial class {ClassName}
     {GetMethodDocString(method)}
     {GetObjectMethodSignature(method, objectType, methodName, typeParameterList, typeParameterConstraints, parameterList)}
     {{
-        {GetObjectMethodBody(method, argumentList)}
+{GetObjectMethodBody(method, argumentList)}
     }}
 ");
 
@@ -137,7 +137,7 @@ public static partial class {ClassName}
     {GetMethodDocString(method)}
     {GetVoidMethodSignature(method, objectType, methodName, typeParameterList, typeParameterConstraints, parameterList)}
     {{
-        {GetVoidMethodBody(method, argumentList)}
+{GetVoidMethodBody(method, argumentList)}
     }}
 ");
                 }
@@ -147,7 +147,7 @@ public static partial class {ClassName}
     {GetMethodDocString(method)}
     {GetPlainMethodSignature(method, objectType, methodName, typeParameterList, typeParameterConstraints, parameterList)}
     {{
-        {GetPlainMethodBody(method, argumentList)}
+{GetPlainMethodBody(method, argumentList)}
     }}
 ");
                 }
@@ -168,7 +168,7 @@ public static partial class {ClassName}
     {GetMethodDocString(method)}
     {GetObjectMethodSignature(method, objectType, methodName, typeParameterList, typeParameterConstraints, parameterList)}
     {{
-        {GetChainableBody(method, GetObjectMethodRetType(method), GetObjectMethodBody(method, argumentList), 1)}
+{GetChainableBody(method, GetObjectMethodRetType(method), GetObjectMethodBody(method, argumentList), 1)}
     }}
 ");
 
@@ -179,7 +179,7 @@ public static partial class {ClassName}
     {GetMethodDocString(method)}
     {GetVoidMethodSignature(method, objectType, methodName, typeParameterList, typeParameterConstraints, parameterList)}
     {{
-        {GetChainableBody(method, GetVoidMethodRetType(method), GetVoidMethodBody(method, argumentList), 1)}
+{GetChainableBody(method, GetVoidMethodRetType(method), GetVoidMethodBody(method, argumentList), 1)}
     }}
 ");
                 }
@@ -189,7 +189,7 @@ public static partial class {ClassName}
     {GetMethodDocString(method)}
     {GetPlainMethodSignature(method, objectType, methodName, typeParameterList, typeParameterConstraints, parameterList)}
     {{
-        {GetChainableBody(method, GetPlainMethodRetType(method), GetPlainMethodBody(method, argumentList), 1)}
+{GetChainableBody(method, GetPlainMethodRetType(method), GetPlainMethodBody(method, argumentList), 1)}
     }}
 ");
                 }
@@ -255,17 +255,17 @@ public static partial class {ClassName}
         private string GetObjectMethodBody(IMethodSymbol method, StringBuilder argumentList)
         {
             var returnType = (method.ReturnType as IPointerTypeSymbol).PointedAtType;
-            return $"return new {Constants.NativePtrType}<{returnType}>(WGPU.API.{method.Name}({method.Parameters[0].Name}{argumentList}));";
+            return $"        return new {Constants.NativePtrType}<{returnType}>(WGPU.API.{method.Name}({method.Parameters[0].Name}{argumentList}));";
         }
 
         private string GetPlainMethodBody(IMethodSymbol method, StringBuilder argumentList)
         {
-            return $"return WGPU.API.{method.Name}({method.Parameters[0].Name}{argumentList});";
+            return $"        return WGPU.API.{method.Name}({method.Parameters[0].Name}{argumentList});";
         }
         
         private string GetVoidMethodBody(IMethodSymbol method, StringBuilder argumentList)
         {
-            return $"WGPU.API.{method.Name}({method.Parameters[0].Name}{argumentList});";
+            return $"        WGPU.API.{method.Name}({method.Parameters[0].Name}{argumentList});";
         }
         
         // TODO: Now we're unable to pass null to these methods :(
@@ -281,7 +281,7 @@ public static partial class {ClassName}
             
             // Forward declare return variable
             if (!method.ReturnsVoid)
-                stringBuilder.AppendLine($"{returnType} ret;"); // TODO: Handle the return type better. Take it as a parameter and split off the 
+                stringBuilder.AppendLine($"        {returnType} ret;"); // TODO: Handle the return type better. Take it as a parameter and split off the
             
             for (int i = startIndex; i < method.Parameters.Length; i++)
             {
@@ -293,14 +293,15 @@ public static partial class {ClassName}
                     if (parameter.RefKind == RefKind.Ref)
                     {
                         // ref types cannot be null so we can write straight to them, then call mutate.
-                        stringBuilder.AppendLine($"fixed ({parameter.Type}* {parameter.Name}{ChainableUnmanagedSuffix} = &{parameter.Name}.Native) {{");
+                        stringBuilder.AppendLine($@"        var {parameter.Name}Chained = {parameter.Name}.GetWithChain();
+        var {parameter.Name}{ChainableUnmanagedSuffix} = &{parameter.Name}Chained;");
                     }
                     else
                     {
                         if (chainableCount == 1)
                         {
                             stringBuilder.AppendLine($@"        if ({parameter.Name} == null) {{
-        {body.Replace("return", "ret =").Replace($"{parameter.Name}{ChainableUnmanagedSuffix}", "null")}
+{body.Replace("return", "ret =").Replace($"{parameter.Name}{ChainableUnmanagedSuffix}", "null")}
         }}
         else
         {{
@@ -315,7 +316,7 @@ public static partial class {ClassName}
                 }
             }
 
-            stringBuilder.AppendLine($"        {body.Replace("return", "ret =")}");
+            stringBuilder.AppendLine($"{body.Replace("return", "ret =")}");
 
             for (int i = startIndex; i < method.Parameters.Length; i++)
             {
@@ -325,14 +326,14 @@ public static partial class {ClassName}
                     if (parameter.RefKind == RefKind.Ref)
                     {
                         // Now propagate mutations through the chain
-                        stringBuilder.AppendLine($"        {parameter.Name}.Next?.Mutate(((ChainedStruct*){parameter.Name}{ChainableUnmanagedSuffix})->Next);");
-                        stringBuilder.AppendLine("        }");
+                        stringBuilder.AppendLine($@"        {parameter.Name}.Mutate(((ChainedStruct*){parameter.Name}{ChainableUnmanagedSuffix}));
+        ChainHelper.FreeChain(ref {parameter.Name}Chained);");
                     }
                     else
                     {
                         if (chainableCount == 1)
                         {
-                            stringBuilder.AppendLine($@"        {parameter.Name}.FreeChain(ref {parameter.Name}{ChainableUnmanagedSuffix});
+                            stringBuilder.AppendLine($@"        ChainHelper.FreeChain(ref {parameter.Name}{ChainableUnmanagedSuffix});
         }}");
                         }
                         else

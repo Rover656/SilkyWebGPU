@@ -12,8 +12,7 @@ public unsafe class WebGPUPtr<T> : IDisposable
 {
     private T* _ptr;
     private bool _weak;
-
-    // TODO: Make internal again?
+    
     public WebGPUPtr(T* ptr)
     {
         _ptr = ptr;
@@ -39,6 +38,10 @@ public unsafe class WebGPUPtr<T> : IDisposable
         return _ptr == null;
     }
 
+    /// <summary>
+    /// Whether or not the pointer is weak or not.
+    /// A weak pointer does not control the lifecycle of the object.
+    /// </summary>
     public bool IsWeak()
     {
         return _weak;

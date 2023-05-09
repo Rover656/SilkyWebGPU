@@ -18,11 +18,9 @@ public static class WGPU
             Disposal = new WebGPUDisposal(API);
         }
 
-        // using var descriptorUnmanaged = descriptor.Get();
-
         var descriptorUnmanaged = descriptor.GetWithChain();
         var ret = new WebGPUPtr<Instance>(API.CreateInstance(descriptorUnmanaged));
-        descriptor.FreeChain(ref descriptorUnmanaged);
+        ChainHelper.FreeChain(ref descriptorUnmanaged);
         return ret;
     }
 

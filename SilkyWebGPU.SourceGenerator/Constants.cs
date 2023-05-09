@@ -42,6 +42,8 @@
             "TextureViewDescriptor", "BindGroupDescriptor", "ComputePassDescriptor", "ProgrammableStageDescriptor",
             "ShaderModuleDescriptor", "TextureDescriptor", "ComputePipelineDescriptor", "SupportedLimits",
             "DeviceDescriptor", "RenderPassDescriptor", "RenderPipelineDescriptor", "ShaderModuleWGSLDescriptor",
+            
+            "VertexState", "PrimitiveState", "DepthStencilState", "FragmentState", "MultisampleState", "ColorTargetState",
 
             // Extensions
             "Extensions.WGPU.AdapterExtras",
