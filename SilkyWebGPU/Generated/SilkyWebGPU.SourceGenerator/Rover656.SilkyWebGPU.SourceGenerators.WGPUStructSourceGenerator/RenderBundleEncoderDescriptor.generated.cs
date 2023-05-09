@@ -3,6 +3,8 @@
 using Rover656.SilkyWebGPU;
 using Rover656.SilkyWebGPU.Chain;
 
+using System.Runtime.CompilerServices;
+
 using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
 using Silk.NET.WebGPU.Extensions.WGPU;
@@ -10,13 +12,14 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.RenderBundleEncoderDescriptor"/>
-public class ManagedRenderBundleEncoderDescriptor : ChainedStruct<Silk.NET.WebGPU.RenderBundleEncoderDescriptor>
+public class RenderBundleEncoderDescriptor : ChainedStruct<Silk.NET.WebGPU.RenderBundleEncoderDescriptor>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.RenderBundleEncoderDescriptor.Label" />
     public unsafe string Label
     {
         get => SilkMarshal.PtrToString((nint) Native.Label);
+
         set
        {
            if (Native.Label != null)
@@ -25,24 +28,33 @@ public class ManagedRenderBundleEncoderDescriptor : ChainedStruct<Silk.NET.WebGP
         }
     }
  
-    /// <seealso cref="Silk.NET.WebGPU.RenderBundleEncoderDescriptor.ColorFormatsCount" />
-    public uint ColorFormatsCount
-    {
-        get => Native.ColorFormatsCount;
-        set => Native.ColorFormatsCount = value;
-    }
- 
-    /// <summary>
-    /// This is a currently unsupported type.
-    /// Native type: Silk.NET.WebGPU.TextureFormat*.
-    /// Original name: ColorFormats.
-    /// Is array type?: True.
-    /// </summary>
     /// <seealso cref="Silk.NET.WebGPU.RenderBundleEncoderDescriptor.ColorFormats" />
-    public unsafe Silk.NET.WebGPU.TextureFormat* ColorFormats
+    public unsafe Silk.NET.WebGPU.TextureFormat? ColorFormats
     {
-        get => Native.ColorFormats;
-        set => Native.ColorFormats = value;
+        get
+        {
+            if (Native.ColorFormats == null)
+                return null;
+            return *Native.ColorFormats;
+        }
+
+        set
+        {
+            // If we're setting this to null, wipe the memory.
+            if (!value.HasValue)
+            {
+                SilkMarshal.Free((nint) Native.ColorFormats);
+                Native.ColorFormats = null;
+                return;
+            }
+
+            // Because we will always own this handle, we allocate if its null, or we overwrite data.
+            if (Native.ColorFormats == null)
+                Native.ColorFormats = (Silk.NET.WebGPU.TextureFormat*) SilkMarshal.Allocate(sizeof(Silk.NET.WebGPU.TextureFormat));
+
+            // Write new data
+            *Native.ColorFormats = value.Value;
+        }
     }
  
     /// <seealso cref="Silk.NET.WebGPU.RenderBundleEncoderDescriptor.DepthStencilFormat" />
@@ -78,7 +90,6 @@ public class ManagedRenderBundleEncoderDescriptor : ChainedStruct<Silk.NET.WebGP
         // Write anything to the console we deem writable. This might not be accurate but its good enough for debug purposes :)
         return $@"RenderBundleEncoderDescriptor {{
     Label = ""{Label}""
-    ColorFormatsCount = ""{ColorFormatsCount}""
     DepthStencilFormat = ""{DepthStencilFormat}""
     SampleCount = ""{SampleCount}""
     DepthReadOnly = ""{DepthReadOnly}""
@@ -89,5 +100,6 @@ public class ManagedRenderBundleEncoderDescriptor : ChainedStruct<Silk.NET.WebGP
     protected override unsafe void ReleaseUnmanagedResources()
     {
         SilkMarshal.Free((nint) Native.Label);
+        SilkMarshal.Free((nint) Native.ColorFormats);
     }
 }

@@ -3,6 +3,8 @@
 using Rover656.SilkyWebGPU;
 using Rover656.SilkyWebGPU.Chain;
 
+using System.Runtime.CompilerServices;
+
 using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
 using Silk.NET.WebGPU.Extensions.WGPU;
@@ -10,13 +12,14 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.CommandEncoderDescriptor"/>
-public class ManagedCommandEncoderDescriptor : ChainedStruct<Silk.NET.WebGPU.CommandEncoderDescriptor>
+public class CommandEncoderDescriptor : ChainedStruct<Silk.NET.WebGPU.CommandEncoderDescriptor>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.CommandEncoderDescriptor.Label" />
     public unsafe string Label
     {
         get => SilkMarshal.PtrToString((nint) Native.Label);
+
         set
        {
            if (Native.Label != null)

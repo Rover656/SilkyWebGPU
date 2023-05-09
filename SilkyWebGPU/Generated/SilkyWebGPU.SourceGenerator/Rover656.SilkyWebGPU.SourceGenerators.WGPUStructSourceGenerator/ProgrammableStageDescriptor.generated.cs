@@ -3,6 +3,8 @@
 using Rover656.SilkyWebGPU;
 using Rover656.SilkyWebGPU.Chain;
 
+using System.Runtime.CompilerServices;
+
 using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
 using Silk.NET.WebGPU.Extensions.WGPU;
@@ -10,7 +12,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.ProgrammableStageDescriptor"/>
-public class ManagedProgrammableStageDescriptor : ChainedStruct<Silk.NET.WebGPU.ProgrammableStageDescriptor>
+public class ProgrammableStageDescriptor : ChainedStruct<Silk.NET.WebGPU.ProgrammableStageDescriptor>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.ProgrammableStageDescriptor.Module" />
@@ -24,6 +26,7 @@ public class ManagedProgrammableStageDescriptor : ChainedStruct<Silk.NET.WebGPU.
     public unsafe string EntryPoint
     {
         get => SilkMarshal.PtrToString((nint) Native.EntryPoint);
+
         set
        {
            if (Native.EntryPoint != null)
@@ -32,24 +35,33 @@ public class ManagedProgrammableStageDescriptor : ChainedStruct<Silk.NET.WebGPU.
         }
     }
  
-    /// <seealso cref="Silk.NET.WebGPU.ProgrammableStageDescriptor.ConstantCount" />
-    public uint ConstantCount
-    {
-        get => Native.ConstantCount;
-        set => Native.ConstantCount = value;
-    }
- 
-    /// <summary>
-    /// This is a currently unsupported type.
-    /// Native type: Silk.NET.WebGPU.ConstantEntry*.
-    /// Original name: Constants.
-    /// Is array type?: True.
-    /// </summary>
     /// <seealso cref="Silk.NET.WebGPU.ProgrammableStageDescriptor.Constants" />
-    public unsafe Silk.NET.WebGPU.ConstantEntry* Constants
+    public unsafe Silk.NET.WebGPU.ConstantEntry? Constants
     {
-        get => Native.Constants;
-        set => Native.Constants = value;
+        get
+        {
+            if (Native.Constants == null)
+                return null;
+            return *Native.Constants;
+        }
+
+        set
+        {
+            // If we're setting this to null, wipe the memory.
+            if (!value.HasValue)
+            {
+                SilkMarshal.Free((nint) Native.Constants);
+                Native.Constants = null;
+                return;
+            }
+
+            // Because we will always own this handle, we allocate if its null, or we overwrite data.
+            if (Native.Constants == null)
+                Native.Constants = (Silk.NET.WebGPU.ConstantEntry*) SilkMarshal.Allocate(sizeof(Silk.NET.WebGPU.ConstantEntry));
+
+            // Write new data
+            *Native.Constants = value.Value;
+        }
     }
  
     public override unsafe string ToString()
@@ -57,12 +69,12 @@ public class ManagedProgrammableStageDescriptor : ChainedStruct<Silk.NET.WebGPU.
         // Write anything to the console we deem writable. This might not be accurate but its good enough for debug purposes :)
         return $@"ProgrammableStageDescriptor {{
     EntryPoint = ""{EntryPoint}""
-    ConstantCount = ""{ConstantCount}""
 }}";
     }
 
     protected override unsafe void ReleaseUnmanagedResources()
     {
         SilkMarshal.Free((nint) Native.EntryPoint);
+        SilkMarshal.Free((nint) Native.Constants);
     }
 }

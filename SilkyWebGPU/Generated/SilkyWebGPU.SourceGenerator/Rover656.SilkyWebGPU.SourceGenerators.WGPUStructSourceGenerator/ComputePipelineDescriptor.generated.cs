@@ -3,6 +3,8 @@
 using Rover656.SilkyWebGPU;
 using Rover656.SilkyWebGPU.Chain;
 
+using System.Runtime.CompilerServices;
+
 using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
 using Silk.NET.WebGPU.Extensions.WGPU;
@@ -10,13 +12,14 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.ComputePipelineDescriptor"/>
-public class ManagedComputePipelineDescriptor : ChainedStruct<Silk.NET.WebGPU.ComputePipelineDescriptor>
+public class ComputePipelineDescriptor : ChainedStruct<Silk.NET.WebGPU.ComputePipelineDescriptor>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.ComputePipelineDescriptor.Label" />
     public unsafe string Label
     {
         get => SilkMarshal.PtrToString((nint) Native.Label);
+
         set
        {
            if (Native.Label != null)
@@ -33,7 +36,7 @@ public class ManagedComputePipelineDescriptor : ChainedStruct<Silk.NET.WebGPU.Co
     }
  
     // Keep a copy around for disposal.
-    private ManagedProgrammableStageDescriptor _Compute;
+    private ProgrammableStageDescriptor _Compute;
 
     /// <seealso cref="Silk.NET.WebGPU.ComputePipelineDescriptor.Compute" />
     /// <remarks>
@@ -42,10 +45,11 @@ public class ManagedComputePipelineDescriptor : ChainedStruct<Silk.NET.WebGPU.Co
     /// This also means, when this object is disposed (or when you replace the value of this property with another value), the old value will be disposed.
     /// This is to ensure disposal occurs at the right time.
     /// </remarks>
-    public unsafe ManagedProgrammableStageDescriptor Compute
+    public unsafe ProgrammableStageDescriptor Compute
     {
         // TODO: Due to limitations, these are only writeable for now... Use the Raw field instead for reading.
         //get => Native.Compute;
+
         set
         {
             // Dispose any existing object.

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -63,6 +64,10 @@ public class {Constants.ManagedStructPrefix}{structFriendlyName} : ChainedStruct
                         if (field.Name == "Chain" || field.Name == "NextInChain")
                             continue;
                         
+                        // Skip this if this is an array counter.
+                        if (IsArrayCounter(members, field))
+                            continue;
+                        
                         // TODO: What is the strategy for structures like Vertex and Primitive, which can also be chained...
                         // And also for DepthStencil and Fragment. All in RenderPipelineDescriptor.
 
@@ -85,6 +90,7 @@ public class {Constants.ManagedStructPrefix}{structFriendlyName} : ChainedStruct
     {{
         // TODO: Due to limitations, these are only writeable for now... Use the Raw field instead for reading.
         //get => Native.{field.Name};
+
         set
         {{
             // Dispose any existing object.
@@ -123,21 +129,10 @@ public class {Constants.ManagedStructPrefix}{structFriendlyName} : ChainedStruct
                         {
                             var pointerType = field.Type as IPointerTypeSymbol;
 
-                            // Really garbage but for now should suffice.
-                            var isArray = false;
-                            foreach (var searchMember in members)
-                            {
-                                if (searchMember is IFieldSymbol searchField)
-                                {
-                                    if (searchField.Name == field.Name.TrimEnd('s') + "Count" || searchField.Name == field.Name.Replace("ies", "y") + "Count")
-                                    {
-                                        isArray = true;
-                                        break;
-                                    }
-                                }
-                            }
+                            // Check if this is a pointer array.
+                            var isArray = IsArrayField(members, field, out var arrayCountField);
                             
-                            if (WGPUExtensionSourceGenerator.Objects.Contains(pointerType.PointedAtType.Name))
+                            if (Constants.ClassObjects.Contains(pointerType.PointedAtType.Name))
                             {
                                 // We ball
                                 outputWriter.Append($@"
@@ -170,6 +165,7 @@ public class {Constants.ManagedStructPrefix}{structFriendlyName} : ChainedStruct
     {{
         // TODO: Due to limitations, these are only writeable for now... Use the Raw field instead for reading.
         //get => Native.{field.Name};
+
         set
         {{
             // Release any existing native pointer.
@@ -191,6 +187,46 @@ public class {Constants.ManagedStructPrefix}{structFriendlyName} : ChainedStruct
                                 chainFreePtr.Add(field.Name);
                                 marshalFree.Add(field.Name);
                             }
+                            else if (Constants.ManagedStructs.Contains(pointerType.PointedAtType.Name) && isArray)
+                            {
+                                outputWriter.Append($@"
+    // Keep a copy around for disposal.
+    private {Constants.NativeChainableArrayType}<{pointerType.PointedAtType}> _{field.Name};
+
+    /// <seealso cref=""{Constants.WebGpuNS}.{structName}.{field.Name}"" />
+    /// <remarks>
+    /// TODO: Write this remark.
+    /// Summary: Will update if you modify the existing pointer, but if you replace it, it won't.
+    /// </remarks>
+    public unsafe {Constants.NativeChainableArrayType}<{pointerType.PointedAtType}> {field.Name}
+    {{
+        // Limitations do not permit this to work... yet.
+        //get => Native.{field.Name};
+
+        set
+        {{
+            // Dispose any existing object.
+            _{field.Name}?.Dispose();
+
+            // Allocate new chain -OR- set to default
+            if (value != null)
+            {{
+                Native.{field.Name} = value.Ptr;
+                Native.{arrayCountField} = value.Count;
+            }}
+            else
+            {{
+                Native.{field.Name} = null;
+                Native.{arrayCountField} = 0;
+            }}
+
+            // Save for later disposal
+            _{field.Name} = value;
+        }}
+    }}
+ ");
+                                managedDispose.Add(field.Name);
+                            }
                             else if (pointerType.PointedAtType.Name == "Byte")
                             {
                                 // This is a *string*
@@ -199,6 +235,7 @@ public class {Constants.ManagedStructPrefix}{structFriendlyName} : ChainedStruct
     public unsafe string {field.Name}
     {{
         get => SilkMarshal.PtrToString((nint) Native.{field.Name});
+
         set
        {{
            if (Native.{field.Name} != null)
@@ -209,6 +246,41 @@ public class {Constants.ManagedStructPrefix}{structFriendlyName} : ChainedStruct
  ");
                                 
                                 // Remember to free this with the marshal!
+                                marshalFree.Add(field.Name);
+                            }
+                            else if (pointerType.PointedAtType.Kind != SymbolKind.PointerType)
+                            {
+                                outputWriter.Append($@"
+    /// <seealso cref=""{Constants.WebGpuNS}.{structName}.{field.Name}"" />
+    public unsafe {pointerType.PointedAtType}? {field.Name}
+    {{
+        get
+        {{
+            if (Native.{field.Name} == null)
+                return null;
+            return *Native.{field.Name};
+        }}
+
+        set
+        {{
+            // If we're setting this to null, wipe the memory.
+            if (!value.HasValue)
+            {{
+                SilkMarshal.Free((nint) Native.{field.Name});
+                Native.{field.Name} = null;
+                return;
+            }}
+
+            // Because we will always own this handle, we allocate if its null, or we overwrite data.
+            if (Native.{field.Name} == null)
+                Native.{field.Name} = ({pointerType.PointedAtType}*) SilkMarshal.Allocate(sizeof({pointerType.PointedAtType}));
+
+            // Write new data
+            *Native.{field.Name} = value.Value;
+        }}
+    }}
+ ");
+                                
                                 marshalFree.Add(field.Name);
                             }
                             else
@@ -226,7 +298,7 @@ public class {Constants.ManagedStructPrefix}{structFriendlyName} : ChainedStruct
         get => Native.{field.Name};
         set => Native.{field.Name} = value;
     }}
- ");
+");
                             }
                         }
                     }
@@ -241,14 +313,20 @@ public class {Constants.ManagedStructPrefix}{structFriendlyName} : ChainedStruct
                 // Write a ToString method for debugging
                 foreach (var member in structSymbol.GetMembers())
                 {
-                    if (member is IFieldSymbol field)
-                    {
-                        // Skip anything to do with the chain.
-                        if (field.Name == "Chain" || field.Name == "NextInChain" || (field.Type.Kind == SymbolKind.PointerType  && (field.Type as IPointerTypeSymbol).PointedAtType.Name != "Byte") || chainFreeRef.Contains(field.Name) || chainFreePtr.Contains(field.Name))
-                            continue;
+                    // Ignore non-members
+                    if (!(member is IFieldSymbol field))
+                        continue;
+                    
+                    // Skip anything to do with the chain.
+                    if (field.Name == "Chain" || field.Name == "NextInChain" ||
+                        (field.Type.Kind == SymbolKind.PointerType &&
+                         (field.Type as IPointerTypeSymbol).PointedAtType.Name != "Byte") ||
+                        chainFreeRef.Contains(field.Name) || chainFreePtr.Contains(field.Name) ||
+                        IsArrayCounter(members, field) || IsArrayField(members, field, out _))
+                        continue;
 
-                        outputWriter.AppendLine($"    {field.Name} = \"\"{{{field.Name}}}\"\"");
-                    }
+                    // Add to ToString output.
+                    outputWriter.AppendLine($"    {field.Name} = \"\"{{{field.Name}}}\"\"");
                 }
                 
                 outputWriter.AppendLine(@"}}"";
@@ -298,6 +376,66 @@ public class {Constants.ManagedStructPrefix}{structFriendlyName} : ChainedStruct
 
                 context.AddSource($"{structFriendlyName}.generated.cs", outputWriter.ToString());
             }
+        }
+
+        // Really garbage but for now should suffice.
+        private bool IsArrayCounter(ImmutableArray<ISymbol> members, IFieldSymbol field)
+        {
+            if (!field.Name.Contains("Count"))
+                return false;
+            foreach (var searchMember in members)
+            {
+                if (searchMember is IFieldSymbol searchField)
+                {
+                    if (searchField.Name == $"{field.Name.Replace("Count", "")}")
+                    {
+                        return true;
+                    }
+                    
+                    // TODO: Should probably only replace last, but it'll do for now.
+                    if (searchField.Name == $"{field.Name.Replace("Count", "")}s")
+                    {
+                        return true;
+                    }
+
+                    if (searchField.Name == $"{field.Name.Replace("Count", "").TrimEnd('y')}ies")
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private bool IsArrayField(ImmutableArray<ISymbol> members, IFieldSymbol field, out string countFieldName)
+        {
+            foreach (var searchMember in members)
+            {
+                if (searchMember is IFieldSymbol searchField)
+                {
+                    if (searchField.Name == field.Name + "Count")
+                    {
+                        countFieldName = field.Name + "Count";
+                        return true;
+                    }
+                    
+                    if (searchField.Name == field.Name.TrimEnd('s') + "Count")
+                    {
+                        countFieldName = field.Name.TrimEnd('s') + "Count";
+                        return true;
+                    }
+
+                    if (searchField.Name == field.Name.Replace("ies", "y") + "Count")
+                    {
+                        countFieldName = field.Name.Replace("ies", "y") + "Count";
+                        return true;
+                    }
+                }
+            }
+
+            countFieldName = "";
+            return false;
         }
 
         public void Initialize(GeneratorInitializationContext context)

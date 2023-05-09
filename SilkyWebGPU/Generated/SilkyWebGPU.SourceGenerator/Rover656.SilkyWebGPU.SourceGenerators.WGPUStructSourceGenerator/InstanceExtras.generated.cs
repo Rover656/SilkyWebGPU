@@ -3,6 +3,8 @@
 using Rover656.SilkyWebGPU;
 using Rover656.SilkyWebGPU.Chain;
 
+using System.Runtime.CompilerServices;
+
 using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
 using Silk.NET.WebGPU.Extensions.WGPU;
@@ -10,7 +12,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.Extensions.WGPU.InstanceExtras"/>
-public class ManagedInstanceExtras : ChainedStruct<Silk.NET.WebGPU.Extensions.WGPU.InstanceExtras>
+public class InstanceExtras : ChainedStruct<Silk.NET.WebGPU.Extensions.WGPU.InstanceExtras>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.Extensions.WGPU.InstanceExtras.Backends" />
@@ -31,6 +33,7 @@ public class ManagedInstanceExtras : ChainedStruct<Silk.NET.WebGPU.Extensions.WG
     public unsafe string DxilPath
     {
         get => SilkMarshal.PtrToString((nint) Native.DxilPath);
+
         set
        {
            if (Native.DxilPath != null)
@@ -43,6 +46,7 @@ public class ManagedInstanceExtras : ChainedStruct<Silk.NET.WebGPU.Extensions.WG
     public unsafe string DxcPath
     {
         get => SilkMarshal.PtrToString((nint) Native.DxcPath);
+
         set
        {
            if (Native.DxcPath != null)

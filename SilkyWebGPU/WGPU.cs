@@ -10,7 +10,7 @@ public static class WGPU
     public static WebGPU API = null!;
     public static WebGPUDisposal Disposal = null!;
 
-    public static unsafe WebGPUPtr<Instance> CreateInstance(ManagedInstanceDescriptor descriptor)
+    public static unsafe WebGPUPtr<Instance> CreateInstance(InstanceDescriptor descriptor)
     {
         if (API == null!)
         {

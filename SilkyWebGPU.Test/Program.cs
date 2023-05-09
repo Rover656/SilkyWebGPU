@@ -56,47 +56,39 @@ fn fs_main() -> @location(0) vec4<f32> {
         CreateSwapChain();
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <remarks></remarks>
-    /// <inheritdoc cref=""/>
     private static async void WindowOnLoad()
     {
         // Create instance
-        using var descriptor = new ManagedInstanceDescriptor();
-        using var extras = new ManagedInstanceExtras
+        using var descriptor = new InstanceDescriptor
         {
-            Backends = (uint)InstanceBackend.DX12 // TODO: Make enums type-aware.
+            Next = new InstanceExtras
+            {
+                Backends = (uint) InstanceBackend.DX12 // TODO: Make enums type-aware.
+            }
         };
-        descriptor.Next = extras;
+        
         _Instance = WGPU.CreateInstance(descriptor);
         
         // Create surface from window
-        // TODO: Provide a light extension for hiding the creation of a WebGPUPtr.
-        unsafe
-        {
-            _Surface = new WebGPUPtr<Surface>(_window.CreateWebGPUSurface(WGPU.API, _Instance));
-        }
+        _Surface = _window.CreateWebGPUSurface(_Instance);
 
         // Request adapter
-        using var requestAdapterOptions = new ManagedRequestAdapterOptions
+        using var requestAdapterOptions = new RequestAdapterOptions
         {
-            CompatibleSurface = _Surface
+            CompatibleSurface = _Surface,
+            Next = new AdapterExtras
+            {
+                Backend = BackendType.D3D12
+            }
         };
-        using var adapterExtras = new ManagedAdapterExtras
-        {
-            Backend = BackendType.D3D12
-        };
-        requestAdapterOptions.Next = adapterExtras;
         
         _Adapter = await _Instance.RequestAdapter(requestAdapterOptions);
 
         {
             // Create limits object to populate
-            var limits = new ManagedSupportedLimits
+            var limits = new SupportedLimits
             {
-                Next = new ManagedSupportedLimitsExtras()
+                Next = new SupportedLimitsExtras()
             };
 
             // Get limits
@@ -106,11 +98,13 @@ fn fs_main() -> @location(0) vec4<f32> {
             limits.Dispose();
         }
 
-        var properties = new ManagedAdapterProperties();
-        _Adapter.GetProperties(ref properties);
-        Console.WriteLine(properties);
-        Console.WriteLine(properties.Next);
-        properties.Dispose();
+        {
+            var properties = new AdapterProperties();
+            _Adapter.GetProperties(ref properties);
+            Console.WriteLine(properties);
+            Console.WriteLine(properties.Next);
+            properties.Dispose(); // We can't use a "using" directive here as that makes it immutable.
+        }
 
         // Write properties to console
         PrintAdapterFeatures();
@@ -126,81 +120,78 @@ fn fs_main() -> @location(0) vec4<f32> {
         }
 
         // Load shader
-        using var wgslDescriptor = new ManagedShaderModuleWGSLDescriptor
+        using var shaderModuleDescriptor = new ShaderModuleDescriptor
         {
-            Code = SHADER
-        };
-        using var shaderModuleDescriptor = new ManagedShaderModuleDescriptor
-        {
-            Next = wgslDescriptor
+            Next = new ShaderModuleWGSLDescriptor
+            {
+                Code = SHADER
+            }
         };
 
         _Shader = _Device.CreateShaderModule(shaderModuleDescriptor);
 
+        // Get swap chain format.
         _SwapChainFormat = _Surface.GetPreferredFormat(_Adapter);
 
-        unsafe
+        // Create render pipeline
+        var blendState = new BlendState
         {
-            var blendState = new BlendState
+            Color = new BlendComponent
             {
-                Color = new BlendComponent
-                {
-                    SrcFactor = BlendFactor.One,
-                    DstFactor = BlendFactor.Zero,
-                    Operation = BlendOperation.Add
-                },
-                Alpha = new BlendComponent
-                {
-                    SrcFactor = BlendFactor.One,
-                    DstFactor = BlendFactor.Zero,
-                    Operation = BlendOperation.Add
-                }
-            };
-
-            // This needs to be wrapped
-            var colorTargetState = new ColorTargetState
+                SrcFactor = BlendFactor.One,
+                DstFactor = BlendFactor.Zero,
+                Operation = BlendOperation.Add
+            },
+            Alpha = new BlendComponent
             {
-                Format    = _SwapChainFormat,
-                Blend     = &blendState,
-                WriteMask = ColorWriteMask.All
-            };
+                SrcFactor = BlendFactor.One,
+                DstFactor = BlendFactor.Zero,
+                Operation = BlendOperation.Add
+            }
+        };
 
-            // This needs wrapped
-            var fragmentState = new ManagedFragmentState
+        // This needs to be wrapped
+        var colorTargetState = new ColorTargetState
+        {
+            Format    = _SwapChainFormat,
+            Blend     = blendState,
+            WriteMask = ColorWriteMask.All
+        };
+
+        // This needs wrapped
+        var fragmentState = new FragmentState
+        {
+            Module      = _Shader,
+            Targets     = new[] {colorTargetState},
+            EntryPoint  = "fs_main"
+        };
+
+        // And this needs to be able to accept wrapped values...
+        using var renderPipelineDescriptor = new RenderPipelineDescriptor
+        {
+            Vertex = new VertexState
             {
-                Module      = _Shader,
-                TargetCount = 1,
-                Targets     = &colorTargetState,
-                EntryPoint  = "fs_main"
-            };
-
-            // And this needs to be able to accept wrapped values...
-            using var renderPipelineDescriptor = new ManagedRenderPipelineDescriptor
+                Module     = _Shader,
+                EntryPoint = "vs_main",
+            },
+            Primitive = new PrimitiveState
             {
-                Vertex = new ManagedVertexState
-                {
-                    Module     = _Shader,
-                    EntryPoint = "vs_main",
-                },
-                Primitive = new ManagedPrimitiveState
-                {
-                    Topology         = PrimitiveTopology.TriangleList,
-                    StripIndexFormat = IndexFormat.Undefined,
-                    FrontFace        = FrontFace.Ccw,
-                    CullMode         = CullMode.None
-                },
-                Multisample = new ManagedMultisampleState
-                {
-                    Count                  = 1,
-                    Mask                   = ~0u,
-                    AlphaToCoverageEnabled = false
-                },
-                Fragment     = fragmentState,
-                DepthStencil = null
-            };
+                Topology         = PrimitiveTopology.TriangleList,
+                StripIndexFormat = IndexFormat.Undefined,
+                FrontFace        = FrontFace.Ccw,
+                CullMode         = CullMode.None
+            },
+            Multisample = new MultisampleState
+            {
+                Count                  = 1,
+                Mask                   = ~0u,
+                AlphaToCoverageEnabled = false
+            },
+            Fragment     = fragmentState,
+            DepthStencil = null
+        };
 
-            _Pipeline = _Device.CreateRenderPipeline(renderPipelineDescriptor);
-        }
+        _Pipeline = _Device.CreateRenderPipeline(renderPipelineDescriptor);
 
         CreateSwapChain();
     }
@@ -216,7 +207,7 @@ fn fs_main() -> @location(0) vec4<f32> {
 
     private static void CreateSwapChain()
     {
-        var swapChainDescriptor = new ManagedSwapChainDescriptor
+        using var swapChainDescriptor = new SwapChainDescriptor
         {
             Usage = TextureUsage.RenderAttachment,
             Format = _SwapChainFormat,
@@ -255,11 +246,11 @@ fn fs_main() -> @location(0) vec4<f32> {
             return;
         }
 
-        var commandEncoderDescriptor = new ManagedCommandEncoderDescriptor();
+        using var commandEncoderDescriptor = new CommandEncoderDescriptor();
 
         var encoder = _Device.CreateCommandEncoder(commandEncoderDescriptor);
 
-        var colorAttachment = new RenderPassColorAttachment
+        using var colorAttachment = new RenderPassColorAttachment
         {
             View          = nextTexture,
             ResolveTarget = null,
@@ -274,16 +265,11 @@ fn fs_main() -> @location(0) vec4<f32> {
             }
         };
 
-        var renderPassDescriptor = new ManagedRenderPassDescriptor
+        using var renderPassDescriptor = new RenderPassDescriptor
         {
-            ColorAttachmentCount   = 1,
+            ColorAttachments = new[] {colorAttachment},
             DepthStencilAttachment = null
         };
-
-        unsafe
-        {
-            renderPassDescriptor.ColorAttachments = &colorAttachment;
-        }
 
         var renderPass = encoder.BeginRenderPass(renderPassDescriptor);
 
@@ -294,7 +280,7 @@ fn fs_main() -> @location(0) vec4<f32> {
 
         var queue = _Device.GetQueue();
 
-        var commandBuffer = encoder.Finish(new CommandBufferDescriptor());
+        var commandBuffer = encoder.Finish(new CommandBufferDescriptor()); // This new object is fine, as an empty class won't allocate anything :)
 
         queue.Submit(1, ref commandBuffer);
         _SwapChain.Present();
@@ -307,9 +293,9 @@ fn fs_main() -> @location(0) vec4<f32> {
 
         Console.WriteLine("Adapter features:");
 
-        for (var i = 0; i < features.Length; i++)
+        foreach (var feature in features)
         {
-            Console.WriteLine($"\t{features[i]}");
+            Console.WriteLine($"\t{feature}");
         }
     }
     

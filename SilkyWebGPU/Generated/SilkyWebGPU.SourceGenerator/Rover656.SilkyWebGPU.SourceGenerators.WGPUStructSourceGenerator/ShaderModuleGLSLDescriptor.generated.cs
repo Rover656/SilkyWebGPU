@@ -3,6 +3,8 @@
 using Rover656.SilkyWebGPU;
 using Rover656.SilkyWebGPU.Chain;
 
+using System.Runtime.CompilerServices;
+
 using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
 using Silk.NET.WebGPU.Extensions.WGPU;
@@ -10,7 +12,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.Extensions.WGPU.ShaderModuleGLSLDescriptor"/>
-public class ManagedShaderModuleGLSLDescriptor : ChainedStruct<Silk.NET.WebGPU.Extensions.WGPU.ShaderModuleGLSLDescriptor>
+public class ShaderModuleGLSLDescriptor : ChainedStruct<Silk.NET.WebGPU.Extensions.WGPU.ShaderModuleGLSLDescriptor>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.Extensions.WGPU.ShaderModuleGLSLDescriptor.Stage" />
@@ -24,6 +26,7 @@ public class ManagedShaderModuleGLSLDescriptor : ChainedStruct<Silk.NET.WebGPU.E
     public unsafe string Code
     {
         get => SilkMarshal.PtrToString((nint) Native.Code);
+
         set
        {
            if (Native.Code != null)
@@ -32,24 +35,33 @@ public class ManagedShaderModuleGLSLDescriptor : ChainedStruct<Silk.NET.WebGPU.E
         }
     }
  
-    /// <seealso cref="Silk.NET.WebGPU.Extensions.WGPU.ShaderModuleGLSLDescriptor.DefineCount" />
-    public uint DefineCount
-    {
-        get => Native.DefineCount;
-        set => Native.DefineCount = value;
-    }
- 
-    /// <summary>
-    /// This is a currently unsupported type.
-    /// Native type: Silk.NET.WebGPU.Extensions.WGPU.ShaderDefine*.
-    /// Original name: Defines.
-    /// Is array type?: True.
-    /// </summary>
     /// <seealso cref="Silk.NET.WebGPU.Extensions.WGPU.ShaderModuleGLSLDescriptor.Defines" />
-    public unsafe Silk.NET.WebGPU.Extensions.WGPU.ShaderDefine* Defines
+    public unsafe Silk.NET.WebGPU.Extensions.WGPU.ShaderDefine? Defines
     {
-        get => Native.Defines;
-        set => Native.Defines = value;
+        get
+        {
+            if (Native.Defines == null)
+                return null;
+            return *Native.Defines;
+        }
+
+        set
+        {
+            // If we're setting this to null, wipe the memory.
+            if (!value.HasValue)
+            {
+                SilkMarshal.Free((nint) Native.Defines);
+                Native.Defines = null;
+                return;
+            }
+
+            // Because we will always own this handle, we allocate if its null, or we overwrite data.
+            if (Native.Defines == null)
+                Native.Defines = (Silk.NET.WebGPU.Extensions.WGPU.ShaderDefine*) SilkMarshal.Allocate(sizeof(Silk.NET.WebGPU.Extensions.WGPU.ShaderDefine));
+
+            // Write new data
+            *Native.Defines = value.Value;
+        }
     }
  
     public override unsafe string ToString()
@@ -58,12 +70,12 @@ public class ManagedShaderModuleGLSLDescriptor : ChainedStruct<Silk.NET.WebGPU.E
         return $@"ShaderModuleGLSLDescriptor {{
     Stage = ""{Stage}""
     Code = ""{Code}""
-    DefineCount = ""{DefineCount}""
 }}";
     }
 
     protected override unsafe void ReleaseUnmanagedResources()
     {
         SilkMarshal.Free((nint) Native.Code);
+        SilkMarshal.Free((nint) Native.Defines);
     }
 }

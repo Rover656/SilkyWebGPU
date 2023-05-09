@@ -3,6 +3,8 @@
 using Rover656.SilkyWebGPU;
 using Rover656.SilkyWebGPU.Chain;
 
+using System.Runtime.CompilerServices;
+
 using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
 using Silk.NET.WebGPU.Extensions.WGPU;
@@ -10,13 +12,14 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.RenderPassDescriptor"/>
-public class ManagedRenderPassDescriptor : ChainedStruct<Silk.NET.WebGPU.RenderPassDescriptor>
+public class RenderPassDescriptor : ChainedStruct<Silk.NET.WebGPU.RenderPassDescriptor>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.RenderPassDescriptor.Label" />
     public unsafe string Label
     {
         get => SilkMarshal.PtrToString((nint) Native.Label);
+
         set
        {
            if (Native.Label != null)
@@ -25,37 +28,68 @@ public class ManagedRenderPassDescriptor : ChainedStruct<Silk.NET.WebGPU.RenderP
         }
     }
  
-    /// <seealso cref="Silk.NET.WebGPU.RenderPassDescriptor.ColorAttachmentCount" />
-    public uint ColorAttachmentCount
-    {
-        get => Native.ColorAttachmentCount;
-        set => Native.ColorAttachmentCount = value;
-    }
- 
-    /// <summary>
-    /// This is a currently unsupported type.
-    /// Native type: Silk.NET.WebGPU.RenderPassColorAttachment*.
-    /// Original name: ColorAttachments.
-    /// Is array type?: True.
-    /// </summary>
+    // Keep a copy around for disposal.
+    private NativeChainableArray<Silk.NET.WebGPU.RenderPassColorAttachment> _ColorAttachments;
+
     /// <seealso cref="Silk.NET.WebGPU.RenderPassDescriptor.ColorAttachments" />
-    public unsafe Silk.NET.WebGPU.RenderPassColorAttachment* ColorAttachments
+    /// <remarks>
+    /// TODO: Write this remark.
+    /// Summary: Will update if you modify the existing pointer, but if you replace it, it won't.
+    /// </remarks>
+    public unsafe NativeChainableArray<Silk.NET.WebGPU.RenderPassColorAttachment> ColorAttachments
     {
-        get => Native.ColorAttachments;
-        set => Native.ColorAttachments = value;
+        // Limitations do not permit this to work... yet.
+        //get => Native.ColorAttachments;
+
+        set
+        {
+            // Dispose any existing object.
+            _ColorAttachments?.Dispose();
+
+            // Allocate new chain -OR- set to default
+            if (value != null)
+            {
+                Native.ColorAttachments = value.Ptr;
+                Native.ColorAttachmentCount = value.Count;
+            }
+            else
+            {
+                Native.ColorAttachments = null;
+                Native.ColorAttachmentCount = 0;
+            }
+
+            // Save for later disposal
+            _ColorAttachments = value;
+        }
     }
  
-    /// <summary>
-    /// This is a currently unsupported type.
-    /// Native type: Silk.NET.WebGPU.RenderPassDepthStencilAttachment*.
-    /// Original name: DepthStencilAttachment.
-    /// Is array type?: False.
-    /// </summary>
     /// <seealso cref="Silk.NET.WebGPU.RenderPassDescriptor.DepthStencilAttachment" />
-    public unsafe Silk.NET.WebGPU.RenderPassDepthStencilAttachment* DepthStencilAttachment
+    public unsafe Silk.NET.WebGPU.RenderPassDepthStencilAttachment? DepthStencilAttachment
     {
-        get => Native.DepthStencilAttachment;
-        set => Native.DepthStencilAttachment = value;
+        get
+        {
+            if (Native.DepthStencilAttachment == null)
+                return null;
+            return *Native.DepthStencilAttachment;
+        }
+
+        set
+        {
+            // If we're setting this to null, wipe the memory.
+            if (!value.HasValue)
+            {
+                SilkMarshal.Free((nint) Native.DepthStencilAttachment);
+                Native.DepthStencilAttachment = null;
+                return;
+            }
+
+            // Because we will always own this handle, we allocate if its null, or we overwrite data.
+            if (Native.DepthStencilAttachment == null)
+                Native.DepthStencilAttachment = (Silk.NET.WebGPU.RenderPassDepthStencilAttachment*) SilkMarshal.Allocate(sizeof(Silk.NET.WebGPU.RenderPassDepthStencilAttachment));
+
+            // Write new data
+            *Native.DepthStencilAttachment = value.Value;
+        }
     }
  
     /// <seealso cref="Silk.NET.WebGPU.RenderPassDescriptor.OcclusionQuerySet" />
@@ -65,24 +99,33 @@ public class ManagedRenderPassDescriptor : ChainedStruct<Silk.NET.WebGPU.RenderP
         set => Native.OcclusionQuerySet = value;
     }
  
-    /// <seealso cref="Silk.NET.WebGPU.RenderPassDescriptor.TimestampWriteCount" />
-    public uint TimestampWriteCount
-    {
-        get => Native.TimestampWriteCount;
-        set => Native.TimestampWriteCount = value;
-    }
- 
-    /// <summary>
-    /// This is a currently unsupported type.
-    /// Native type: Silk.NET.WebGPU.RenderPassTimestampWrite*.
-    /// Original name: TimestampWrites.
-    /// Is array type?: True.
-    /// </summary>
     /// <seealso cref="Silk.NET.WebGPU.RenderPassDescriptor.TimestampWrites" />
-    public unsafe Silk.NET.WebGPU.RenderPassTimestampWrite* TimestampWrites
+    public unsafe Silk.NET.WebGPU.RenderPassTimestampWrite? TimestampWrites
     {
-        get => Native.TimestampWrites;
-        set => Native.TimestampWrites = value;
+        get
+        {
+            if (Native.TimestampWrites == null)
+                return null;
+            return *Native.TimestampWrites;
+        }
+
+        set
+        {
+            // If we're setting this to null, wipe the memory.
+            if (!value.HasValue)
+            {
+                SilkMarshal.Free((nint) Native.TimestampWrites);
+                Native.TimestampWrites = null;
+                return;
+            }
+
+            // Because we will always own this handle, we allocate if its null, or we overwrite data.
+            if (Native.TimestampWrites == null)
+                Native.TimestampWrites = (Silk.NET.WebGPU.RenderPassTimestampWrite*) SilkMarshal.Allocate(sizeof(Silk.NET.WebGPU.RenderPassTimestampWrite));
+
+            // Write new data
+            *Native.TimestampWrites = value.Value;
+        }
     }
  
     public override unsafe string ToString()
@@ -90,13 +133,19 @@ public class ManagedRenderPassDescriptor : ChainedStruct<Silk.NET.WebGPU.RenderP
         // Write anything to the console we deem writable. This might not be accurate but its good enough for debug purposes :)
         return $@"RenderPassDescriptor {{
     Label = ""{Label}""
-    ColorAttachmentCount = ""{ColorAttachmentCount}""
-    TimestampWriteCount = ""{TimestampWriteCount}""
 }}";
+    }
+
+    public override unsafe void Dispose()
+    {
+        _ColorAttachments?.Dispose();
+        base.Dispose();
     }
 
     protected override unsafe void ReleaseUnmanagedResources()
     {
         SilkMarshal.Free((nint) Native.Label);
+        SilkMarshal.Free((nint) Native.DepthStencilAttachment);
+        SilkMarshal.Free((nint) Native.TimestampWrites);
     }
 }

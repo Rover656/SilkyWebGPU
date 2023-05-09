@@ -3,6 +3,8 @@
 using Rover656.SilkyWebGPU;
 using Rover656.SilkyWebGPU.Chain;
 
+using System.Runtime.CompilerServices;
+
 using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
 using Silk.NET.WebGPU.Extensions.WGPU;
@@ -10,7 +12,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.VertexState"/>
-public class ManagedVertexState : ChainedStruct<Silk.NET.WebGPU.VertexState>
+public class VertexState : ChainedStruct<Silk.NET.WebGPU.VertexState>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.VertexState.Module" />
@@ -24,6 +26,7 @@ public class ManagedVertexState : ChainedStruct<Silk.NET.WebGPU.VertexState>
     public unsafe string EntryPoint
     {
         get => SilkMarshal.PtrToString((nint) Native.EntryPoint);
+
         set
        {
            if (Native.EntryPoint != null)
@@ -32,44 +35,62 @@ public class ManagedVertexState : ChainedStruct<Silk.NET.WebGPU.VertexState>
         }
     }
  
-    /// <seealso cref="Silk.NET.WebGPU.VertexState.ConstantCount" />
-    public uint ConstantCount
-    {
-        get => Native.ConstantCount;
-        set => Native.ConstantCount = value;
-    }
- 
-    /// <summary>
-    /// This is a currently unsupported type.
-    /// Native type: Silk.NET.WebGPU.ConstantEntry*.
-    /// Original name: Constants.
-    /// Is array type?: True.
-    /// </summary>
     /// <seealso cref="Silk.NET.WebGPU.VertexState.Constants" />
-    public unsafe Silk.NET.WebGPU.ConstantEntry* Constants
+    public unsafe Silk.NET.WebGPU.ConstantEntry? Constants
     {
-        get => Native.Constants;
-        set => Native.Constants = value;
+        get
+        {
+            if (Native.Constants == null)
+                return null;
+            return *Native.Constants;
+        }
+
+        set
+        {
+            // If we're setting this to null, wipe the memory.
+            if (!value.HasValue)
+            {
+                SilkMarshal.Free((nint) Native.Constants);
+                Native.Constants = null;
+                return;
+            }
+
+            // Because we will always own this handle, we allocate if its null, or we overwrite data.
+            if (Native.Constants == null)
+                Native.Constants = (Silk.NET.WebGPU.ConstantEntry*) SilkMarshal.Allocate(sizeof(Silk.NET.WebGPU.ConstantEntry));
+
+            // Write new data
+            *Native.Constants = value.Value;
+        }
     }
  
-    /// <seealso cref="Silk.NET.WebGPU.VertexState.BufferCount" />
-    public uint BufferCount
-    {
-        get => Native.BufferCount;
-        set => Native.BufferCount = value;
-    }
- 
-    /// <summary>
-    /// This is a currently unsupported type.
-    /// Native type: Silk.NET.WebGPU.VertexBufferLayout*.
-    /// Original name: Buffers.
-    /// Is array type?: True.
-    /// </summary>
     /// <seealso cref="Silk.NET.WebGPU.VertexState.Buffers" />
-    public unsafe Silk.NET.WebGPU.VertexBufferLayout* Buffers
+    public unsafe Silk.NET.WebGPU.VertexBufferLayout? Buffers
     {
-        get => Native.Buffers;
-        set => Native.Buffers = value;
+        get
+        {
+            if (Native.Buffers == null)
+                return null;
+            return *Native.Buffers;
+        }
+
+        set
+        {
+            // If we're setting this to null, wipe the memory.
+            if (!value.HasValue)
+            {
+                SilkMarshal.Free((nint) Native.Buffers);
+                Native.Buffers = null;
+                return;
+            }
+
+            // Because we will always own this handle, we allocate if its null, or we overwrite data.
+            if (Native.Buffers == null)
+                Native.Buffers = (Silk.NET.WebGPU.VertexBufferLayout*) SilkMarshal.Allocate(sizeof(Silk.NET.WebGPU.VertexBufferLayout));
+
+            // Write new data
+            *Native.Buffers = value.Value;
+        }
     }
  
     public override unsafe string ToString()
@@ -77,13 +98,13 @@ public class ManagedVertexState : ChainedStruct<Silk.NET.WebGPU.VertexState>
         // Write anything to the console we deem writable. This might not be accurate but its good enough for debug purposes :)
         return $@"VertexState {{
     EntryPoint = ""{EntryPoint}""
-    ConstantCount = ""{ConstantCount}""
-    BufferCount = ""{BufferCount}""
 }}";
     }
 
     protected override unsafe void ReleaseUnmanagedResources()
     {
         SilkMarshal.Free((nint) Native.EntryPoint);
+        SilkMarshal.Free((nint) Native.Constants);
+        SilkMarshal.Free((nint) Native.Buffers);
     }
 }

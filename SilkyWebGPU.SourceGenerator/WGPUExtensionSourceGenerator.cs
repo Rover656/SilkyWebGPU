@@ -13,11 +13,6 @@ namespace Rover656.SilkyWebGPU.SourceGenerators
         /// The name of the generated class
         /// </summary>
         private const string ClassName = "MethodExtensions";
-        
-        /// <summary>
-        /// The interface which provides a method to get a disposable managed chainable.
-        /// </summary>
-        private const string ChainableSafetyInterface = "IManagedChainable";
 
         /// <summary>
         /// Suffix applied to the unmanaged versions of chainable objects.
@@ -30,17 +25,6 @@ namespace Rover656.SilkyWebGPU.SourceGenerators
         /// TODO: Decide how this should be configured :P
         /// </summary>
         private const bool AllowStrayPointers = true; // TODO: Needs to be enabled to be able to set null on userdatum nicely.
-
-        /// <summary>
-        /// List of Objects we want to consider as "Classes"
-        /// </summary>
-        public static readonly string[] Objects =
-        {
-            "Adapter", "BindGroup", "BindGroupLayout", "Buffer", "CommandBuffer", "CommandEncoder",
-            "ComputePassEncoder", "ComputePipeline", "Device", "Instance", "PipelineLayout", "QuerySet", "Queue",
-            "RenderBundleEncoder", "RenderPassEncoder", "RenderPipeline", "Sampler", "ShaderModule", "Surface",
-            "SwapChain", "Texture", "TextureView"
-        };
 
         public void Execute(GeneratorExecutionContext context)
         {
@@ -87,7 +71,7 @@ public static partial class {ClassName}
             var objectType = (method.Parameters[0].Type as IPointerTypeSymbol).PointedAtType;
 
             // TODO: Right now we only generate object methods.
-            if (!Objects.Contains(objectType.Name))
+            if (!Constants.ClassObjects.Contains(objectType.Name))
                 return;
 
             // Determine new method name
@@ -375,7 +359,7 @@ public static partial class {ClassName}
         {
             if (parameter.Type is IPointerTypeSymbol pointerType)
             {
-                if (Objects.Contains(pointerType.PointedAtType.Name))
+                if (Constants.ClassObjects.Contains(pointerType.PointedAtType.Name))
                 {
                     return $"{Constants.NativePtrType}<{pointerType.PointedAtType}>";
                 }
@@ -421,7 +405,7 @@ public static partial class {ClassName}
             {
                 if (parameterSymbol.Type is IPointerTypeSymbol pointerType)
                 {
-                    if (Objects.Contains(pointerType.PointedAtType.Name))
+                    if (Constants.ClassObjects.Contains(pointerType.PointedAtType.Name))
                     {
                         return ".AsRef()";
                     }

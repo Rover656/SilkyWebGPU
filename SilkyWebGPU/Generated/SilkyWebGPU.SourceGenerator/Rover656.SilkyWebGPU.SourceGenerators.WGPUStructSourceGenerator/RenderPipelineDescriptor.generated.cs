@@ -3,6 +3,8 @@
 using Rover656.SilkyWebGPU;
 using Rover656.SilkyWebGPU.Chain;
 
+using System.Runtime.CompilerServices;
+
 using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
 using Silk.NET.WebGPU.Extensions.WGPU;
@@ -10,13 +12,14 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.RenderPipelineDescriptor"/>
-public class ManagedRenderPipelineDescriptor : ChainedStruct<Silk.NET.WebGPU.RenderPipelineDescriptor>
+public class RenderPipelineDescriptor : ChainedStruct<Silk.NET.WebGPU.RenderPipelineDescriptor>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.RenderPipelineDescriptor.Label" />
     public unsafe string Label
     {
         get => SilkMarshal.PtrToString((nint) Native.Label);
+
         set
        {
            if (Native.Label != null)
@@ -33,7 +36,7 @@ public class ManagedRenderPipelineDescriptor : ChainedStruct<Silk.NET.WebGPU.Ren
     }
  
     // Keep a copy around for disposal.
-    private ManagedVertexState _Vertex;
+    private VertexState _Vertex;
 
     /// <seealso cref="Silk.NET.WebGPU.RenderPipelineDescriptor.Vertex" />
     /// <remarks>
@@ -42,10 +45,11 @@ public class ManagedRenderPipelineDescriptor : ChainedStruct<Silk.NET.WebGPU.Ren
     /// This also means, when this object is disposed (or when you replace the value of this property with another value), the old value will be disposed.
     /// This is to ensure disposal occurs at the right time.
     /// </remarks>
-    public unsafe ManagedVertexState Vertex
+    public unsafe VertexState Vertex
     {
         // TODO: Due to limitations, these are only writeable for now... Use the Raw field instead for reading.
         //get => Native.Vertex;
+
         set
         {
             // Dispose any existing object.
@@ -65,7 +69,7 @@ public class ManagedRenderPipelineDescriptor : ChainedStruct<Silk.NET.WebGPU.Ren
     }
  
     // Keep a copy around for disposal.
-    private ManagedPrimitiveState _Primitive;
+    private PrimitiveState _Primitive;
 
     /// <seealso cref="Silk.NET.WebGPU.RenderPipelineDescriptor.Primitive" />
     /// <remarks>
@@ -74,10 +78,11 @@ public class ManagedRenderPipelineDescriptor : ChainedStruct<Silk.NET.WebGPU.Ren
     /// This also means, when this object is disposed (or when you replace the value of this property with another value), the old value will be disposed.
     /// This is to ensure disposal occurs at the right time.
     /// </remarks>
-    public unsafe ManagedPrimitiveState Primitive
+    public unsafe PrimitiveState Primitive
     {
         // TODO: Due to limitations, these are only writeable for now... Use the Raw field instead for reading.
         //get => Native.Primitive;
+
         set
         {
             // Dispose any existing object.
@@ -108,10 +113,11 @@ public class ManagedRenderPipelineDescriptor : ChainedStruct<Silk.NET.WebGPU.Ren
  
     /// <seealso cref="Silk.NET.WebGPU.RenderPipelineDescriptor.DepthStencil" />
     /// <remarks>While this property is a reference type, this property will set by value.</remarks>
-    public unsafe ManagedDepthStencilState DepthStencil
+    public unsafe DepthStencilState DepthStencil
     {
         // TODO: Due to limitations, these are only writeable for now... Use the Raw field instead for reading.
         //get => Native.DepthStencil;
+
         set
         {
             // Release any existing native pointer.
@@ -129,7 +135,7 @@ public class ManagedRenderPipelineDescriptor : ChainedStruct<Silk.NET.WebGPU.Ren
     }
  
     // Keep a copy around for disposal.
-    private ManagedMultisampleState _Multisample;
+    private MultisampleState _Multisample;
 
     /// <seealso cref="Silk.NET.WebGPU.RenderPipelineDescriptor.Multisample" />
     /// <remarks>
@@ -138,10 +144,11 @@ public class ManagedRenderPipelineDescriptor : ChainedStruct<Silk.NET.WebGPU.Ren
     /// This also means, when this object is disposed (or when you replace the value of this property with another value), the old value will be disposed.
     /// This is to ensure disposal occurs at the right time.
     /// </remarks>
-    public unsafe ManagedMultisampleState Multisample
+    public unsafe MultisampleState Multisample
     {
         // TODO: Due to limitations, these are only writeable for now... Use the Raw field instead for reading.
         //get => Native.Multisample;
+
         set
         {
             // Dispose any existing object.
@@ -172,10 +179,11 @@ public class ManagedRenderPipelineDescriptor : ChainedStruct<Silk.NET.WebGPU.Ren
  
     /// <seealso cref="Silk.NET.WebGPU.RenderPipelineDescriptor.Fragment" />
     /// <remarks>While this property is a reference type, this property will set by value.</remarks>
-    public unsafe ManagedFragmentState Fragment
+    public unsafe FragmentState Fragment
     {
         // TODO: Due to limitations, these are only writeable for now... Use the Raw field instead for reading.
         //get => Native.Fragment;
+
         set
         {
             // Release any existing native pointer.

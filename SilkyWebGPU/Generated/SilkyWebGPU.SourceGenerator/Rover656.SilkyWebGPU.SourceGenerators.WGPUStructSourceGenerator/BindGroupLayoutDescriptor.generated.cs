@@ -3,6 +3,8 @@
 using Rover656.SilkyWebGPU;
 using Rover656.SilkyWebGPU.Chain;
 
+using System.Runtime.CompilerServices;
+
 using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
 using Silk.NET.WebGPU.Extensions.WGPU;
@@ -10,13 +12,14 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.BindGroupLayoutDescriptor"/>
-public class ManagedBindGroupLayoutDescriptor : ChainedStruct<Silk.NET.WebGPU.BindGroupLayoutDescriptor>
+public class BindGroupLayoutDescriptor : ChainedStruct<Silk.NET.WebGPU.BindGroupLayoutDescriptor>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.BindGroupLayoutDescriptor.Label" />
     public unsafe string Label
     {
         get => SilkMarshal.PtrToString((nint) Native.Label);
+
         set
        {
            if (Native.Label != null)
@@ -25,24 +28,33 @@ public class ManagedBindGroupLayoutDescriptor : ChainedStruct<Silk.NET.WebGPU.Bi
         }
     }
  
-    /// <seealso cref="Silk.NET.WebGPU.BindGroupLayoutDescriptor.EntryCount" />
-    public uint EntryCount
-    {
-        get => Native.EntryCount;
-        set => Native.EntryCount = value;
-    }
- 
-    /// <summary>
-    /// This is a currently unsupported type.
-    /// Native type: Silk.NET.WebGPU.BindGroupLayoutEntry*.
-    /// Original name: Entries.
-    /// Is array type?: True.
-    /// </summary>
     /// <seealso cref="Silk.NET.WebGPU.BindGroupLayoutDescriptor.Entries" />
-    public unsafe Silk.NET.WebGPU.BindGroupLayoutEntry* Entries
+    public unsafe Silk.NET.WebGPU.BindGroupLayoutEntry? Entries
     {
-        get => Native.Entries;
-        set => Native.Entries = value;
+        get
+        {
+            if (Native.Entries == null)
+                return null;
+            return *Native.Entries;
+        }
+
+        set
+        {
+            // If we're setting this to null, wipe the memory.
+            if (!value.HasValue)
+            {
+                SilkMarshal.Free((nint) Native.Entries);
+                Native.Entries = null;
+                return;
+            }
+
+            // Because we will always own this handle, we allocate if its null, or we overwrite data.
+            if (Native.Entries == null)
+                Native.Entries = (Silk.NET.WebGPU.BindGroupLayoutEntry*) SilkMarshal.Allocate(sizeof(Silk.NET.WebGPU.BindGroupLayoutEntry));
+
+            // Write new data
+            *Native.Entries = value.Value;
+        }
     }
  
     public override unsafe string ToString()
@@ -50,12 +62,12 @@ public class ManagedBindGroupLayoutDescriptor : ChainedStruct<Silk.NET.WebGPU.Bi
         // Write anything to the console we deem writable. This might not be accurate but its good enough for debug purposes :)
         return $@"BindGroupLayoutDescriptor {{
     Label = ""{Label}""
-    EntryCount = ""{EntryCount}""
 }}";
     }
 
     protected override unsafe void ReleaseUnmanagedResources()
     {
         SilkMarshal.Free((nint) Native.Label);
+        SilkMarshal.Free((nint) Native.Entries);
     }
 }

@@ -3,6 +3,8 @@
 using Rover656.SilkyWebGPU;
 using Rover656.SilkyWebGPU.Chain;
 
+using System.Runtime.CompilerServices;
+
 using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
 using Silk.NET.WebGPU.Extensions.WGPU;
@@ -10,7 +12,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.AdapterProperties"/>
-public class ManagedAdapterProperties : ChainedStruct<Silk.NET.WebGPU.AdapterProperties>
+public class AdapterProperties : ChainedStruct<Silk.NET.WebGPU.AdapterProperties>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.AdapterProperties.VendorID" />
@@ -24,6 +26,7 @@ public class ManagedAdapterProperties : ChainedStruct<Silk.NET.WebGPU.AdapterPro
     public unsafe string VendorName
     {
         get => SilkMarshal.PtrToString((nint) Native.VendorName);
+
         set
        {
            if (Native.VendorName != null)
@@ -36,6 +39,7 @@ public class ManagedAdapterProperties : ChainedStruct<Silk.NET.WebGPU.AdapterPro
     public unsafe string Architecture
     {
         get => SilkMarshal.PtrToString((nint) Native.Architecture);
+
         set
        {
            if (Native.Architecture != null)
@@ -55,6 +59,7 @@ public class ManagedAdapterProperties : ChainedStruct<Silk.NET.WebGPU.AdapterPro
     public unsafe string Name
     {
         get => SilkMarshal.PtrToString((nint) Native.Name);
+
         set
        {
            if (Native.Name != null)
@@ -67,6 +72,7 @@ public class ManagedAdapterProperties : ChainedStruct<Silk.NET.WebGPU.AdapterPro
     public unsafe string DriverDescription
     {
         get => SilkMarshal.PtrToString((nint) Native.DriverDescription);
+
         set
        {
            if (Native.DriverDescription != null)

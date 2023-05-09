@@ -3,6 +3,8 @@
 using Rover656.SilkyWebGPU;
 using Rover656.SilkyWebGPU.Chain;
 
+using System.Runtime.CompilerServices;
+
 using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
 using Silk.NET.WebGPU.Extensions.WGPU;
@@ -10,13 +12,14 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.DeviceDescriptor"/>
-public class ManagedDeviceDescriptor : ChainedStruct<Silk.NET.WebGPU.DeviceDescriptor>
+public class DeviceDescriptor : ChainedStruct<Silk.NET.WebGPU.DeviceDescriptor>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.DeviceDescriptor.Label" />
     public unsafe string Label
     {
         get => SilkMarshal.PtrToString((nint) Native.Label);
+
         set
        {
            if (Native.Label != null)
@@ -25,37 +28,62 @@ public class ManagedDeviceDescriptor : ChainedStruct<Silk.NET.WebGPU.DeviceDescr
         }
     }
  
-    /// <seealso cref="Silk.NET.WebGPU.DeviceDescriptor.RequiredFeaturesCount" />
-    public uint RequiredFeaturesCount
-    {
-        get => Native.RequiredFeaturesCount;
-        set => Native.RequiredFeaturesCount = value;
-    }
- 
-    /// <summary>
-    /// This is a currently unsupported type.
-    /// Native type: Silk.NET.WebGPU.FeatureName*.
-    /// Original name: RequiredFeatures.
-    /// Is array type?: True.
-    /// </summary>
     /// <seealso cref="Silk.NET.WebGPU.DeviceDescriptor.RequiredFeatures" />
-    public unsafe Silk.NET.WebGPU.FeatureName* RequiredFeatures
+    public unsafe Silk.NET.WebGPU.FeatureName? RequiredFeatures
     {
-        get => Native.RequiredFeatures;
-        set => Native.RequiredFeatures = value;
+        get
+        {
+            if (Native.RequiredFeatures == null)
+                return null;
+            return *Native.RequiredFeatures;
+        }
+
+        set
+        {
+            // If we're setting this to null, wipe the memory.
+            if (!value.HasValue)
+            {
+                SilkMarshal.Free((nint) Native.RequiredFeatures);
+                Native.RequiredFeatures = null;
+                return;
+            }
+
+            // Because we will always own this handle, we allocate if its null, or we overwrite data.
+            if (Native.RequiredFeatures == null)
+                Native.RequiredFeatures = (Silk.NET.WebGPU.FeatureName*) SilkMarshal.Allocate(sizeof(Silk.NET.WebGPU.FeatureName));
+
+            // Write new data
+            *Native.RequiredFeatures = value.Value;
+        }
     }
  
-    /// <summary>
-    /// This is a currently unsupported type.
-    /// Native type: Silk.NET.WebGPU.RequiredLimits*.
-    /// Original name: RequiredLimits.
-    /// Is array type?: False.
-    /// </summary>
     /// <seealso cref="Silk.NET.WebGPU.DeviceDescriptor.RequiredLimits" />
-    public unsafe Silk.NET.WebGPU.RequiredLimits* RequiredLimits
+    public unsafe Silk.NET.WebGPU.RequiredLimits? RequiredLimits
     {
-        get => Native.RequiredLimits;
-        set => Native.RequiredLimits = value;
+        get
+        {
+            if (Native.RequiredLimits == null)
+                return null;
+            return *Native.RequiredLimits;
+        }
+
+        set
+        {
+            // If we're setting this to null, wipe the memory.
+            if (!value.HasValue)
+            {
+                SilkMarshal.Free((nint) Native.RequiredLimits);
+                Native.RequiredLimits = null;
+                return;
+            }
+
+            // Because we will always own this handle, we allocate if its null, or we overwrite data.
+            if (Native.RequiredLimits == null)
+                Native.RequiredLimits = (Silk.NET.WebGPU.RequiredLimits*) SilkMarshal.Allocate(sizeof(Silk.NET.WebGPU.RequiredLimits));
+
+            // Write new data
+            *Native.RequiredLimits = value.Value;
+        }
     }
  
     /// <seealso cref="Silk.NET.WebGPU.DeviceDescriptor.DefaultQueue" />
@@ -70,7 +98,6 @@ public class ManagedDeviceDescriptor : ChainedStruct<Silk.NET.WebGPU.DeviceDescr
         // Write anything to the console we deem writable. This might not be accurate but its good enough for debug purposes :)
         return $@"DeviceDescriptor {{
     Label = ""{Label}""
-    RequiredFeaturesCount = ""{RequiredFeaturesCount}""
     DefaultQueue = ""{DefaultQueue}""
 }}";
     }
@@ -78,5 +105,7 @@ public class ManagedDeviceDescriptor : ChainedStruct<Silk.NET.WebGPU.DeviceDescr
     protected override unsafe void ReleaseUnmanagedResources()
     {
         SilkMarshal.Free((nint) Native.Label);
+        SilkMarshal.Free((nint) Native.RequiredFeatures);
+        SilkMarshal.Free((nint) Native.RequiredLimits);
     }
 }

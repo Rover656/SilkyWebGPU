@@ -3,6 +3,8 @@
 using Rover656.SilkyWebGPU;
 using Rover656.SilkyWebGPU.Chain;
 
+using System.Runtime.CompilerServices;
+
 using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
 using Silk.NET.WebGPU.Extensions.WGPU;
@@ -10,13 +12,14 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.ComputePassDescriptor"/>
-public class ManagedComputePassDescriptor : ChainedStruct<Silk.NET.WebGPU.ComputePassDescriptor>
+public class ComputePassDescriptor : ChainedStruct<Silk.NET.WebGPU.ComputePassDescriptor>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.ComputePassDescriptor.Label" />
     public unsafe string Label
     {
         get => SilkMarshal.PtrToString((nint) Native.Label);
+
         set
        {
            if (Native.Label != null)
@@ -25,24 +28,33 @@ public class ManagedComputePassDescriptor : ChainedStruct<Silk.NET.WebGPU.Comput
         }
     }
  
-    /// <seealso cref="Silk.NET.WebGPU.ComputePassDescriptor.TimestampWriteCount" />
-    public uint TimestampWriteCount
-    {
-        get => Native.TimestampWriteCount;
-        set => Native.TimestampWriteCount = value;
-    }
- 
-    /// <summary>
-    /// This is a currently unsupported type.
-    /// Native type: Silk.NET.WebGPU.ComputePassTimestampWrite*.
-    /// Original name: TimestampWrites.
-    /// Is array type?: True.
-    /// </summary>
     /// <seealso cref="Silk.NET.WebGPU.ComputePassDescriptor.TimestampWrites" />
-    public unsafe Silk.NET.WebGPU.ComputePassTimestampWrite* TimestampWrites
+    public unsafe Silk.NET.WebGPU.ComputePassTimestampWrite? TimestampWrites
     {
-        get => Native.TimestampWrites;
-        set => Native.TimestampWrites = value;
+        get
+        {
+            if (Native.TimestampWrites == null)
+                return null;
+            return *Native.TimestampWrites;
+        }
+
+        set
+        {
+            // If we're setting this to null, wipe the memory.
+            if (!value.HasValue)
+            {
+                SilkMarshal.Free((nint) Native.TimestampWrites);
+                Native.TimestampWrites = null;
+                return;
+            }
+
+            // Because we will always own this handle, we allocate if its null, or we overwrite data.
+            if (Native.TimestampWrites == null)
+                Native.TimestampWrites = (Silk.NET.WebGPU.ComputePassTimestampWrite*) SilkMarshal.Allocate(sizeof(Silk.NET.WebGPU.ComputePassTimestampWrite));
+
+            // Write new data
+            *Native.TimestampWrites = value.Value;
+        }
     }
  
     public override unsafe string ToString()
@@ -50,12 +62,12 @@ public class ManagedComputePassDescriptor : ChainedStruct<Silk.NET.WebGPU.Comput
         // Write anything to the console we deem writable. This might not be accurate but its good enough for debug purposes :)
         return $@"ComputePassDescriptor {{
     Label = ""{Label}""
-    TimestampWriteCount = ""{TimestampWriteCount}""
 }}";
     }
 
     protected override unsafe void ReleaseUnmanagedResources()
     {
         SilkMarshal.Free((nint) Native.Label);
+        SilkMarshal.Free((nint) Native.TimestampWrites);
     }
 }

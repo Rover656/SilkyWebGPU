@@ -3,6 +3,8 @@
 using Rover656.SilkyWebGPU;
 using Rover656.SilkyWebGPU.Chain;
 
+using System.Runtime.CompilerServices;
+
 using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
 using Silk.NET.WebGPU.Extensions.WGPU;
@@ -10,7 +12,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.FragmentState"/>
-public class ManagedFragmentState : ChainedStruct<Silk.NET.WebGPU.FragmentState>
+public class FragmentState : ChainedStruct<Silk.NET.WebGPU.FragmentState>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.FragmentState.Module" />
@@ -24,6 +26,7 @@ public class ManagedFragmentState : ChainedStruct<Silk.NET.WebGPU.FragmentState>
     public unsafe string EntryPoint
     {
         get => SilkMarshal.PtrToString((nint) Native.EntryPoint);
+
         set
        {
            if (Native.EntryPoint != null)
@@ -32,44 +35,68 @@ public class ManagedFragmentState : ChainedStruct<Silk.NET.WebGPU.FragmentState>
         }
     }
  
-    /// <seealso cref="Silk.NET.WebGPU.FragmentState.ConstantCount" />
-    public uint ConstantCount
-    {
-        get => Native.ConstantCount;
-        set => Native.ConstantCount = value;
-    }
- 
-    /// <summary>
-    /// This is a currently unsupported type.
-    /// Native type: Silk.NET.WebGPU.ConstantEntry*.
-    /// Original name: Constants.
-    /// Is array type?: True.
-    /// </summary>
     /// <seealso cref="Silk.NET.WebGPU.FragmentState.Constants" />
-    public unsafe Silk.NET.WebGPU.ConstantEntry* Constants
+    public unsafe Silk.NET.WebGPU.ConstantEntry? Constants
     {
-        get => Native.Constants;
-        set => Native.Constants = value;
+        get
+        {
+            if (Native.Constants == null)
+                return null;
+            return *Native.Constants;
+        }
+
+        set
+        {
+            // If we're setting this to null, wipe the memory.
+            if (!value.HasValue)
+            {
+                SilkMarshal.Free((nint) Native.Constants);
+                Native.Constants = null;
+                return;
+            }
+
+            // Because we will always own this handle, we allocate if its null, or we overwrite data.
+            if (Native.Constants == null)
+                Native.Constants = (Silk.NET.WebGPU.ConstantEntry*) SilkMarshal.Allocate(sizeof(Silk.NET.WebGPU.ConstantEntry));
+
+            // Write new data
+            *Native.Constants = value.Value;
+        }
     }
  
-    /// <seealso cref="Silk.NET.WebGPU.FragmentState.TargetCount" />
-    public uint TargetCount
-    {
-        get => Native.TargetCount;
-        set => Native.TargetCount = value;
-    }
- 
-    /// <summary>
-    /// This is a currently unsupported type.
-    /// Native type: Silk.NET.WebGPU.ColorTargetState*.
-    /// Original name: Targets.
-    /// Is array type?: True.
-    /// </summary>
+    // Keep a copy around for disposal.
+    private NativeChainableArray<Silk.NET.WebGPU.ColorTargetState> _Targets;
+
     /// <seealso cref="Silk.NET.WebGPU.FragmentState.Targets" />
-    public unsafe Silk.NET.WebGPU.ColorTargetState* Targets
+    /// <remarks>
+    /// TODO: Write this remark.
+    /// Summary: Will update if you modify the existing pointer, but if you replace it, it won't.
+    /// </remarks>
+    public unsafe NativeChainableArray<Silk.NET.WebGPU.ColorTargetState> Targets
     {
-        get => Native.Targets;
-        set => Native.Targets = value;
+        // Limitations do not permit this to work... yet.
+        //get => Native.Targets;
+
+        set
+        {
+            // Dispose any existing object.
+            _Targets?.Dispose();
+
+            // Allocate new chain -OR- set to default
+            if (value != null)
+            {
+                Native.Targets = value.Ptr;
+                Native.TargetCount = value.Count;
+            }
+            else
+            {
+                Native.Targets = null;
+                Native.TargetCount = 0;
+            }
+
+            // Save for later disposal
+            _Targets = value;
+        }
     }
  
     public override unsafe string ToString()
@@ -77,13 +104,18 @@ public class ManagedFragmentState : ChainedStruct<Silk.NET.WebGPU.FragmentState>
         // Write anything to the console we deem writable. This might not be accurate but its good enough for debug purposes :)
         return $@"FragmentState {{
     EntryPoint = ""{EntryPoint}""
-    ConstantCount = ""{ConstantCount}""
-    TargetCount = ""{TargetCount}""
 }}";
+    }
+
+    public override unsafe void Dispose()
+    {
+        _Targets?.Dispose();
+        base.Dispose();
     }
 
     protected override unsafe void ReleaseUnmanagedResources()
     {
         SilkMarshal.Free((nint) Native.EntryPoint);
+        SilkMarshal.Free((nint) Native.Constants);
     }
 }

@@ -3,6 +3,8 @@
 using Rover656.SilkyWebGPU;
 using Rover656.SilkyWebGPU.Chain;
 
+using System.Runtime.CompilerServices;
+
 using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
 using Silk.NET.WebGPU.Extensions.WGPU;
@@ -10,26 +12,20 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.PipelineLayoutDescriptor"/>
-public class ManagedPipelineLayoutDescriptor : ChainedStruct<Silk.NET.WebGPU.PipelineLayoutDescriptor>
+public class PipelineLayoutDescriptor : ChainedStruct<Silk.NET.WebGPU.PipelineLayoutDescriptor>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.PipelineLayoutDescriptor.Label" />
     public unsafe string Label
     {
         get => SilkMarshal.PtrToString((nint) Native.Label);
+
         set
        {
            if (Native.Label != null)
                SilkMarshal.Free((nint) Native.Label);
            Native.Label = (byte *) SilkMarshal.StringToPtr(value);
         }
-    }
- 
-    /// <seealso cref="Silk.NET.WebGPU.PipelineLayoutDescriptor.BindGroupLayoutCount" />
-    public uint BindGroupLayoutCount
-    {
-        get => Native.BindGroupLayoutCount;
-        set => Native.BindGroupLayoutCount = value;
     }
  
     /// <summary>
@@ -44,13 +40,12 @@ public class ManagedPipelineLayoutDescriptor : ChainedStruct<Silk.NET.WebGPU.Pip
         get => Native.BindGroupLayouts;
         set => Native.BindGroupLayouts = value;
     }
- 
+
     public override unsafe string ToString()
     {
         // Write anything to the console we deem writable. This might not be accurate but its good enough for debug purposes :)
         return $@"PipelineLayoutDescriptor {{
     Label = ""{Label}""
-    BindGroupLayoutCount = ""{BindGroupLayoutCount}""
 }}";
     }
 

@@ -13,7 +13,7 @@ public unsafe class WebGPUPtr<T> : IDisposable
     private T* _ptr;
     private bool _weak;
     
-    public WebGPUPtr(T* ptr)
+    internal WebGPUPtr(T* ptr)
     {
         _ptr = ptr;
         _weak = false;

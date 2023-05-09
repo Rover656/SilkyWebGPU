@@ -107,7 +107,7 @@ public static partial class MethodExtensions
     /// AdapterGetLimits
     /// Generated from <see cref="Silk.NET.WebGPU.WebGPU"/>.
     /// </summary>
-    public static unsafe Silk.NET.Core.Bool32 GetLimits(this WebGPUPtr<Silk.NET.WebGPU.Adapter> adapter, ref ManagedSupportedLimits limits) 
+    public static unsafe Silk.NET.Core.Bool32 GetLimits(this WebGPUPtr<Silk.NET.WebGPU.Adapter> adapter, ref SupportedLimits limits) 
     {
         Silk.NET.Core.Bool32 ret;
         var limitsChained = limits.GetWithChain();
@@ -144,7 +144,7 @@ public static partial class MethodExtensions
     /// AdapterGetProperties
     /// Generated from <see cref="Silk.NET.WebGPU.WebGPU"/>.
     /// </summary>
-    public static unsafe void GetProperties(this WebGPUPtr<Silk.NET.WebGPU.Adapter> adapter, ref ManagedAdapterProperties properties) 
+    public static unsafe void GetProperties(this WebGPUPtr<Silk.NET.WebGPU.Adapter> adapter, ref AdapterProperties properties) 
     {
         var propertiesChained = properties.GetWithChain();
         var propertiesUnmanaged = &propertiesChained;
@@ -200,7 +200,7 @@ public static partial class MethodExtensions
     /// AdapterRequestDevice
     /// Generated from <see cref="Silk.NET.WebGPU.WebGPU"/>.
     /// </summary>
-    public static unsafe void RequestDevice(this WebGPUPtr<Silk.NET.WebGPU.Adapter> adapter, in ManagedDeviceDescriptor descriptor, Silk.NET.WebGPU.PfnRequestDeviceCallback callback, void* userdata) 
+    public static unsafe void RequestDevice(this WebGPUPtr<Silk.NET.WebGPU.Adapter> adapter, in DeviceDescriptor descriptor, Silk.NET.WebGPU.PfnRequestDeviceCallback callback, void* userdata) 
     {
         if (descriptor == null) {
         WGPU.API.AdapterRequestDevice(adapter, null, callback, userdata);
@@ -230,7 +230,7 @@ public static partial class MethodExtensions
     /// AdapterRequestDevice
     /// Generated from <see cref="Silk.NET.WebGPU.WebGPU"/>.
     /// </summary>
-    public static unsafe void RequestDevice<T0>(this WebGPUPtr<Silk.NET.WebGPU.Adapter> adapter, in ManagedDeviceDescriptor descriptor, Silk.NET.WebGPU.PfnRequestDeviceCallback callback, ref T0 userdata) 
+    public static unsafe void RequestDevice<T0>(this WebGPUPtr<Silk.NET.WebGPU.Adapter> adapter, in DeviceDescriptor descriptor, Silk.NET.WebGPU.PfnRequestDeviceCallback callback, ref T0 userdata) 
         where T0 : unmanaged
     {
         if (descriptor == null) {
@@ -481,7 +481,7 @@ public static partial class MethodExtensions
     /// CommandEncoderBeginComputePass
     /// Generated from <see cref="Silk.NET.WebGPU.WebGPU"/>.
     /// </summary>
-    public static unsafe WebGPUPtr<Silk.NET.WebGPU.ComputePassEncoder> BeginComputePass(this WebGPUPtr<Silk.NET.WebGPU.CommandEncoder> commandEncoder, in ManagedComputePassDescriptor descriptor) 
+    public static unsafe WebGPUPtr<Silk.NET.WebGPU.ComputePassEncoder> BeginComputePass(this WebGPUPtr<Silk.NET.WebGPU.CommandEncoder> commandEncoder, in ComputePassDescriptor descriptor) 
     {
         WebGPUPtr<Silk.NET.WebGPU.ComputePassEncoder> ret;
         if (descriptor == null) {
@@ -522,7 +522,7 @@ public static partial class MethodExtensions
     /// CommandEncoderBeginRenderPass
     /// Generated from <see cref="Silk.NET.WebGPU.WebGPU"/>.
     /// </summary>
-    public static unsafe WebGPUPtr<Silk.NET.WebGPU.RenderPassEncoder> BeginRenderPass(this WebGPUPtr<Silk.NET.WebGPU.CommandEncoder> commandEncoder, in ManagedRenderPassDescriptor descriptor) 
+    public static unsafe WebGPUPtr<Silk.NET.WebGPU.RenderPassEncoder> BeginRenderPass(this WebGPUPtr<Silk.NET.WebGPU.CommandEncoder> commandEncoder, in RenderPassDescriptor descriptor) 
     {
         WebGPUPtr<Silk.NET.WebGPU.RenderPassEncoder> ret;
         if (descriptor == null) {
@@ -823,7 +823,7 @@ public static partial class MethodExtensions
     /// CommandEncoderFinish
     /// Generated from <see cref="Silk.NET.WebGPU.WebGPU"/>.
     /// </summary>
-    public static unsafe WebGPUPtr<Silk.NET.WebGPU.CommandBuffer> Finish(this WebGPUPtr<Silk.NET.WebGPU.CommandEncoder> commandEncoder, in ManagedCommandBufferDescriptor descriptor) 
+    public static unsafe WebGPUPtr<Silk.NET.WebGPU.CommandBuffer> Finish(this WebGPUPtr<Silk.NET.WebGPU.CommandEncoder> commandEncoder, in CommandBufferDescriptor descriptor) 
     {
         WebGPUPtr<Silk.NET.WebGPU.CommandBuffer> ret;
         if (descriptor == null) {
@@ -1204,7 +1204,7 @@ public static partial class MethodExtensions
     /// DeviceCreateBindGroup
     /// Generated from <see cref="Silk.NET.WebGPU.WebGPU"/>.
     /// </summary>
-    public static unsafe WebGPUPtr<Silk.NET.WebGPU.BindGroup> CreateBindGroup(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in ManagedBindGroupDescriptor descriptor) 
+    public static unsafe WebGPUPtr<Silk.NET.WebGPU.BindGroup> CreateBindGroup(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in BindGroupDescriptor descriptor) 
     {
         WebGPUPtr<Silk.NET.WebGPU.BindGroup> ret;
         if (descriptor == null) {
@@ -1245,7 +1245,7 @@ public static partial class MethodExtensions
     /// DeviceCreateBindGroupLayout
     /// Generated from <see cref="Silk.NET.WebGPU.WebGPU"/>.
     /// </summary>
-    public static unsafe WebGPUPtr<Silk.NET.WebGPU.BindGroupLayout> CreateBindGroupLayout(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in ManagedBindGroupLayoutDescriptor descriptor) 
+    public static unsafe WebGPUPtr<Silk.NET.WebGPU.BindGroupLayout> CreateBindGroupLayout(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in BindGroupLayoutDescriptor descriptor) 
     {
         WebGPUPtr<Silk.NET.WebGPU.BindGroupLayout> ret;
         if (descriptor == null) {
@@ -1286,7 +1286,7 @@ public static partial class MethodExtensions
     /// DeviceCreateBuffer
     /// Generated from <see cref="Silk.NET.WebGPU.WebGPU"/>.
     /// </summary>
-    public static unsafe WebGPUPtr<Silk.NET.WebGPU.Buffer> CreateBuffer(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in ManagedBufferDescriptor descriptor) 
+    public static unsafe WebGPUPtr<Silk.NET.WebGPU.Buffer> CreateBuffer(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in BufferDescriptor descriptor) 
     {
         WebGPUPtr<Silk.NET.WebGPU.Buffer> ret;
         if (descriptor == null) {
@@ -1327,7 +1327,7 @@ public static partial class MethodExtensions
     /// DeviceCreateCommandEncoder
     /// Generated from <see cref="Silk.NET.WebGPU.WebGPU"/>.
     /// </summary>
-    public static unsafe WebGPUPtr<Silk.NET.WebGPU.CommandEncoder> CreateCommandEncoder(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in ManagedCommandEncoderDescriptor descriptor) 
+    public static unsafe WebGPUPtr<Silk.NET.WebGPU.CommandEncoder> CreateCommandEncoder(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in CommandEncoderDescriptor descriptor) 
     {
         WebGPUPtr<Silk.NET.WebGPU.CommandEncoder> ret;
         if (descriptor == null) {
@@ -1368,7 +1368,7 @@ public static partial class MethodExtensions
     /// DeviceCreateComputePipeline
     /// Generated from <see cref="Silk.NET.WebGPU.WebGPU"/>.
     /// </summary>
-    public static unsafe WebGPUPtr<Silk.NET.WebGPU.ComputePipeline> CreateComputePipeline(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in ManagedComputePipelineDescriptor descriptor) 
+    public static unsafe WebGPUPtr<Silk.NET.WebGPU.ComputePipeline> CreateComputePipeline(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in ComputePipelineDescriptor descriptor) 
     {
         WebGPUPtr<Silk.NET.WebGPU.ComputePipeline> ret;
         if (descriptor == null) {
@@ -1420,7 +1420,7 @@ public static partial class MethodExtensions
     /// DeviceCreateComputePipelineAsync
     /// Generated from <see cref="Silk.NET.WebGPU.WebGPU"/>.
     /// </summary>
-    public static unsafe void CreateComputePipelineAsync(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in ManagedComputePipelineDescriptor descriptor, Silk.NET.WebGPU.PfnCreateComputePipelineAsyncCallback callback, void* userdata) 
+    public static unsafe void CreateComputePipelineAsync(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in ComputePipelineDescriptor descriptor, Silk.NET.WebGPU.PfnCreateComputePipelineAsyncCallback callback, void* userdata) 
     {
         if (descriptor == null) {
         WGPU.API.DeviceCreateComputePipelineAsync(device, null, callback, userdata);
@@ -1450,7 +1450,7 @@ public static partial class MethodExtensions
     /// DeviceCreateComputePipelineAsync
     /// Generated from <see cref="Silk.NET.WebGPU.WebGPU"/>.
     /// </summary>
-    public static unsafe void CreateComputePipelineAsync<T0>(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in ManagedComputePipelineDescriptor descriptor, Silk.NET.WebGPU.PfnCreateComputePipelineAsyncCallback callback, ref T0 userdata) 
+    public static unsafe void CreateComputePipelineAsync<T0>(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in ComputePipelineDescriptor descriptor, Silk.NET.WebGPU.PfnCreateComputePipelineAsyncCallback callback, ref T0 userdata) 
         where T0 : unmanaged
     {
         if (descriptor == null) {
@@ -1490,7 +1490,7 @@ public static partial class MethodExtensions
     /// DeviceCreatePipelineLayout
     /// Generated from <see cref="Silk.NET.WebGPU.WebGPU"/>.
     /// </summary>
-    public static unsafe WebGPUPtr<Silk.NET.WebGPU.PipelineLayout> CreatePipelineLayout(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in ManagedPipelineLayoutDescriptor descriptor) 
+    public static unsafe WebGPUPtr<Silk.NET.WebGPU.PipelineLayout> CreatePipelineLayout(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in PipelineLayoutDescriptor descriptor) 
     {
         WebGPUPtr<Silk.NET.WebGPU.PipelineLayout> ret;
         if (descriptor == null) {
@@ -1531,7 +1531,7 @@ public static partial class MethodExtensions
     /// DeviceCreateQuerySet
     /// Generated from <see cref="Silk.NET.WebGPU.WebGPU"/>.
     /// </summary>
-    public static unsafe WebGPUPtr<Silk.NET.WebGPU.QuerySet> CreateQuerySet(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in ManagedQuerySetDescriptor descriptor) 
+    public static unsafe WebGPUPtr<Silk.NET.WebGPU.QuerySet> CreateQuerySet(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in QuerySetDescriptor descriptor) 
     {
         WebGPUPtr<Silk.NET.WebGPU.QuerySet> ret;
         if (descriptor == null) {
@@ -1572,7 +1572,7 @@ public static partial class MethodExtensions
     /// DeviceCreateRenderBundleEncoder
     /// Generated from <see cref="Silk.NET.WebGPU.WebGPU"/>.
     /// </summary>
-    public static unsafe WebGPUPtr<Silk.NET.WebGPU.RenderBundleEncoder> CreateRenderBundleEncoder(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in ManagedRenderBundleEncoderDescriptor descriptor) 
+    public static unsafe WebGPUPtr<Silk.NET.WebGPU.RenderBundleEncoder> CreateRenderBundleEncoder(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in RenderBundleEncoderDescriptor descriptor) 
     {
         WebGPUPtr<Silk.NET.WebGPU.RenderBundleEncoder> ret;
         if (descriptor == null) {
@@ -1613,7 +1613,7 @@ public static partial class MethodExtensions
     /// DeviceCreateRenderPipeline
     /// Generated from <see cref="Silk.NET.WebGPU.WebGPU"/>.
     /// </summary>
-    public static unsafe WebGPUPtr<Silk.NET.WebGPU.RenderPipeline> CreateRenderPipeline(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in ManagedRenderPipelineDescriptor descriptor) 
+    public static unsafe WebGPUPtr<Silk.NET.WebGPU.RenderPipeline> CreateRenderPipeline(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in RenderPipelineDescriptor descriptor) 
     {
         WebGPUPtr<Silk.NET.WebGPU.RenderPipeline> ret;
         if (descriptor == null) {
@@ -1665,7 +1665,7 @@ public static partial class MethodExtensions
     /// DeviceCreateRenderPipelineAsync
     /// Generated from <see cref="Silk.NET.WebGPU.WebGPU"/>.
     /// </summary>
-    public static unsafe void CreateRenderPipelineAsync(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in ManagedRenderPipelineDescriptor descriptor, Silk.NET.WebGPU.PfnCreateRenderPipelineAsyncCallback callback, void* userdata) 
+    public static unsafe void CreateRenderPipelineAsync(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in RenderPipelineDescriptor descriptor, Silk.NET.WebGPU.PfnCreateRenderPipelineAsyncCallback callback, void* userdata) 
     {
         if (descriptor == null) {
         WGPU.API.DeviceCreateRenderPipelineAsync(device, null, callback, userdata);
@@ -1695,7 +1695,7 @@ public static partial class MethodExtensions
     /// DeviceCreateRenderPipelineAsync
     /// Generated from <see cref="Silk.NET.WebGPU.WebGPU"/>.
     /// </summary>
-    public static unsafe void CreateRenderPipelineAsync<T0>(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in ManagedRenderPipelineDescriptor descriptor, Silk.NET.WebGPU.PfnCreateRenderPipelineAsyncCallback callback, ref T0 userdata) 
+    public static unsafe void CreateRenderPipelineAsync<T0>(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in RenderPipelineDescriptor descriptor, Silk.NET.WebGPU.PfnCreateRenderPipelineAsyncCallback callback, ref T0 userdata) 
         where T0 : unmanaged
     {
         if (descriptor == null) {
@@ -1735,7 +1735,7 @@ public static partial class MethodExtensions
     /// DeviceCreateSampler
     /// Generated from <see cref="Silk.NET.WebGPU.WebGPU"/>.
     /// </summary>
-    public static unsafe WebGPUPtr<Silk.NET.WebGPU.Sampler> CreateSampler(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in ManagedSamplerDescriptor descriptor) 
+    public static unsafe WebGPUPtr<Silk.NET.WebGPU.Sampler> CreateSampler(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in SamplerDescriptor descriptor) 
     {
         WebGPUPtr<Silk.NET.WebGPU.Sampler> ret;
         if (descriptor == null) {
@@ -1776,7 +1776,7 @@ public static partial class MethodExtensions
     /// DeviceCreateShaderModule
     /// Generated from <see cref="Silk.NET.WebGPU.WebGPU"/>.
     /// </summary>
-    public static unsafe WebGPUPtr<Silk.NET.WebGPU.ShaderModule> CreateShaderModule(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in ManagedShaderModuleDescriptor descriptor) 
+    public static unsafe WebGPUPtr<Silk.NET.WebGPU.ShaderModule> CreateShaderModule(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in ShaderModuleDescriptor descriptor) 
     {
         WebGPUPtr<Silk.NET.WebGPU.ShaderModule> ret;
         if (descriptor == null) {
@@ -1817,7 +1817,7 @@ public static partial class MethodExtensions
     /// DeviceCreateSwapChain
     /// Generated from <see cref="Silk.NET.WebGPU.WebGPU"/>.
     /// </summary>
-    public static unsafe WebGPUPtr<Silk.NET.WebGPU.SwapChain> CreateSwapChain(this WebGPUPtr<Silk.NET.WebGPU.Device> device, WebGPUPtr<Silk.NET.WebGPU.Surface> surface, in ManagedSwapChainDescriptor descriptor) 
+    public static unsafe WebGPUPtr<Silk.NET.WebGPU.SwapChain> CreateSwapChain(this WebGPUPtr<Silk.NET.WebGPU.Device> device, WebGPUPtr<Silk.NET.WebGPU.Surface> surface, in SwapChainDescriptor descriptor) 
     {
         WebGPUPtr<Silk.NET.WebGPU.SwapChain> ret;
                 if (descriptor == null) {
@@ -1858,7 +1858,7 @@ public static partial class MethodExtensions
     /// DeviceCreateTexture
     /// Generated from <see cref="Silk.NET.WebGPU.WebGPU"/>.
     /// </summary>
-    public static unsafe WebGPUPtr<Silk.NET.WebGPU.Texture> CreateTexture(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in ManagedTextureDescriptor descriptor) 
+    public static unsafe WebGPUPtr<Silk.NET.WebGPU.Texture> CreateTexture(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in TextureDescriptor descriptor) 
     {
         WebGPUPtr<Silk.NET.WebGPU.Texture> ret;
         if (descriptor == null) {
@@ -1929,7 +1929,7 @@ public static partial class MethodExtensions
     /// DeviceGetLimits
     /// Generated from <see cref="Silk.NET.WebGPU.WebGPU"/>.
     /// </summary>
-    public static unsafe Silk.NET.Core.Bool32 GetLimits(this WebGPUPtr<Silk.NET.WebGPU.Device> device, ref ManagedSupportedLimits limits) 
+    public static unsafe Silk.NET.Core.Bool32 GetLimits(this WebGPUPtr<Silk.NET.WebGPU.Device> device, ref SupportedLimits limits) 
     {
         Silk.NET.Core.Bool32 ret;
         var limitsChained = limits.GetWithChain();
@@ -2089,7 +2089,7 @@ public static partial class MethodExtensions
     /// InstanceCreateSurface
     /// Generated from <see cref="Silk.NET.WebGPU.WebGPU"/>.
     /// </summary>
-    public static unsafe WebGPUPtr<Silk.NET.WebGPU.Surface> CreateSurface(this WebGPUPtr<Silk.NET.WebGPU.Instance> instance, in ManagedSurfaceDescriptor descriptor) 
+    public static unsafe WebGPUPtr<Silk.NET.WebGPU.Surface> CreateSurface(this WebGPUPtr<Silk.NET.WebGPU.Instance> instance, in SurfaceDescriptor descriptor) 
     {
         WebGPUPtr<Silk.NET.WebGPU.Surface> ret;
         if (descriptor == null) {
@@ -2151,7 +2151,7 @@ public static partial class MethodExtensions
     /// InstanceRequestAdapter
     /// Generated from <see cref="Silk.NET.WebGPU.WebGPU"/>.
     /// </summary>
-    public static unsafe void RequestAdapter(this WebGPUPtr<Silk.NET.WebGPU.Instance> instance, in ManagedRequestAdapterOptions options, Silk.NET.WebGPU.PfnRequestAdapterCallback callback, void* userdata) 
+    public static unsafe void RequestAdapter(this WebGPUPtr<Silk.NET.WebGPU.Instance> instance, in RequestAdapterOptions options, Silk.NET.WebGPU.PfnRequestAdapterCallback callback, void* userdata) 
     {
         if (options == null) {
         WGPU.API.InstanceRequestAdapter(instance, null, callback, userdata);
@@ -2181,7 +2181,7 @@ public static partial class MethodExtensions
     /// InstanceRequestAdapter
     /// Generated from <see cref="Silk.NET.WebGPU.WebGPU"/>.
     /// </summary>
-    public static unsafe void RequestAdapter<T0>(this WebGPUPtr<Silk.NET.WebGPU.Instance> instance, in ManagedRequestAdapterOptions options, Silk.NET.WebGPU.PfnRequestAdapterCallback callback, ref T0 userdata) 
+    public static unsafe void RequestAdapter<T0>(this WebGPUPtr<Silk.NET.WebGPU.Instance> instance, in RequestAdapterOptions options, Silk.NET.WebGPU.PfnRequestAdapterCallback callback, ref T0 userdata) 
         where T0 : unmanaged
     {
         if (options == null) {
@@ -2611,7 +2611,7 @@ public static partial class MethodExtensions
     /// RenderBundleEncoderFinish
     /// Generated from <see cref="Silk.NET.WebGPU.WebGPU"/>.
     /// </summary>
-    public static unsafe WebGPUPtr<Silk.NET.WebGPU.RenderBundle> Finish(this WebGPUPtr<Silk.NET.WebGPU.RenderBundleEncoder> renderBundleEncoder, in ManagedRenderBundleDescriptor descriptor) 
+    public static unsafe WebGPUPtr<Silk.NET.WebGPU.RenderBundle> Finish(this WebGPUPtr<Silk.NET.WebGPU.RenderBundleEncoder> renderBundleEncoder, in RenderBundleDescriptor descriptor) 
     {
         WebGPUPtr<Silk.NET.WebGPU.RenderBundle> ret;
         if (descriptor == null) {
@@ -3263,7 +3263,7 @@ public static partial class MethodExtensions
     /// TextureCreateView
     /// Generated from <see cref="Silk.NET.WebGPU.WebGPU"/>.
     /// </summary>
-    public static unsafe WebGPUPtr<Silk.NET.WebGPU.TextureView> CreateView(this WebGPUPtr<Silk.NET.WebGPU.Texture> texture, in ManagedTextureViewDescriptor descriptor) 
+    public static unsafe WebGPUPtr<Silk.NET.WebGPU.TextureView> CreateView(this WebGPUPtr<Silk.NET.WebGPU.Texture> texture, in TextureViewDescriptor descriptor) 
     {
         WebGPUPtr<Silk.NET.WebGPU.TextureView> ret;
         if (descriptor == null) {

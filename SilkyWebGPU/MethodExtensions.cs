@@ -1,4 +1,5 @@
 ﻿using Rover656.SilkyWebGPU.Chain;
+using Silk.NET.Core.Contexts;
 using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
 
@@ -7,8 +8,13 @@ namespace Rover656.SilkyWebGPU;
 // Some hand-written extension methods.
 public static partial class MethodExtensions
 {
+    public static unsafe WebGPUPtr<Surface> CreateWebGPUSurface(this INativeWindowSource view, WebGPUPtr<Instance> instance)
+    {
+        return new WebGPUPtr<Surface>(view.CreateWebGPUSurface(WGPU.API, instance));
+    }
+    
     public static async Task<WebGPUPtr<Adapter>> RequestAdapter(this WebGPUPtr<Instance> instance,
-        ManagedRequestAdapterOptions adapterOptions)
+        RequestAdapterOptions adapterOptions)
     {
         WebGPUPtr<Adapter> adapter = null!;
 
@@ -36,7 +42,7 @@ public static partial class MethodExtensions
     }
     
     public static async Task<WebGPUPtr<Device>> RequestDevice(this WebGPUPtr<Adapter> adapter,
-        ManagedDeviceDescriptor? deviceDescriptor = null)
+        DeviceDescriptor? deviceDescriptor = null)
     {
         WebGPUPtr<Device> device = null!;
         
@@ -64,24 +70,10 @@ public static partial class MethodExtensions
         // Allocate memory for writing
         Span<FeatureName> span = stackalloc FeatureName[(int)count];
         WGPU.API.AdapterEnumerateFeatures(adapter, span);
-        
+
         // Copy to array
         var features = new FeatureName[count];
         span.CopyTo(features);
         return features;
     }
-
-    public static unsafe AdapterProperties GetProperties(this WebGPUPtr<Adapter> adapter)
-    {
-        var properties = new AdapterProperties();
-        WGPU.API.AdapterGetProperties(adapter, &properties);
-        return properties;
-    }
-    
-    // public static unsafe ManagedAdapterProperties GetPropertiesManaged(this WebGPUPtr<Adapter> adapter)
-    // {
-    //     var properties = new AdapterProperties();
-    //     WGPU.API.AdapterGetProperties(adapter, &properties);
-    //     return properties;
-    // }
 }

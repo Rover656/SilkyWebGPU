@@ -3,6 +3,8 @@
 using Rover656.SilkyWebGPU;
 using Rover656.SilkyWebGPU.Chain;
 
+using System.Runtime.CompilerServices;
+
 using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
 using Silk.NET.WebGPU.Extensions.WGPU;
@@ -10,13 +12,14 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.QuerySetDescriptor"/>
-public class ManagedQuerySetDescriptor : ChainedStruct<Silk.NET.WebGPU.QuerySetDescriptor>
+public class QuerySetDescriptor : ChainedStruct<Silk.NET.WebGPU.QuerySetDescriptor>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.QuerySetDescriptor.Label" />
     public unsafe string Label
     {
         get => SilkMarshal.PtrToString((nint) Native.Label);
+
         set
        {
            if (Native.Label != null)
@@ -39,24 +42,33 @@ public class ManagedQuerySetDescriptor : ChainedStruct<Silk.NET.WebGPU.QuerySetD
         set => Native.Count = value;
     }
  
-    /// <summary>
-    /// This is a currently unsupported type.
-    /// Native type: Silk.NET.WebGPU.PipelineStatisticName*.
-    /// Original name: PipelineStatistics.
-    /// Is array type?: True.
-    /// </summary>
     /// <seealso cref="Silk.NET.WebGPU.QuerySetDescriptor.PipelineStatistics" />
-    public unsafe Silk.NET.WebGPU.PipelineStatisticName* PipelineStatistics
+    public unsafe Silk.NET.WebGPU.PipelineStatisticName? PipelineStatistics
     {
-        get => Native.PipelineStatistics;
-        set => Native.PipelineStatistics = value;
-    }
- 
-    /// <seealso cref="Silk.NET.WebGPU.QuerySetDescriptor.PipelineStatisticsCount" />
-    public uint PipelineStatisticsCount
-    {
-        get => Native.PipelineStatisticsCount;
-        set => Native.PipelineStatisticsCount = value;
+        get
+        {
+            if (Native.PipelineStatistics == null)
+                return null;
+            return *Native.PipelineStatistics;
+        }
+
+        set
+        {
+            // If we're setting this to null, wipe the memory.
+            if (!value.HasValue)
+            {
+                SilkMarshal.Free((nint) Native.PipelineStatistics);
+                Native.PipelineStatistics = null;
+                return;
+            }
+
+            // Because we will always own this handle, we allocate if its null, or we overwrite data.
+            if (Native.PipelineStatistics == null)
+                Native.PipelineStatistics = (Silk.NET.WebGPU.PipelineStatisticName*) SilkMarshal.Allocate(sizeof(Silk.NET.WebGPU.PipelineStatisticName));
+
+            // Write new data
+            *Native.PipelineStatistics = value.Value;
+        }
     }
  
     public override unsafe string ToString()
@@ -66,12 +78,12 @@ public class ManagedQuerySetDescriptor : ChainedStruct<Silk.NET.WebGPU.QuerySetD
     Label = ""{Label}""
     Type = ""{Type}""
     Count = ""{Count}""
-    PipelineStatisticsCount = ""{PipelineStatisticsCount}""
 }}";
     }
 
     protected override unsafe void ReleaseUnmanagedResources()
     {
         SilkMarshal.Free((nint) Native.Label);
+        SilkMarshal.Free((nint) Native.PipelineStatistics);
     }
 }

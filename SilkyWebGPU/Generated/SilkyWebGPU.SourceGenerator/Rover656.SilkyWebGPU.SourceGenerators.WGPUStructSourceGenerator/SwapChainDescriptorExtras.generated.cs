@@ -3,6 +3,8 @@
 using Rover656.SilkyWebGPU;
 using Rover656.SilkyWebGPU.Chain;
 
+using System.Runtime.CompilerServices;
+
 using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
 using Silk.NET.WebGPU.Extensions.WGPU;
@@ -10,7 +12,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.Extensions.WGPU.SwapChainDescriptorExtras"/>
-public class ManagedSwapChainDescriptorExtras : ChainedStruct<Silk.NET.WebGPU.Extensions.WGPU.SwapChainDescriptorExtras>
+public class SwapChainDescriptorExtras : ChainedStruct<Silk.NET.WebGPU.Extensions.WGPU.SwapChainDescriptorExtras>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.Extensions.WGPU.SwapChainDescriptorExtras.AlphaMode" />
@@ -20,24 +22,33 @@ public class ManagedSwapChainDescriptorExtras : ChainedStruct<Silk.NET.WebGPU.Ex
         set => Native.AlphaMode = value;
     }
  
-    /// <seealso cref="Silk.NET.WebGPU.Extensions.WGPU.SwapChainDescriptorExtras.ViewFormatCount" />
-    public nuint ViewFormatCount
-    {
-        get => Native.ViewFormatCount;
-        set => Native.ViewFormatCount = value;
-    }
- 
-    /// <summary>
-    /// This is a currently unsupported type.
-    /// Native type: Silk.NET.WebGPU.TextureFormat*.
-    /// Original name: ViewFormats.
-    /// Is array type?: True.
-    /// </summary>
     /// <seealso cref="Silk.NET.WebGPU.Extensions.WGPU.SwapChainDescriptorExtras.ViewFormats" />
-    public unsafe Silk.NET.WebGPU.TextureFormat* ViewFormats
+    public unsafe Silk.NET.WebGPU.TextureFormat? ViewFormats
     {
-        get => Native.ViewFormats;
-        set => Native.ViewFormats = value;
+        get
+        {
+            if (Native.ViewFormats == null)
+                return null;
+            return *Native.ViewFormats;
+        }
+
+        set
+        {
+            // If we're setting this to null, wipe the memory.
+            if (!value.HasValue)
+            {
+                SilkMarshal.Free((nint) Native.ViewFormats);
+                Native.ViewFormats = null;
+                return;
+            }
+
+            // Because we will always own this handle, we allocate if its null, or we overwrite data.
+            if (Native.ViewFormats == null)
+                Native.ViewFormats = (Silk.NET.WebGPU.TextureFormat*) SilkMarshal.Allocate(sizeof(Silk.NET.WebGPU.TextureFormat));
+
+            // Write new data
+            *Native.ViewFormats = value.Value;
+        }
     }
  
     public override unsafe string ToString()
@@ -45,7 +56,11 @@ public class ManagedSwapChainDescriptorExtras : ChainedStruct<Silk.NET.WebGPU.Ex
         // Write anything to the console we deem writable. This might not be accurate but its good enough for debug purposes :)
         return $@"SwapChainDescriptorExtras {{
     AlphaMode = ""{AlphaMode}""
-    ViewFormatCount = ""{ViewFormatCount}""
 }}";
+    }
+
+    protected override unsafe void ReleaseUnmanagedResources()
+    {
+        SilkMarshal.Free((nint) Native.ViewFormats);
     }
 }

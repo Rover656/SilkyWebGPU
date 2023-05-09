@@ -3,6 +3,8 @@
 using Rover656.SilkyWebGPU;
 using Rover656.SilkyWebGPU.Chain;
 
+using System.Runtime.CompilerServices;
+
 using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
 using Silk.NET.WebGPU.Extensions.WGPU;
@@ -10,13 +12,14 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.ShaderModuleWGSLDescriptor"/>
-public class ManagedShaderModuleWGSLDescriptor : ChainedStruct<Silk.NET.WebGPU.ShaderModuleWGSLDescriptor>
+public class ShaderModuleWGSLDescriptor : ChainedStruct<Silk.NET.WebGPU.ShaderModuleWGSLDescriptor>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.ShaderModuleWGSLDescriptor.Code" />
     public unsafe string Code
     {
         get => SilkMarshal.PtrToString((nint) Native.Code);
+
         set
        {
            if (Native.Code != null)

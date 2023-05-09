@@ -17,6 +17,8 @@
         /// </summary>
         public const string NativePtrType = "WebGPUPtr";
         
+        public const string NativeChainableArrayType = "NativeChainableArray";
+        
         /// <summary>
         /// Native objects that are being treated like "classes"
         /// </summary>
@@ -28,7 +30,7 @@
             "SwapChain", "Texture", "TextureView"
         };
 
-        public static readonly string ManagedStructPrefix = "Managed";
+        public static readonly string ManagedStructPrefix = "";//""Managed";
         
         /// <summary>
         /// All structs that are wrapped by a managed type for handling chaining.
@@ -43,7 +45,7 @@
             "ShaderModuleDescriptor", "TextureDescriptor", "ComputePipelineDescriptor", "SupportedLimits",
             "DeviceDescriptor", "RenderPassDescriptor", "RenderPipelineDescriptor", "ShaderModuleWGSLDescriptor",
             
-            "VertexState", "PrimitiveState", "DepthStencilState", "FragmentState", "MultisampleState", "ColorTargetState",
+            "VertexState", "PrimitiveState", "DepthStencilState", "FragmentState", "MultisampleState", "ColorTargetState", "RenderPassColorAttachment",
 
             // Extensions
             "Extensions.WGPU.AdapterExtras",

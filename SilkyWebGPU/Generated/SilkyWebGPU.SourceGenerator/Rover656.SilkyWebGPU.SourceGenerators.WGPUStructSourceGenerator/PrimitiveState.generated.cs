@@ -3,6 +3,8 @@
 using Rover656.SilkyWebGPU;
 using Rover656.SilkyWebGPU.Chain;
 
+using System.Runtime.CompilerServices;
+
 using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
 using Silk.NET.WebGPU.Extensions.WGPU;
@@ -10,7 +12,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.PrimitiveState"/>
-public class ManagedPrimitiveState : ChainedStruct<Silk.NET.WebGPU.PrimitiveState>
+public class PrimitiveState : ChainedStruct<Silk.NET.WebGPU.PrimitiveState>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.PrimitiveState.Topology" />

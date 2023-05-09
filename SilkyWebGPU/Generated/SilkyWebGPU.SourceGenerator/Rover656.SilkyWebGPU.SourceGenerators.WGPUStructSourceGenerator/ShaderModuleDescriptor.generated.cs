@@ -3,6 +3,8 @@
 using Rover656.SilkyWebGPU;
 using Rover656.SilkyWebGPU.Chain;
 
+using System.Runtime.CompilerServices;
+
 using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
 using Silk.NET.WebGPU.Extensions.WGPU;
@@ -10,13 +12,14 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.ShaderModuleDescriptor"/>
-public class ManagedShaderModuleDescriptor : ChainedStruct<Silk.NET.WebGPU.ShaderModuleDescriptor>
+public class ShaderModuleDescriptor : ChainedStruct<Silk.NET.WebGPU.ShaderModuleDescriptor>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.ShaderModuleDescriptor.Label" />
     public unsafe string Label
     {
         get => SilkMarshal.PtrToString((nint) Native.Label);
+
         set
        {
            if (Native.Label != null)
@@ -25,24 +28,33 @@ public class ManagedShaderModuleDescriptor : ChainedStruct<Silk.NET.WebGPU.Shade
         }
     }
  
-    /// <seealso cref="Silk.NET.WebGPU.ShaderModuleDescriptor.HintCount" />
-    public uint HintCount
-    {
-        get => Native.HintCount;
-        set => Native.HintCount = value;
-    }
- 
-    /// <summary>
-    /// This is a currently unsupported type.
-    /// Native type: Silk.NET.WebGPU.ShaderModuleCompilationHint*.
-    /// Original name: Hints.
-    /// Is array type?: True.
-    /// </summary>
     /// <seealso cref="Silk.NET.WebGPU.ShaderModuleDescriptor.Hints" />
-    public unsafe Silk.NET.WebGPU.ShaderModuleCompilationHint* Hints
+    public unsafe Silk.NET.WebGPU.ShaderModuleCompilationHint? Hints
     {
-        get => Native.Hints;
-        set => Native.Hints = value;
+        get
+        {
+            if (Native.Hints == null)
+                return null;
+            return *Native.Hints;
+        }
+
+        set
+        {
+            // If we're setting this to null, wipe the memory.
+            if (!value.HasValue)
+            {
+                SilkMarshal.Free((nint) Native.Hints);
+                Native.Hints = null;
+                return;
+            }
+
+            // Because we will always own this handle, we allocate if its null, or we overwrite data.
+            if (Native.Hints == null)
+                Native.Hints = (Silk.NET.WebGPU.ShaderModuleCompilationHint*) SilkMarshal.Allocate(sizeof(Silk.NET.WebGPU.ShaderModuleCompilationHint));
+
+            // Write new data
+            *Native.Hints = value.Value;
+        }
     }
  
     public override unsafe string ToString()
@@ -50,12 +62,12 @@ public class ManagedShaderModuleDescriptor : ChainedStruct<Silk.NET.WebGPU.Shade
         // Write anything to the console we deem writable. This might not be accurate but its good enough for debug purposes :)
         return $@"ShaderModuleDescriptor {{
     Label = ""{Label}""
-    HintCount = ""{HintCount}""
 }}";
     }
 
     protected override unsafe void ReleaseUnmanagedResources()
     {
         SilkMarshal.Free((nint) Native.Label);
+        SilkMarshal.Free((nint) Native.Hints);
     }
 }
