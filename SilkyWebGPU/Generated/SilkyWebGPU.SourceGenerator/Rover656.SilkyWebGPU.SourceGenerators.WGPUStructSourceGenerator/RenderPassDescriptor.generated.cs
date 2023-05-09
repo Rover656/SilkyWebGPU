@@ -3,8 +3,6 @@
 using Rover656.SilkyWebGPU;
 using Rover656.SilkyWebGPU.Chain;
 
-using System.Runtime.CompilerServices;
-
 using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
 using Silk.NET.WebGPU.Extensions.WGPU;
@@ -99,35 +97,19 @@ public class RenderPassDescriptor : ChainedStruct<Silk.NET.WebGPU.RenderPassDesc
         set => Native.OcclusionQuerySet = value;
     }
  
+    /// <summary>
+    /// This is a currently unsupported type.
+    /// Native type: Silk.NET.WebGPU.RenderPassTimestampWrite*.
+    /// Original name: TimestampWrites.
+    /// Is array type?: true.
+    /// </summary>
     /// <seealso cref="Silk.NET.WebGPU.RenderPassDescriptor.TimestampWrites" />
-    public unsafe Silk.NET.WebGPU.RenderPassTimestampWrite? TimestampWrites
+    public unsafe Silk.NET.WebGPU.RenderPassTimestampWrite* TimestampWrites
     {
-        get
-        {
-            if (Native.TimestampWrites == null)
-                return null;
-            return *Native.TimestampWrites;
-        }
-
-        set
-        {
-            // If we're setting this to null, wipe the memory.
-            if (!value.HasValue)
-            {
-                SilkMarshal.Free((nint) Native.TimestampWrites);
-                Native.TimestampWrites = null;
-                return;
-            }
-
-            // Because we will always own this handle, we allocate if its null, or we overwrite data.
-            if (Native.TimestampWrites == null)
-                Native.TimestampWrites = (Silk.NET.WebGPU.RenderPassTimestampWrite*) SilkMarshal.Allocate(sizeof(Silk.NET.WebGPU.RenderPassTimestampWrite));
-
-            // Write new data
-            *Native.TimestampWrites = value.Value;
-        }
+        get => Native.TimestampWrites;
+        set => Native.TimestampWrites = value;
     }
- 
+
     public override unsafe string ToString()
     {
         // Write anything to the console we deem writable. This might not be accurate but its good enough for debug purposes :)
@@ -146,6 +128,5 @@ public class RenderPassDescriptor : ChainedStruct<Silk.NET.WebGPU.RenderPassDesc
     {
         SilkMarshal.Free((nint) Native.Label);
         SilkMarshal.Free((nint) Native.DepthStencilAttachment);
-        SilkMarshal.Free((nint) Native.TimestampWrites);
     }
 }

@@ -3,8 +3,6 @@
 using Rover656.SilkyWebGPU;
 using Rover656.SilkyWebGPU.Chain;
 
-using System.Runtime.CompilerServices;
-
 using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
 using Silk.NET.WebGPU.Extensions.WGPU;
@@ -35,64 +33,32 @@ public class VertexState : ChainedStruct<Silk.NET.WebGPU.VertexState>
         }
     }
  
+    /// <summary>
+    /// This is a currently unsupported type.
+    /// Native type: Silk.NET.WebGPU.ConstantEntry*.
+    /// Original name: Constants.
+    /// Is array type?: true.
+    /// </summary>
     /// <seealso cref="Silk.NET.WebGPU.VertexState.Constants" />
-    public unsafe Silk.NET.WebGPU.ConstantEntry? Constants
+    public unsafe Silk.NET.WebGPU.ConstantEntry* Constants
     {
-        get
-        {
-            if (Native.Constants == null)
-                return null;
-            return *Native.Constants;
-        }
-
-        set
-        {
-            // If we're setting this to null, wipe the memory.
-            if (!value.HasValue)
-            {
-                SilkMarshal.Free((nint) Native.Constants);
-                Native.Constants = null;
-                return;
-            }
-
-            // Because we will always own this handle, we allocate if its null, or we overwrite data.
-            if (Native.Constants == null)
-                Native.Constants = (Silk.NET.WebGPU.ConstantEntry*) SilkMarshal.Allocate(sizeof(Silk.NET.WebGPU.ConstantEntry));
-
-            // Write new data
-            *Native.Constants = value.Value;
-        }
+        get => Native.Constants;
+        set => Native.Constants = value;
     }
- 
+
+    /// <summary>
+    /// This is a currently unsupported type.
+    /// Native type: Silk.NET.WebGPU.VertexBufferLayout*.
+    /// Original name: Buffers.
+    /// Is array type?: true.
+    /// </summary>
     /// <seealso cref="Silk.NET.WebGPU.VertexState.Buffers" />
-    public unsafe Silk.NET.WebGPU.VertexBufferLayout? Buffers
+    public unsafe Silk.NET.WebGPU.VertexBufferLayout* Buffers
     {
-        get
-        {
-            if (Native.Buffers == null)
-                return null;
-            return *Native.Buffers;
-        }
-
-        set
-        {
-            // If we're setting this to null, wipe the memory.
-            if (!value.HasValue)
-            {
-                SilkMarshal.Free((nint) Native.Buffers);
-                Native.Buffers = null;
-                return;
-            }
-
-            // Because we will always own this handle, we allocate if its null, or we overwrite data.
-            if (Native.Buffers == null)
-                Native.Buffers = (Silk.NET.WebGPU.VertexBufferLayout*) SilkMarshal.Allocate(sizeof(Silk.NET.WebGPU.VertexBufferLayout));
-
-            // Write new data
-            *Native.Buffers = value.Value;
-        }
+        get => Native.Buffers;
+        set => Native.Buffers = value;
     }
- 
+
     public override unsafe string ToString()
     {
         // Write anything to the console we deem writable. This might not be accurate but its good enough for debug purposes :)
@@ -104,7 +70,5 @@ public class VertexState : ChainedStruct<Silk.NET.WebGPU.VertexState>
     protected override unsafe void ReleaseUnmanagedResources()
     {
         SilkMarshal.Free((nint) Native.EntryPoint);
-        SilkMarshal.Free((nint) Native.Constants);
-        SilkMarshal.Free((nint) Native.Buffers);
     }
 }

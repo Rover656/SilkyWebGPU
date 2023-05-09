@@ -3,8 +3,6 @@
 using Rover656.SilkyWebGPU;
 using Rover656.SilkyWebGPU.Chain;
 
-using System.Runtime.CompilerServices;
-
 using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
 using Silk.NET.WebGPU.Extensions.WGPU;
@@ -28,35 +26,19 @@ public class ShaderModuleDescriptor : ChainedStruct<Silk.NET.WebGPU.ShaderModule
         }
     }
  
+    /// <summary>
+    /// This is a currently unsupported type.
+    /// Native type: Silk.NET.WebGPU.ShaderModuleCompilationHint*.
+    /// Original name: Hints.
+    /// Is array type?: true.
+    /// </summary>
     /// <seealso cref="Silk.NET.WebGPU.ShaderModuleDescriptor.Hints" />
-    public unsafe Silk.NET.WebGPU.ShaderModuleCompilationHint? Hints
+    public unsafe Silk.NET.WebGPU.ShaderModuleCompilationHint* Hints
     {
-        get
-        {
-            if (Native.Hints == null)
-                return null;
-            return *Native.Hints;
-        }
-
-        set
-        {
-            // If we're setting this to null, wipe the memory.
-            if (!value.HasValue)
-            {
-                SilkMarshal.Free((nint) Native.Hints);
-                Native.Hints = null;
-                return;
-            }
-
-            // Because we will always own this handle, we allocate if its null, or we overwrite data.
-            if (Native.Hints == null)
-                Native.Hints = (Silk.NET.WebGPU.ShaderModuleCompilationHint*) SilkMarshal.Allocate(sizeof(Silk.NET.WebGPU.ShaderModuleCompilationHint));
-
-            // Write new data
-            *Native.Hints = value.Value;
-        }
+        get => Native.Hints;
+        set => Native.Hints = value;
     }
- 
+
     public override unsafe string ToString()
     {
         // Write anything to the console we deem writable. This might not be accurate but its good enough for debug purposes :)
@@ -68,6 +50,5 @@ public class ShaderModuleDescriptor : ChainedStruct<Silk.NET.WebGPU.ShaderModule
     protected override unsafe void ReleaseUnmanagedResources()
     {
         SilkMarshal.Free((nint) Native.Label);
-        SilkMarshal.Free((nint) Native.Hints);
     }
 }

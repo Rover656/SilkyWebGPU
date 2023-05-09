@@ -32,6 +32,8 @@
 
         public static readonly string ManagedStructPrefix = "";//""Managed";
         
+        // TODO: Wrapping of non-chainable structs with pointers n such in them...
+
         /// <summary>
         /// All structs that are wrapped by a managed type for handling chaining.
         /// </summary>
@@ -45,7 +47,7 @@
             "ShaderModuleDescriptor", "TextureDescriptor", "ComputePipelineDescriptor", "SupportedLimits",
             "DeviceDescriptor", "RenderPassDescriptor", "RenderPipelineDescriptor", "ShaderModuleWGSLDescriptor",
             
-            "VertexState", "PrimitiveState", "DepthStencilState", "FragmentState", "MultisampleState", "ColorTargetState", "RenderPassColorAttachment",
+            "VertexState", "PrimitiveState", "DepthStencilState", "FragmentState", "MultisampleState", "ColorTargetState", "RenderPassColorAttachment", "BindGroupEntry", "BindGroupLayoutEntry",
 
             // Extensions
             "Extensions.WGPU.AdapterExtras",

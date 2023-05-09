@@ -3,8 +3,6 @@
 using Rover656.SilkyWebGPU;
 using Rover656.SilkyWebGPU.Chain;
 
-using System.Runtime.CompilerServices;
-
 using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
 using Silk.NET.WebGPU.Extensions.WGPU;
@@ -28,35 +26,19 @@ public class DeviceDescriptor : ChainedStruct<Silk.NET.WebGPU.DeviceDescriptor>
         }
     }
  
+    /// <summary>
+    /// This is a currently unsupported type.
+    /// Native type: Silk.NET.WebGPU.FeatureName*.
+    /// Original name: RequiredFeatures.
+    /// Is array type?: true.
+    /// </summary>
     /// <seealso cref="Silk.NET.WebGPU.DeviceDescriptor.RequiredFeatures" />
-    public unsafe Silk.NET.WebGPU.FeatureName? RequiredFeatures
+    public unsafe Silk.NET.WebGPU.FeatureName* RequiredFeatures
     {
-        get
-        {
-            if (Native.RequiredFeatures == null)
-                return null;
-            return *Native.RequiredFeatures;
-        }
-
-        set
-        {
-            // If we're setting this to null, wipe the memory.
-            if (!value.HasValue)
-            {
-                SilkMarshal.Free((nint) Native.RequiredFeatures);
-                Native.RequiredFeatures = null;
-                return;
-            }
-
-            // Because we will always own this handle, we allocate if its null, or we overwrite data.
-            if (Native.RequiredFeatures == null)
-                Native.RequiredFeatures = (Silk.NET.WebGPU.FeatureName*) SilkMarshal.Allocate(sizeof(Silk.NET.WebGPU.FeatureName));
-
-            // Write new data
-            *Native.RequiredFeatures = value.Value;
-        }
+        get => Native.RequiredFeatures;
+        set => Native.RequiredFeatures = value;
     }
- 
+
     /// <seealso cref="Silk.NET.WebGPU.DeviceDescriptor.RequiredLimits" />
     public unsafe Silk.NET.WebGPU.RequiredLimits? RequiredLimits
     {
@@ -105,7 +87,6 @@ public class DeviceDescriptor : ChainedStruct<Silk.NET.WebGPU.DeviceDescriptor>
     protected override unsafe void ReleaseUnmanagedResources()
     {
         SilkMarshal.Free((nint) Native.Label);
-        SilkMarshal.Free((nint) Native.RequiredFeatures);
         SilkMarshal.Free((nint) Native.RequiredLimits);
     }
 }

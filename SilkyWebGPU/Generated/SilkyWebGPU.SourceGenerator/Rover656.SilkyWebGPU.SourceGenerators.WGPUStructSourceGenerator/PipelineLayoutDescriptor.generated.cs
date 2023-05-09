@@ -3,8 +3,6 @@
 using Rover656.SilkyWebGPU;
 using Rover656.SilkyWebGPU.Chain;
 
-using System.Runtime.CompilerServices;
-
 using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
 using Silk.NET.WebGPU.Extensions.WGPU;
@@ -32,7 +30,7 @@ public class PipelineLayoutDescriptor : ChainedStruct<Silk.NET.WebGPU.PipelineLa
     /// This is a currently unsupported type.
     /// Native type: Silk.NET.WebGPU.BindGroupLayout**.
     /// Original name: BindGroupLayouts.
-    /// Is array type?: True.
+    /// Is array type?: true.
     /// </summary>
     /// <seealso cref="Silk.NET.WebGPU.PipelineLayoutDescriptor.BindGroupLayouts" />
     public unsafe Silk.NET.WebGPU.BindGroupLayout** BindGroupLayouts

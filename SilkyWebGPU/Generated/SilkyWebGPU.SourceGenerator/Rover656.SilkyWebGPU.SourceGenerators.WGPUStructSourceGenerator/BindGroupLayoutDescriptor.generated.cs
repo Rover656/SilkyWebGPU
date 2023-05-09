@@ -3,8 +3,6 @@
 using Rover656.SilkyWebGPU;
 using Rover656.SilkyWebGPU.Chain;
 
-using System.Runtime.CompilerServices;
-
 using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
 using Silk.NET.WebGPU.Extensions.WGPU;
@@ -28,32 +26,38 @@ public class BindGroupLayoutDescriptor : ChainedStruct<Silk.NET.WebGPU.BindGroup
         }
     }
  
+    // Keep a copy around for disposal.
+    private NativeChainableArray<Silk.NET.WebGPU.BindGroupLayoutEntry> _Entries;
+
     /// <seealso cref="Silk.NET.WebGPU.BindGroupLayoutDescriptor.Entries" />
-    public unsafe Silk.NET.WebGPU.BindGroupLayoutEntry? Entries
+    /// <remarks>
+    /// TODO: Write this remark.
+    /// Summary: Will update if you modify the existing pointer, but if you replace it, it won't.
+    /// </remarks>
+    public unsafe NativeChainableArray<Silk.NET.WebGPU.BindGroupLayoutEntry> Entries
     {
-        get
-        {
-            if (Native.Entries == null)
-                return null;
-            return *Native.Entries;
-        }
+        // Limitations do not permit this to work... yet.
+        //get => Native.Entries;
 
         set
         {
-            // If we're setting this to null, wipe the memory.
-            if (!value.HasValue)
+            // Dispose any existing object.
+            _Entries?.Dispose();
+
+            // Allocate new chain -OR- set to default
+            if (value != null)
             {
-                SilkMarshal.Free((nint) Native.Entries);
+                Native.Entries = value.Ptr;
+                Native.EntryCount = value.Count;
+            }
+            else
+            {
                 Native.Entries = null;
-                return;
+                Native.EntryCount = 0;
             }
 
-            // Because we will always own this handle, we allocate if its null, or we overwrite data.
-            if (Native.Entries == null)
-                Native.Entries = (Silk.NET.WebGPU.BindGroupLayoutEntry*) SilkMarshal.Allocate(sizeof(Silk.NET.WebGPU.BindGroupLayoutEntry));
-
-            // Write new data
-            *Native.Entries = value.Value;
+            // Save for later disposal
+            _Entries = value;
         }
     }
  
@@ -65,9 +69,14 @@ public class BindGroupLayoutDescriptor : ChainedStruct<Silk.NET.WebGPU.BindGroup
 }}";
     }
 
+    public override unsafe void Dispose()
+    {
+        _Entries?.Dispose();
+        base.Dispose();
+    }
+
     protected override unsafe void ReleaseUnmanagedResources()
     {
         SilkMarshal.Free((nint) Native.Label);
-        SilkMarshal.Free((nint) Native.Entries);
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
@@ -8,7 +9,7 @@ namespace Rover656.SilkyWebGPU.SourceGenerators
 {
     // TODO: This does quite well already. Will want to tap into the NativeType annotations to grab more data.
     //       We want to atleast fix enums. The rest I'm happy to be manually controlled with partial classes.
-    
+
     /// <summary>
     /// Source generator for generating friendly struct wrappers.
     /// </summary>
@@ -63,13 +64,13 @@ public class {Constants.ManagedStructPrefix}{structFriendlyName} : ChainedStruct
                         // Skip anything to do with the chain.
                         if (field.Name == "Chain" || field.Name == "NextInChain")
                             continue;
-                        
+
                         // Skip this if this is an array counter.
                         if (IsArrayCounter(members, field))
                             continue;
-                        
-                        // TODO: What is the strategy for structures like Vertex and Primitive, which can also be chained...
-                        // And also for DepthStencil and Fragment. All in RenderPipelineDescriptor.
+
+                        // TODO: Enum arrays and pointer arrays.
+                        // PipelineStatistics is a false positive of a single pointer value.
 
                         if (field.Type.Kind != SymbolKind.PointerType)
                         {
@@ -130,66 +131,11 @@ public class {Constants.ManagedStructPrefix}{structFriendlyName} : ChainedStruct
                             var pointerType = field.Type as IPointerTypeSymbol;
 
                             // Check if this is a pointer array.
-                            var isArray = IsArrayField(members, field, out var arrayCountField);
-                            
-                            if (Constants.ClassObjects.Contains(pointerType.PointedAtType.Name))
+                            if (IsArrayField(members, field, out var arrayCountField))
                             {
-                                // We ball
-                                outputWriter.Append($@"
-    /// <seealso cref=""{Constants.WebGpuNS}.{structName}.{field.Name}"" />
-    public unsafe {Constants.NativePtrType}<{pointerType.PointedAtType}> {field.Name}
-    {{
-        get => {Constants.NativePtrType}<{pointerType.PointedAtType}>.Weak(Native.{field.Name});
-        set => Native.{field.Name} = value;
-    }}
- ");
-                            }
-                            else if (Constants.ManagedStructs.Contains(pointerType.PointedAtType.Name) && !isArray)
-                            {
-                                outputWriter.Append($@"
-    /// <summary>
-    /// This is raw access to the underlying field at its native type. This will likely be removed.
-    /// <summary/>
-    /// <seealso cref=""{Constants.WebGpuNS}.{structName}.{field.Name}"" />
-    public unsafe {field.Type} {field.Name}Raw
-    {{
-        get => Native.{field.Name};
-        set => Native.{field.Name} = value;
-    }}
- ");
-                                
-                                outputWriter.Append($@"
-    /// <seealso cref=""{Constants.WebGpuNS}.{structName}.{field.Name}"" />
-    /// <remarks>While this property is a reference type, this property will set by value.</remarks>
-    public unsafe {Constants.ManagedStructPrefix}{pointerType.PointedAtType.Name} {field.Name}
-    {{
-        // TODO: Due to limitations, these are only writeable for now... Use the Raw field instead for reading.
-        //get => Native.{field.Name};
-
-        set
-        {{
-            // Release any existing native pointer.
-            if (Native.{field.Name} != null)
-            {{
-                ChainHelper.FreeChain((ChainedStruct*) Native.{field.Name});
-                SilkMarshal.Free((nint) Native.{field.Name});
-            }}
-
-            // Allocate new!
-            if (value != null)
-                Native.{field.Name} = value.Alloc();
-            else Native.{field.Name} = null;
-        }}
-    }}
- ");
-                                
-                                // Add to both the marshal and chain free list
-                                chainFreePtr.Add(field.Name);
-                                marshalFree.Add(field.Name);
-                            }
-                            else if (Constants.ManagedStructs.Contains(pointerType.PointedAtType.Name) && isArray)
-                            {
-                                outputWriter.Append($@"
+                                if (Constants.ManagedStructs.Contains(pointerType.PointedAtType.Name))
+                                {
+                                    outputWriter.Append($@"
     // Keep a copy around for disposal.
     private {Constants.NativeChainableArrayType}<{pointerType.PointedAtType}> _{field.Name};
 
@@ -225,12 +171,87 @@ public class {Constants.ManagedStructPrefix}{structFriendlyName} : ChainedStruct
         }}
     }}
  ");
-                                managedDispose.Add(field.Name);
+                                    managedDispose.Add(field.Name);
+                                }
+                                else
+                                {
+                                    outputWriter.Append($@"
+    /// <summary>
+    /// This is a currently unsupported type.
+    /// Native type: {field.Type}.
+    /// Original name: {field.Name}.
+    /// Is array type?: true.
+    /// </summary>
+    /// <seealso cref=""{Constants.WebGpuNS}.{structName}.{field.Name}"" />
+    public unsafe {field.Type} {field.Name}
+    {{
+        get => Native.{field.Name};
+        set => Native.{field.Name} = value;
+    }}
+");
+                                }
                             }
-                            else if (pointerType.PointedAtType.Name == "Byte")
+                            else
                             {
-                                // This is a *string*
-                                outputWriter.Append($@"
+                                if (Constants.ClassObjects.Contains(pointerType.PointedAtType.Name))
+                                {
+                                    // We ball
+                                    outputWriter.Append($@"
+    /// <seealso cref=""{Constants.WebGpuNS}.{structName}.{field.Name}"" />
+    public unsafe {Constants.NativePtrType}<{pointerType.PointedAtType}> {field.Name}
+    {{
+        get => {Constants.NativePtrType}<{pointerType.PointedAtType}>.Weak(Native.{field.Name});
+        set => Native.{field.Name} = value;
+    }}
+ ");
+                                }
+                                else if (Constants.ManagedStructs.Contains(pointerType.PointedAtType.Name))
+                                {
+                                    outputWriter.Append($@"
+    /// <summary>
+    /// This is raw access to the underlying field at its native type. This will likely be removed.
+    /// <summary/>
+    /// <seealso cref=""{Constants.WebGpuNS}.{structName}.{field.Name}"" />
+    public unsafe {field.Type} {field.Name}Raw
+    {{
+        get => Native.{field.Name};
+        set => Native.{field.Name} = value;
+    }}
+ ");
+
+                                    outputWriter.Append($@"
+    /// <seealso cref=""{Constants.WebGpuNS}.{structName}.{field.Name}"" />
+    /// <remarks>While this property is a reference type, this property will set by value.</remarks>
+    public unsafe {Constants.ManagedStructPrefix}{pointerType.PointedAtType.Name} {field.Name}
+    {{
+        // TODO: Due to limitations, these are only writeable for now... Use the Raw field instead for reading.
+        //get => Native.{field.Name};
+
+        set
+        {{
+            // Release any existing native pointer.
+            if (Native.{field.Name} != null)
+            {{
+                ChainHelper.FreeChain((ChainedStruct*) Native.{field.Name});
+                SilkMarshal.Free((nint) Native.{field.Name});
+            }}
+
+            // Allocate new!
+            if (value != null)
+                Native.{field.Name} = value.Alloc();
+            else Native.{field.Name} = null;
+        }}
+    }}
+ ");
+
+                                    // Add to both the marshal and chain free list
+                                    chainFreePtr.Add(field.Name);
+                                    marshalFree.Add(field.Name);
+                                }
+                                else if (pointerType.PointedAtType.Name == "Byte")
+                                {
+                                    // This is a *string*
+                                    outputWriter.Append($@"
     /// <seealso cref=""{Constants.WebGpuNS}.{structName}.{field.Name}"" />
     public unsafe string {field.Name}
     {{
@@ -244,13 +265,15 @@ public class {Constants.ManagedStructPrefix}{structFriendlyName} : ChainedStruct
         }}
     }}
  ");
-                                
-                                // Remember to free this with the marshal!
-                                marshalFree.Add(field.Name);
-                            }
-                            else if (pointerType.PointedAtType.Kind != SymbolKind.PointerType)
-                            {
-                                outputWriter.Append($@"
+
+                                    // Remember to free this with the marshal!
+                                    marshalFree.Add(field.Name);
+                                }
+                                else if (pointerType.PointedAtType.Kind != SymbolKind.PointerType)
+                                {
+                                    if (field.Name == "PipelineStatistics")
+                                        Console.WriteLine("HI");
+                                    outputWriter.Append($@"
     /// <seealso cref=""{Constants.WebGpuNS}.{structName}.{field.Name}"" />
     public unsafe {pointerType.PointedAtType}? {field.Name}
     {{
@@ -280,17 +303,17 @@ public class {Constants.ManagedStructPrefix}{structFriendlyName} : ChainedStruct
         }}
     }}
  ");
-                                
-                                marshalFree.Add(field.Name);
-                            }
-                            else
-                            {
-                                outputWriter.Append($@"
+
+                                    marshalFree.Add(field.Name);
+                                }
+                                else
+                                {
+                                    outputWriter.Append($@"
     /// <summary>
     /// This is a currently unsupported type.
     /// Native type: {field.Type}.
     /// Original name: {field.Name}.
-    /// Is array type?: {isArray}.
+    /// Is array type?: false.
     /// </summary>
     /// <seealso cref=""{Constants.WebGpuNS}.{structName}.{field.Name}"" />
     public unsafe {field.Type} {field.Name}
@@ -299,24 +322,25 @@ public class {Constants.ManagedStructPrefix}{structFriendlyName} : ChainedStruct
         set => Native.{field.Name} = value;
     }}
 ");
+                                }
                             }
                         }
                     }
                 }
-                
+
                 outputWriter.AppendLine($@"
     public override unsafe string ToString()
     {{
         // Write anything to the console we deem writable. This might not be accurate but its good enough for debug purposes :)
         return $@""{structFriendlyName} {{{{");
-                
+
                 // Write a ToString method for debugging
                 foreach (var member in structSymbol.GetMembers())
                 {
                     // Ignore non-members
                     if (!(member is IFieldSymbol field))
                         continue;
-                    
+
                     // Skip anything to do with the chain.
                     if (field.Name == "Chain" || field.Name == "NextInChain" ||
                         (field.Type.Kind == SymbolKind.PointerType &&
@@ -328,7 +352,7 @@ public class {Constants.ManagedStructPrefix}{structFriendlyName} : ChainedStruct
                     // Add to ToString output.
                     outputWriter.AppendLine($"    {field.Name} = \"\"{{{field.Name}}}\"\"");
                 }
-                
+
                 outputWriter.AppendLine(@"}}"";
     }");
 
@@ -358,17 +382,18 @@ public class {Constants.ManagedStructPrefix}{structFriendlyName} : ChainedStruct
                     {
                         outputWriter.AppendLine($"        ChainHelper.FreeChain(ref Native.{fieldName});");
                     }
+
                     foreach (var fieldName in chainFreePtr)
                     {
                         outputWriter.AppendLine($"        ChainHelper.FreeChain((ChainedStruct*) Native.{fieldName});");
                     }
-                
+
                     // Marshal frees
                     foreach (var fieldName in marshalFree)
                     {
                         outputWriter.AppendLine($"        SilkMarshal.Free((nint) Native.{fieldName});");
                     }
-                
+
                     outputWriter.AppendLine(@"    }");
                 }
 
@@ -391,7 +416,7 @@ public class {Constants.ManagedStructPrefix}{structFriendlyName} : ChainedStruct
                     {
                         return true;
                     }
-                    
+
                     // TODO: Should probably only replace last, but it'll do for now.
                     if (searchField.Name == $"{field.Name.Replace("Count", "")}s")
                     {
@@ -419,7 +444,7 @@ public class {Constants.ManagedStructPrefix}{structFriendlyName} : ChainedStruct
                         countFieldName = field.Name + "Count";
                         return true;
                     }
-                    
+
                     if (searchField.Name == field.Name.TrimEnd('s') + "Count")
                     {
                         countFieldName = field.Name.TrimEnd('s') + "Count";

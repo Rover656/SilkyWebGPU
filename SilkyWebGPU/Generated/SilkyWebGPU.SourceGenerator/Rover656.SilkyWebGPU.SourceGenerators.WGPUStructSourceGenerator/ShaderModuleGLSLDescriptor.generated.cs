@@ -3,8 +3,6 @@
 using Rover656.SilkyWebGPU;
 using Rover656.SilkyWebGPU.Chain;
 
-using System.Runtime.CompilerServices;
-
 using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
 using Silk.NET.WebGPU.Extensions.WGPU;
@@ -35,35 +33,19 @@ public class ShaderModuleGLSLDescriptor : ChainedStruct<Silk.NET.WebGPU.Extensio
         }
     }
  
+    /// <summary>
+    /// This is a currently unsupported type.
+    /// Native type: Silk.NET.WebGPU.Extensions.WGPU.ShaderDefine*.
+    /// Original name: Defines.
+    /// Is array type?: true.
+    /// </summary>
     /// <seealso cref="Silk.NET.WebGPU.Extensions.WGPU.ShaderModuleGLSLDescriptor.Defines" />
-    public unsafe Silk.NET.WebGPU.Extensions.WGPU.ShaderDefine? Defines
+    public unsafe Silk.NET.WebGPU.Extensions.WGPU.ShaderDefine* Defines
     {
-        get
-        {
-            if (Native.Defines == null)
-                return null;
-            return *Native.Defines;
-        }
-
-        set
-        {
-            // If we're setting this to null, wipe the memory.
-            if (!value.HasValue)
-            {
-                SilkMarshal.Free((nint) Native.Defines);
-                Native.Defines = null;
-                return;
-            }
-
-            // Because we will always own this handle, we allocate if its null, or we overwrite data.
-            if (Native.Defines == null)
-                Native.Defines = (Silk.NET.WebGPU.Extensions.WGPU.ShaderDefine*) SilkMarshal.Allocate(sizeof(Silk.NET.WebGPU.Extensions.WGPU.ShaderDefine));
-
-            // Write new data
-            *Native.Defines = value.Value;
-        }
+        get => Native.Defines;
+        set => Native.Defines = value;
     }
- 
+
     public override unsafe string ToString()
     {
         // Write anything to the console we deem writable. This might not be accurate but its good enough for debug purposes :)
@@ -76,6 +58,5 @@ public class ShaderModuleGLSLDescriptor : ChainedStruct<Silk.NET.WebGPU.Extensio
     protected override unsafe void ReleaseUnmanagedResources()
     {
         SilkMarshal.Free((nint) Native.Code);
-        SilkMarshal.Free((nint) Native.Defines);
     }
 }

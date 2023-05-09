@@ -3,8 +3,6 @@
 using Rover656.SilkyWebGPU;
 using Rover656.SilkyWebGPU.Chain;
 
-using System.Runtime.CompilerServices;
-
 using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
 using Silk.NET.WebGPU.Extensions.WGPU;
@@ -42,35 +40,19 @@ public class QuerySetDescriptor : ChainedStruct<Silk.NET.WebGPU.QuerySetDescript
         set => Native.Count = value;
     }
  
+    /// <summary>
+    /// This is a currently unsupported type.
+    /// Native type: Silk.NET.WebGPU.PipelineStatisticName*.
+    /// Original name: PipelineStatistics.
+    /// Is array type?: true.
+    /// </summary>
     /// <seealso cref="Silk.NET.WebGPU.QuerySetDescriptor.PipelineStatistics" />
-    public unsafe Silk.NET.WebGPU.PipelineStatisticName? PipelineStatistics
+    public unsafe Silk.NET.WebGPU.PipelineStatisticName* PipelineStatistics
     {
-        get
-        {
-            if (Native.PipelineStatistics == null)
-                return null;
-            return *Native.PipelineStatistics;
-        }
-
-        set
-        {
-            // If we're setting this to null, wipe the memory.
-            if (!value.HasValue)
-            {
-                SilkMarshal.Free((nint) Native.PipelineStatistics);
-                Native.PipelineStatistics = null;
-                return;
-            }
-
-            // Because we will always own this handle, we allocate if its null, or we overwrite data.
-            if (Native.PipelineStatistics == null)
-                Native.PipelineStatistics = (Silk.NET.WebGPU.PipelineStatisticName*) SilkMarshal.Allocate(sizeof(Silk.NET.WebGPU.PipelineStatisticName));
-
-            // Write new data
-            *Native.PipelineStatistics = value.Value;
-        }
+        get => Native.PipelineStatistics;
+        set => Native.PipelineStatistics = value;
     }
- 
+
     public override unsafe string ToString()
     {
         // Write anything to the console we deem writable. This might not be accurate but its good enough for debug purposes :)
@@ -84,6 +66,5 @@ public class QuerySetDescriptor : ChainedStruct<Silk.NET.WebGPU.QuerySetDescript
     protected override unsafe void ReleaseUnmanagedResources()
     {
         SilkMarshal.Free((nint) Native.Label);
-        SilkMarshal.Free((nint) Native.PipelineStatistics);
     }
 }
