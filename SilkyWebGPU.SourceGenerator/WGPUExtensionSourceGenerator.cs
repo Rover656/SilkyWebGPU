@@ -22,7 +22,6 @@ namespace Rover656.SilkyWebGPU.SourceGenerators
         /// <summary>
         /// Setting this to false obliterates any raw pointers. They will all be replaced by the native pointer type, or hidden to allow other overloads space.
         /// This basically forces the full use of the abstraction layer.
-        /// TODO: Decide how this should be configured :P
         /// </summary>
         private const bool AllowStrayPointers = true; // TODO: Needs to be enabled to be able to set null on userdatum nicely.
 
@@ -181,9 +180,7 @@ public static partial class {ClassName}
         }
 
         #region Writers
-
-        // TODO: Modularise Writers. Then we can start to work on automatically unpacking the out parameters into return types
-
+        
         private string GetMethodDocString(IMethodSymbol method)
         {
             // TODO /// <inheritdoc cref=""{Constants.WebGpuNS}.WebGPU.{method.Name}""/>
@@ -252,7 +249,6 @@ public static partial class {ClassName}
             return $"        WGPU.API.{method.Name}({method.Parameters[0].Name}{argumentList});";
         }
         
-        // TODO: Now we're unable to pass null to these methods :(
         // One way could be to do the null check and pass along to an alternative body
         private StringBuilder GetChainableBody(IMethodSymbol method, string returnType, string body, int startIndex = 0)
         {
@@ -265,7 +261,7 @@ public static partial class {ClassName}
             
             // Forward declare return variable
             if (!method.ReturnsVoid)
-                stringBuilder.AppendLine($"        {returnType} ret;"); // TODO: Handle the return type better. Take it as a parameter and split off the
+                stringBuilder.AppendLine($"        {returnType} ret;");
             
             for (int i = startIndex; i < method.Parameters.Length; i++)
             {
@@ -401,6 +397,7 @@ public static partial class {ClassName}
         private string GetArgumentSuffix(IParameterSymbol parameterSymbol)
         {
             // For references to pointers.
+            // TODO: This needs fixed as it's creating false-positives for Queue.Submit accepting multiple command buffers. Need to detect arrays instead.
             if (parameterSymbol.RefKind == RefKind.Ref)
             {
                 if (parameterSymbol.Type is IPointerTypeSymbol pointerType)
@@ -411,8 +408,6 @@ public static partial class {ClassName}
                     }
                 }
             }
-
-            // TODO: Are there any others we may need?
 
             return "";
         }
@@ -456,7 +451,6 @@ public static partial class {ClassName}
 
         private StringBuilder GetArgumentList(IMethodSymbol method, int startIndex = 0, bool resolveChainable = false, bool nullChainables = false)
         {
-            // TODO: Is this where we will add the replacement for the descriptors?
             var argumentList = new StringBuilder();
             for (var i = startIndex; i < method.Parameters.Length; i++)
             {
