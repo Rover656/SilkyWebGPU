@@ -9,5 +9,5 @@ Chainable structs have been wrapped to ensure they can be constructed easily and
 
 ## ToDo
 - [ ] More type support for the struct generator
-- [ ] Ability to reverse chained structs back into managed
+- [x] Ability to reverse chained structs back into managed
 - [ ] Tidy up the WGPU singleton, it's not a great design.
