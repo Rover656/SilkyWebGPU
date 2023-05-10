@@ -11,6 +11,9 @@ Chainable structs have been wrapped to ensure they can be constructed easily and
 - [ ] More type support for the struct generator
 - [x] Ability to reverse chained structs back into managed
 - [ ] Tidy up the WGPU singleton, it's not a great design.
+- [ ] Implement Dawn extensions
+- [ ] Separate Dawn and WGPU extensions into separate output projects
+- [ ] Get this on Nuget
 
 ## Why?
 I personally wasn't happy with how the raw API was laid out, so I decided to write this to wrap the Silk.NET APIs in a more C# friendly way. Here are some examples of before and after's.
