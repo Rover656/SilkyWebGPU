@@ -26,7 +26,10 @@ public unsafe class WebGPUPtr<T> : IDisposable
         return weak;
     }
 
-    public static implicit operator T*(WebGPUPtr<T> ptr) => ptr._ptr;
+    public static implicit operator T*(WebGPUPtr<T> ptr)
+    {
+        return ptr == null! ? null : ptr._ptr;
+    }
     
     public ref T* AsRef()
     {
@@ -53,8 +56,10 @@ public unsafe class WebGPUPtr<T> : IDisposable
     
     private void ReleaseUnmanagedResources()
     {
+        if (_ptr == null) return;
         if (!_weak)
             WGPU.Dispose(this);
+        _ptr = null;
     }
 
     public void Dispose()

@@ -3,7 +3,7 @@ using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
 using Silk.NET.WebGPU.Extensions.WGPU;
 
-namespace Rover656.SilkyWebGPU.Chain;
+namespace Rover656.SilkyWebGPU.Native.Chain;
 
 /**
  * Helper methods for dealing with chains.

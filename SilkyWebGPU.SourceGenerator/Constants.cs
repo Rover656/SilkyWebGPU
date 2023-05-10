@@ -1,4 +1,6 @@
-﻿namespace Rover656.SilkyWebGPU.SourceGenerators
+﻿using System.Linq;
+
+namespace Rover656.SilkyWebGPU.SourceGenerators
 {
     public class Constants
     {
@@ -17,7 +19,9 @@
         /// </summary>
         public const string NativePtrType = "WebGPUPtr";
         
-        public const string NativeChainableArrayType = "NativeChainableArray";
+        public const string NativeChainableArrayType = "NativeArray";
+        public const string NativePointerArrayType = "NativePtrArray";
+        public const string ChainedStructBaseClass = "ChainedStruct";
         
         /// <summary>
         /// Native objects that are being treated like "classes"
@@ -37,17 +41,21 @@
         /// <summary>
         /// All structs that are wrapped by a managed type for handling chaining.
         /// </summary>
-        public static readonly string[] ManagedStructs =
+        public static readonly string[] ChainedStructs =
         {
-            "AdapterProperties", "BindGroupLayoutDescriptor", "BufferBindingLayout",
-            "BufferDescriptor", "CommandBufferDescriptor", "CommandEncoderDescriptor", "InstanceDescriptor",
-            "PipelineLayoutDescriptor", "QuerySetDescriptor", "RenderBundleDescriptor", "RenderBundleEncoderDescriptor",
-            "RequestAdapterOptions", "SamplerDescriptor", "SurfaceDescriptor", "SwapChainDescriptor",
-            "TextureViewDescriptor", "BindGroupDescriptor", "ComputePassDescriptor", "ProgrammableStageDescriptor",
-            "ShaderModuleDescriptor", "TextureDescriptor", "ComputePipelineDescriptor", "SupportedLimits",
-            "DeviceDescriptor", "RenderPassDescriptor", "RenderPipelineDescriptor", "ShaderModuleWGSLDescriptor",
-            
-            "VertexState", "PrimitiveState", "DepthStencilState", "FragmentState", "MultisampleState", "ColorTargetState", "RenderPassColorAttachment", "BindGroupEntry", "BindGroupLayoutEntry",
+            "AdapterProperties", "BindGroupDescriptor", "BindGroupEntry", "BindGroupLayoutDescriptor", "BindGroupLayoutEntry", "BufferBindingLayout",
+            "BufferDescriptor", "ColorTargetState", "CommandBufferDescriptor", "CommandEncoderDescriptor", "CompilationInfo", "CompilationMessage",
+            "ComputePassDescriptor", "ComputePipelineDescriptor", "ConstantEntry", "DepthStencilState", "DeviceDescriptor", "FragmentState",
+            "ImageCopyBuffer", "ImageCopyTexture", "InstanceDescriptor", "MultisampleState", "PipelineLayoutDescriptor",
+            "PrimitiveDepthClipControl", "PrimitiveState", "ProgrammableStageDescriptor", "QuerySetDescriptor",
+            "QueueDescriptor", "RenderBundleDescriptor", "RenderBundleEncoderDescriptor", "RenderPassDescriptor", "RenderPassDescriptorMaxDrawCount",
+            "RenderPipelineDescriptor", "RequestAdapterOptions", "RequiredLimits", "SamplerBindingLayout", "SamplerDescriptor",
+            "ShaderModuleCompilationHint", "ShaderModuleDescriptor", "ShaderModuleSPIRVDescriptor", "ShaderModuleWGSLDescriptor",
+            "StorageTextureBindingLayout", "SupportedLimits", "SurfaceDescriptor", "SurfaceDescriptorFromAndroidNativeWindow",
+            "SurfaceDescriptorFromCanvasHTMLSelector", "SurfaceDescriptorFromMetalLayer", "SurfaceDescriptorFromWaylandSurface",
+            "SurfaceDescriptorFromWindowsHWND", "SurfaceDescriptorFromXcbWindow", "SurfaceDescriptorFromXlibWindow",
+            "SwapChainDescriptor", "TextureBindingLayout", "TextureDataLayout", "TextureDescriptor", "TextureViewDescriptor",
+            "VertexState",
 
             // Extensions
             "Extensions.WGPU.AdapterExtras",
@@ -55,5 +63,17 @@
             "Extensions.WGPU.PipelineLayoutExtras", "Extensions.WGPU.ShaderModuleGLSLDescriptor",
             "Extensions.WGPU.SupportedLimitsExtras", "Extensions.WGPU.SwapChainDescriptorExtras"
         };
+
+        /// <summary>
+        /// All structs that are not chainable that can be wrapped.
+        /// TODO: Remove (but comment) those which do not need to be wrapped.
+        /// </summary>
+        public static readonly string[] WrappedStructs =
+        {
+            "BlendComponent", "BlendState", "Color", "ComputePassTimestampWrite", "Extent3D", "Limits", "Origin3D", "RenderPassColorAttachment",
+            "RenderPassDepthStencilAttachment", "RenderPassTimestampWrite", "StencilFaceState", "VertexAttribute", "VertexBufferLayout",
+        };
+
+        public static readonly string[] ManagedStructs = ChainedStructs.Concat(WrappedStructs).ToArray();
     }
 }

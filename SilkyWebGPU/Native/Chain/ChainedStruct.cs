@@ -2,7 +2,7 @@
 using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
 
-namespace Rover656.SilkyWebGPU.Chain;
+namespace Rover656.SilkyWebGPU.Native.Chain;
 
 /// <summary>
 /// A base class for auto generated wrappers of chained structs.
@@ -32,7 +32,9 @@ public abstract class ChainedStruct<T> : ChainableStruct, IDisposable
         var nativeCopy = Native;
 
         // Build the chain
-        Next?.AddToChain((ChainedStruct*)&nativeCopy);
+        if (Next != null)
+            Next.AddToChain((ChainedStruct*)&nativeCopy);
+        else ((ChainedStruct*)&nativeCopy)->Next = null;
 
         // Return the copy.
         return nativeCopy;

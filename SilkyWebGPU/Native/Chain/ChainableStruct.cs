@@ -1,6 +1,6 @@
 ﻿using Silk.NET.WebGPU;
 
-namespace Rover656.SilkyWebGPU.Chain;
+namespace Rover656.SilkyWebGPU.Native.Chain;
 
 /**
  * A helper class for a struct that is chainable.

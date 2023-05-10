@@ -94,6 +94,8 @@ fn fs_main() -> @location(0) vec4<f32> {
             // Get limits
             _Adapter.GetLimits(ref limits);
 
+            Console.WriteLine(limits);
+
             // Breakpoint here to take a look.
             limits.Dispose();
         }
@@ -281,7 +283,7 @@ fn fs_main() -> @location(0) vec4<f32> {
 
         queue.Submit(1, ref commandBuffer);
         _SwapChain.Present();
-        // _Window.SwapBuffers();
+        _window.SwapBuffers();
     }
     
     private static void PrintAdapterFeatures()

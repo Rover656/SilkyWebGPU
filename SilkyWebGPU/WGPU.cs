@@ -1,4 +1,4 @@
-﻿using Rover656.SilkyWebGPU.Chain;
+﻿using Rover656.SilkyWebGPU.Native.Chain;
 using Silk.NET.WebGPU;
 using Silk.NET.WebGPU.Extensions.Disposal;
 
