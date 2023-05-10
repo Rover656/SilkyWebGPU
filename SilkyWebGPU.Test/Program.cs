@@ -149,24 +149,21 @@ fn fs_main() -> @location(0) vec4<f32> {
                 Operation = BlendOperation.Add
             }
         };
-
-        // This needs to be wrapped
-        var colorTargetState = new ColorTargetState
+        
+        using var colorTargetState = new ColorTargetState
         {
             Format    = _SwapChainFormat,
             Blend     = blendState,
             WriteMask = ColorWriteMask.All
         };
 
-        // This needs wrapped
-        var fragmentState = new FragmentState
+        using var fragmentState = new FragmentState
         {
             Module      = _Shader,
             Targets     = new[] {colorTargetState},
             EntryPoint  = "fs_main"
         };
 
-        // And this needs to be able to accept wrapped values...
         using var renderPipelineDescriptor = new RenderPipelineDescriptor
         {
             Vertex = new VertexState
