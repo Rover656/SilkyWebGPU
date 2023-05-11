@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.ComputePipelineDescriptor"/>
-public class ComputePipelineDescriptor : ChainedStruct<Silk.NET.WebGPU.ComputePipelineDescriptor>
+public class ComputePipelineDescriptor : NewNewChainedStruct<Silk.NET.WebGPU.ComputePipelineDescriptor>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.ComputePipelineDescriptor.Label" />
@@ -46,24 +46,41 @@ public class ComputePipelineDescriptor : ChainedStruct<Silk.NET.WebGPU.ComputePi
     /// </remarks>
     public unsafe ProgrammableStageDescriptor Compute
     {
-        // TODO: Due to limitations, these are only writeable for now... Use the Raw field instead for reading.
-        //get => Native.Compute;
+        get
+        {
+            // This hasn't been set.
+            // A chainable will never be allocated on the library side, so it must be set from managed code before being fetched.
+            if (_Compute == null)
+                return null;
+            
+            // Load the current native value back into the managed clone
+            fixed (Silk.NET.WebGPU.ProgrammableStageDescriptor* native = &_Compute.Native)
+            {
+                _Compute.Update((ChainedStruct*) native);
+            }
+
+            // Return a clone (so modifications don't break this).
+            return (ProgrammableStageDescriptor) _Compute.Clone();
+        }
 
         set
         {
             // Dispose any existing object.
             _Compute?.Dispose();
+            
+            // Save a clone. This clone will manage its own memory separate to the value passed
+            _Compute = value != null ? (ProgrammableStageDescriptor) value.Clone() : null;
+
+            // Dispose the value, it has been consumed
+            value?.Dispose();
 
             // Attempt to free any existing chains
             ChainHelper.FreeChain(ref Native.Compute);
 
             // Allocate new chain -OR- set to default
             if (value != null)
-                Native.Compute = value.GetWithChain();
+                Native.Compute = value.Get();
             else Native.Compute = default;
-
-            // Save
-            _Compute = value;
         }
     }
  
@@ -87,5 +104,13 @@ public class ComputePipelineDescriptor : ChainedStruct<Silk.NET.WebGPU.ComputePi
         ChainHelper.FreeChain(ref Native.Compute);
         SilkMarshal.Free((nint) Native.Label);
         Native.Label = null;
+        base.ReleaseUnmanagedResources();
+    }
+    internal override ComputePipelineDescriptor Clone()
+    {
+        var clone = new ComputePipelineDescriptor();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

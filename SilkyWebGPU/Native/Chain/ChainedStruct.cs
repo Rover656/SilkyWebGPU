@@ -98,7 +98,7 @@ public abstract class ChainedStruct<T> : ChainableStruct, IDisposable
     protected internal override unsafe void AddToChain(ChainedStruct* chainedStruct)
     {
         // Add self to chain
-        chainedStruct = ChainHelper.AddToChain(chainedStruct, Native, ChainHelper.GetSType(this));
+        chainedStruct = ChainHelper.AddToChain(chainedStruct, Native, ChainHelper.GetSType(Native));
 
         // Add next to self
         Next?.AddToChain(chainedStruct);

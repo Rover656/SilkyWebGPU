@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.Extensions.WGPU.DeviceExtras"/>
-public class DeviceExtras : ChainedStruct<Silk.NET.WebGPU.Extensions.WGPU.DeviceExtras>
+public class DeviceExtras : NewNewChainedStruct<Silk.NET.WebGPU.Extensions.WGPU.DeviceExtras>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.Extensions.WGPU.DeviceExtras.TracePath" />
@@ -39,5 +39,13 @@ public class DeviceExtras : ChainedStruct<Silk.NET.WebGPU.Extensions.WGPU.Device
     {
         SilkMarshal.Free((nint) Native.TracePath);
         Native.TracePath = null;
+        base.ReleaseUnmanagedResources();
+    }
+    internal override DeviceExtras Clone()
+    {
+        var clone = new DeviceExtras();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

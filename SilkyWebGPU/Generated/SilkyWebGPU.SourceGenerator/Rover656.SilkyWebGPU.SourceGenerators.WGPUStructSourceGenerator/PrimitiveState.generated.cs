@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.PrimitiveState"/>
-public class PrimitiveState : ChainedStruct<Silk.NET.WebGPU.PrimitiveState>
+public class PrimitiveState : NewNewChainedStruct<Silk.NET.WebGPU.PrimitiveState>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.PrimitiveState.Topology" />
@@ -51,5 +51,12 @@ public class PrimitiveState : ChainedStruct<Silk.NET.WebGPU.PrimitiveState>
     FrontFace = ""{FrontFace}""
     CullMode = ""{CullMode}""
 }}";
+    }
+    internal override PrimitiveState Clone()
+    {
+        var clone = new PrimitiveState();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

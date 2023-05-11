@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.SurfaceDescriptorFromXcbWindow"/>
-public class SurfaceDescriptorFromXcbWindow : ChainedStruct<Silk.NET.WebGPU.SurfaceDescriptorFromXcbWindow>
+public class SurfaceDescriptorFromXcbWindow : NewNewChainedStruct<Silk.NET.WebGPU.SurfaceDescriptorFromXcbWindow>
 {
 
     /// <summary>
@@ -40,5 +40,12 @@ public class SurfaceDescriptorFromXcbWindow : ChainedStruct<Silk.NET.WebGPU.Surf
         return $@"SurfaceDescriptorFromXcbWindow {{
     Window = ""{Window}""
 }}";
+    }
+    internal override SurfaceDescriptorFromXcbWindow Clone()
+    {
+        var clone = new SurfaceDescriptorFromXcbWindow();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

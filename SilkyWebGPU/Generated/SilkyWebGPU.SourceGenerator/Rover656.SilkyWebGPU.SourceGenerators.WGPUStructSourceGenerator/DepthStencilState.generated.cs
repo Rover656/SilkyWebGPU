@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.DepthStencilState"/>
-public class DepthStencilState : ChainedStruct<Silk.NET.WebGPU.DepthStencilState>
+public class DepthStencilState : NewNewChainedStruct<Silk.NET.WebGPU.DepthStencilState>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.DepthStencilState.Format" />
@@ -99,5 +99,12 @@ public class DepthStencilState : ChainedStruct<Silk.NET.WebGPU.DepthStencilState
     DepthBiasSlopeScale = ""{DepthBiasSlopeScale}""
     DepthBiasClamp = ""{DepthBiasClamp}""
 }}";
+    }
+    internal override DepthStencilState Clone()
+    {
+        var clone = new DepthStencilState();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

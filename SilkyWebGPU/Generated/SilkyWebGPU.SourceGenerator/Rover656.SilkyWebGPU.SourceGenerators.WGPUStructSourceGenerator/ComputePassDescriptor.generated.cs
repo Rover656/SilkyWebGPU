@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.ComputePassDescriptor"/>
-public class ComputePassDescriptor : ChainedStruct<Silk.NET.WebGPU.ComputePassDescriptor>
+public class ComputePassDescriptor : NewNewChainedStruct<Silk.NET.WebGPU.ComputePassDescriptor>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.ComputePassDescriptor.Label" />
@@ -45,7 +45,7 @@ public class ComputePassDescriptor : ChainedStruct<Silk.NET.WebGPU.ComputePassDe
             // Dispose any existing object.
             _TimestampWrites?.Dispose();
 
-            // Allocate new chain -OR- set to default
+            // Set array
             if (value != null)
             {
                 Native.TimestampWrites = value.Ptr;
@@ -81,5 +81,13 @@ public class ComputePassDescriptor : ChainedStruct<Silk.NET.WebGPU.ComputePassDe
     {
         SilkMarshal.Free((nint) Native.Label);
         Native.Label = null;
+        base.ReleaseUnmanagedResources();
+    }
+    internal override ComputePassDescriptor Clone()
+    {
+        var clone = new ComputePassDescriptor();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.BufferBindingLayout"/>
-public class BufferBindingLayout : ChainedStruct<Silk.NET.WebGPU.BufferBindingLayout>
+public class BufferBindingLayout : NewNewChainedStruct<Silk.NET.WebGPU.BufferBindingLayout>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.BufferBindingLayout.Type" />
@@ -43,5 +43,12 @@ public class BufferBindingLayout : ChainedStruct<Silk.NET.WebGPU.BufferBindingLa
     HasDynamicOffset = ""{HasDynamicOffset}""
     MinBindingSize = ""{MinBindingSize}""
 }}";
+    }
+    internal override BufferBindingLayout Clone()
+    {
+        var clone = new BufferBindingLayout();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

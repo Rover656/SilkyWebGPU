@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.CompilationInfo"/>
-public class CompilationInfo : ChainedStruct<Silk.NET.WebGPU.CompilationInfo>
+public class CompilationInfo : NewNewChainedStruct<Silk.NET.WebGPU.CompilationInfo>
 {
 
     // Keep a copy around for disposal.
@@ -32,7 +32,7 @@ public class CompilationInfo : ChainedStruct<Silk.NET.WebGPU.CompilationInfo>
             // Dispose any existing object.
             _Messages?.Dispose();
 
-            // Allocate new chain -OR- set to default
+            // Set array
             if (value != null)
             {
                 Native.Messages = value.Ptr;
@@ -61,5 +61,12 @@ public class CompilationInfo : ChainedStruct<Silk.NET.WebGPU.CompilationInfo>
         _Messages?.Dispose();
         _Messages = null;
         base.Dispose();
+    }
+    internal override CompilationInfo Clone()
+    {
+        var clone = new CompilationInfo();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

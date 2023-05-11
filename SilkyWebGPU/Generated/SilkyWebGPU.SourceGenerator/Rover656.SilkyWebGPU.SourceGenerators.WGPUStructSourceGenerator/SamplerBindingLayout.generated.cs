@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.SamplerBindingLayout"/>
-public class SamplerBindingLayout : ChainedStruct<Silk.NET.WebGPU.SamplerBindingLayout>
+public class SamplerBindingLayout : NewNewChainedStruct<Silk.NET.WebGPU.SamplerBindingLayout>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.SamplerBindingLayout.Type" />
@@ -27,5 +27,12 @@ public class SamplerBindingLayout : ChainedStruct<Silk.NET.WebGPU.SamplerBinding
         return $@"SamplerBindingLayout {{
     Type = ""{Type}""
 }}";
+    }
+    internal override SamplerBindingLayout Clone()
+    {
+        var clone = new SamplerBindingLayout();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

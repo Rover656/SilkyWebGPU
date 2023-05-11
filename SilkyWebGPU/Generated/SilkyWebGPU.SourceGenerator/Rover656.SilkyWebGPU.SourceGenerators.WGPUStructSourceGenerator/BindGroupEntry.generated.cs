@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.BindGroupEntry"/>
-public class BindGroupEntry : ChainedStruct<Silk.NET.WebGPU.BindGroupEntry>
+public class BindGroupEntry : NewNewChainedStruct<Silk.NET.WebGPU.BindGroupEntry>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.BindGroupEntry.Binding" />
@@ -64,5 +64,12 @@ public class BindGroupEntry : ChainedStruct<Silk.NET.WebGPU.BindGroupEntry>
     Offset = ""{Offset}""
     Size = ""{Size}""
 }}";
+    }
+    internal override BindGroupEntry Clone()
+    {
+        var clone = new BindGroupEntry();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

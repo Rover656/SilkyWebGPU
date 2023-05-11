@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.Extensions.WGPU.SupportedLimitsExtras"/>
-public class SupportedLimitsExtras : ChainedStruct<Silk.NET.WebGPU.Extensions.WGPU.SupportedLimitsExtras>
+public class SupportedLimitsExtras : NewNewChainedStruct<Silk.NET.WebGPU.Extensions.WGPU.SupportedLimitsExtras>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.Extensions.WGPU.SupportedLimitsExtras.MaxPushConstantSize" />
@@ -27,5 +27,12 @@ public class SupportedLimitsExtras : ChainedStruct<Silk.NET.WebGPU.Extensions.WG
         return $@"SupportedLimitsExtras {{
     MaxPushConstantSize = ""{MaxPushConstantSize}""
 }}";
+    }
+    internal override SupportedLimitsExtras Clone()
+    {
+        var clone = new SupportedLimitsExtras();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

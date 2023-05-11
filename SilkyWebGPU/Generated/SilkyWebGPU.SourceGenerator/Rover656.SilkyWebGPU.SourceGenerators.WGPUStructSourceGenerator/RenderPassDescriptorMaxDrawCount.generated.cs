@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.RenderPassDescriptorMaxDrawCount"/>
-public class RenderPassDescriptorMaxDrawCount : ChainedStruct<Silk.NET.WebGPU.RenderPassDescriptorMaxDrawCount>
+public class RenderPassDescriptorMaxDrawCount : NewNewChainedStruct<Silk.NET.WebGPU.RenderPassDescriptorMaxDrawCount>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.RenderPassDescriptorMaxDrawCount.MaxDrawCount" />
@@ -27,5 +27,12 @@ public class RenderPassDescriptorMaxDrawCount : ChainedStruct<Silk.NET.WebGPU.Re
         return $@"RenderPassDescriptorMaxDrawCount {{
     MaxDrawCount = ""{MaxDrawCount}""
 }}";
+    }
+    internal override RenderPassDescriptorMaxDrawCount Clone()
+    {
+        var clone = new RenderPassDescriptorMaxDrawCount();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

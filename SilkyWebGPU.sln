@@ -3,11 +3,19 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33627.172
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SilkyWebGPU", "SilkyWebGPU\SilkyWebGPU.csproj", "{8066AFC4-5DB3-41E6-A0F0-568B20AABC2E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SilkyWebGPU", "SilkyWebGPU\SilkyWebGPU.csproj", "{8066AFC4-5DB3-41E6-A0F0-568B20AABC2E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SilkyWebGPU.SourceGenerator", "SilkyWebGPU.SourceGenerator\SilkyWebGPU.SourceGenerator.csproj", "{54DACF24-C7FE-495F-A6A7-7D761834ED51}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SilkyWebGPU.SourceGenerator", "SilkyWebGPU.SourceGenerator\SilkyWebGPU.SourceGenerator.csproj", "{54DACF24-C7FE-495F-A6A7-7D761834ED51}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SilkyWebGPU.Test", "SilkyWebGPU.Test\SilkyWebGPU.Test.csproj", "{00616FE6-085B-4D8C-8866-0A811E91D28B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SilkyWebGPU.Test", "SilkyWebGPU.Test\SilkyWebGPU.Test.csproj", "{00616FE6-085B-4D8C-8866-0A811E91D28B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SilkyWebGPU.Extensions.WGPU", "SilkyWebGPU.Extensions.WGPU\SilkyWebGPU.Extensions.WGPU.csproj", "{F9AA038B-2C9F-477B-BB95-A428E2B5D396}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Generators", "Generators", "{88E7D1FD-508C-4DDD-9DF9-5C3D2F0CC167}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{072F9CE9-4368-4053-9B21-23FBA48D4904}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SilkyWebGPU.Extensions.WGPU.SourceGenerator", "SilkyWebGPU.Extensions.WGPU.SourceGenerator\SilkyWebGPU.Extensions.WGPU.SourceGenerator.csproj", "{9ABC64AF-7471-40EF-9DDB-85865A19A1C6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,9 +35,23 @@ Global
 		{00616FE6-085B-4D8C-8866-0A811E91D28B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{00616FE6-085B-4D8C-8866-0A811E91D28B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{00616FE6-085B-4D8C-8866-0A811E91D28B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F9AA038B-2C9F-477B-BB95-A428E2B5D396}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F9AA038B-2C9F-477B-BB95-A428E2B5D396}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F9AA038B-2C9F-477B-BB95-A428E2B5D396}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F9AA038B-2C9F-477B-BB95-A428E2B5D396}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9ABC64AF-7471-40EF-9DDB-85865A19A1C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9ABC64AF-7471-40EF-9DDB-85865A19A1C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9ABC64AF-7471-40EF-9DDB-85865A19A1C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9ABC64AF-7471-40EF-9DDB-85865A19A1C6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{8066AFC4-5DB3-41E6-A0F0-568B20AABC2E} = {072F9CE9-4368-4053-9B21-23FBA48D4904}
+		{54DACF24-C7FE-495F-A6A7-7D761834ED51} = {88E7D1FD-508C-4DDD-9DF9-5C3D2F0CC167}
+		{F9AA038B-2C9F-477B-BB95-A428E2B5D396} = {072F9CE9-4368-4053-9B21-23FBA48D4904}
+		{9ABC64AF-7471-40EF-9DDB-85865A19A1C6} = {88E7D1FD-508C-4DDD-9DF9-5C3D2F0CC167}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {EBA4D29C-665D-484D-9580-914613BB7F80}

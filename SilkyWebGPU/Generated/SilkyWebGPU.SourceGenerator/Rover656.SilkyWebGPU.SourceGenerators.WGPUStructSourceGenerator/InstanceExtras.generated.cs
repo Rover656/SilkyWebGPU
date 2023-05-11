@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.Extensions.WGPU.InstanceExtras"/>
-public class InstanceExtras : ChainedStruct<Silk.NET.WebGPU.Extensions.WGPU.InstanceExtras>
+public class InstanceExtras : NewNewChainedStruct<Silk.NET.WebGPU.Extensions.WGPU.InstanceExtras>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.Extensions.WGPU.InstanceExtras.Backends" />
@@ -71,5 +71,13 @@ public class InstanceExtras : ChainedStruct<Silk.NET.WebGPU.Extensions.WGPU.Inst
         Native.DxilPath = null;
         SilkMarshal.Free((nint) Native.DxcPath);
         Native.DxcPath = null;
+        base.ReleaseUnmanagedResources();
+    }
+    internal override InstanceExtras Clone()
+    {
+        var clone = new InstanceExtras();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.TextureDescriptor"/>
-public class TextureDescriptor : ChainedStruct<Silk.NET.WebGPU.TextureDescriptor>
+public class TextureDescriptor : NewNewChainedStruct<Silk.NET.WebGPU.TextureDescriptor>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.TextureDescriptor.Label" />
@@ -87,7 +87,7 @@ public class TextureDescriptor : ChainedStruct<Silk.NET.WebGPU.TextureDescriptor
             // Dispose any existing object.
             _ViewFormats?.Dispose();
 
-            // Allocate new chain -OR- set to default
+            // Set array
             if (value != null)
             {
                 Native.ViewFormats = value.Ptr;
@@ -129,5 +129,13 @@ public class TextureDescriptor : ChainedStruct<Silk.NET.WebGPU.TextureDescriptor
     {
         SilkMarshal.Free((nint) Native.Label);
         Native.Label = null;
+        base.ReleaseUnmanagedResources();
+    }
+    internal override TextureDescriptor Clone()
+    {
+        var clone = new TextureDescriptor();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

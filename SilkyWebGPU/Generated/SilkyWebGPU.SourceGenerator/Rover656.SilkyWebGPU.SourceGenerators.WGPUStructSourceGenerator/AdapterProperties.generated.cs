@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.AdapterProperties"/>
-public class AdapterProperties : ChainedStruct<Silk.NET.WebGPU.AdapterProperties>
+public class AdapterProperties : NewNewChainedStruct<Silk.NET.WebGPU.AdapterProperties>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.AdapterProperties.VendorID" />
@@ -119,5 +119,13 @@ public class AdapterProperties : ChainedStruct<Silk.NET.WebGPU.AdapterProperties
         Native.Name = null;
         SilkMarshal.Free((nint) Native.DriverDescription);
         Native.DriverDescription = null;
+        base.ReleaseUnmanagedResources();
+    }
+    internal override AdapterProperties Clone()
+    {
+        var clone = new AdapterProperties();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

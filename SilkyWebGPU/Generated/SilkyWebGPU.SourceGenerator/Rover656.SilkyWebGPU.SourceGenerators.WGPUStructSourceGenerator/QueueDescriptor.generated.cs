@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.QueueDescriptor"/>
-public class QueueDescriptor : ChainedStruct<Silk.NET.WebGPU.QueueDescriptor>
+public class QueueDescriptor : NewNewChainedStruct<Silk.NET.WebGPU.QueueDescriptor>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.QueueDescriptor.Label" />
@@ -39,5 +39,13 @@ public class QueueDescriptor : ChainedStruct<Silk.NET.WebGPU.QueueDescriptor>
     {
         SilkMarshal.Free((nint) Native.Label);
         Native.Label = null;
+        base.ReleaseUnmanagedResources();
+    }
+    internal override QueueDescriptor Clone()
+    {
+        var clone = new QueueDescriptor();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

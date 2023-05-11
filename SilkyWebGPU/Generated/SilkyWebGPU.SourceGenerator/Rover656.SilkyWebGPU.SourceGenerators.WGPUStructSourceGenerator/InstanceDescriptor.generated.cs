@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.InstanceDescriptor"/>
-public class InstanceDescriptor : ChainedStruct<Silk.NET.WebGPU.InstanceDescriptor>
+public class InstanceDescriptor : NewNewChainedStruct<Silk.NET.WebGPU.InstanceDescriptor>
 {
 
     public override unsafe string ToString()
@@ -19,5 +19,12 @@ public class InstanceDescriptor : ChainedStruct<Silk.NET.WebGPU.InstanceDescript
         // Write anything to the console we deem writable. This might not be accurate but its good enough for debug purposes :)
         return $@"InstanceDescriptor {{
 }}";
+    }
+    internal override InstanceDescriptor Clone()
+    {
+        var clone = new InstanceDescriptor();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

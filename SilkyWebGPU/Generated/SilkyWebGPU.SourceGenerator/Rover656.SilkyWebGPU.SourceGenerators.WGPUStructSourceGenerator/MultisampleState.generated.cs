@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.MultisampleState"/>
-public class MultisampleState : ChainedStruct<Silk.NET.WebGPU.MultisampleState>
+public class MultisampleState : NewNewChainedStruct<Silk.NET.WebGPU.MultisampleState>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.MultisampleState.Count" />
@@ -43,5 +43,12 @@ public class MultisampleState : ChainedStruct<Silk.NET.WebGPU.MultisampleState>
     Mask = ""{Mask}""
     AlphaToCoverageEnabled = ""{AlphaToCoverageEnabled}""
 }}";
+    }
+    internal override MultisampleState Clone()
+    {
+        var clone = new MultisampleState();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

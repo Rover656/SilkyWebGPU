@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.RenderBundleEncoderDescriptor"/>
-public class RenderBundleEncoderDescriptor : ChainedStruct<Silk.NET.WebGPU.RenderBundleEncoderDescriptor>
+public class RenderBundleEncoderDescriptor : NewNewChainedStruct<Silk.NET.WebGPU.RenderBundleEncoderDescriptor>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.RenderBundleEncoderDescriptor.Label" />
@@ -45,7 +45,7 @@ public class RenderBundleEncoderDescriptor : ChainedStruct<Silk.NET.WebGPU.Rende
             // Dispose any existing object.
             _ColorFormats?.Dispose();
 
-            // Allocate new chain -OR- set to default
+            // Set array
             if (value != null)
             {
                 Native.ColorFormats = value.Ptr;
@@ -113,5 +113,13 @@ public class RenderBundleEncoderDescriptor : ChainedStruct<Silk.NET.WebGPU.Rende
     {
         SilkMarshal.Free((nint) Native.Label);
         Native.Label = null;
+        base.ReleaseUnmanagedResources();
+    }
+    internal override RenderBundleEncoderDescriptor Clone()
+    {
+        var clone = new RenderBundleEncoderDescriptor();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

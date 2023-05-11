@@ -14,11 +14,12 @@ public unsafe class NativeArray<T> : IDisposable
     public uint Count { get; }
     internal T* Ptr { get; private set; }
     private readonly bool _chainable;
-    private readonly ChainedStruct<T>[]? _chainedStructs;
+    private readonly NewChainedStruct<T>[]? _chainedStructs;
     private readonly WrappedStruct<T>[]? _wrappedStructs;
     private readonly bool _owner;
 
-    public static implicit operator NativeArray<T>(ChainedStruct<T>[] arr) => new(arr);
+    // public static implicit operator NativeArray<T>(ChainedStruct<T>[] arr) => new(arr);
+    public static implicit operator NativeArray<T>(NewChainedStruct<T>[] arr) => new(arr);
     public static implicit operator NativeArray<T>(WrappedStruct<T>[] arr) => new(arr);
     public static implicit operator NativeArray<T>(T[] arr) => new(arr);
 
@@ -36,7 +37,7 @@ public unsafe class NativeArray<T> : IDisposable
         Ptr = (T*)SilkMarshal.Allocate((int)(sizeof(T) * count));
     }
 
-    public NativeArray(params ChainedStruct<T>[] values) : this((uint)values.Length)
+    public NativeArray(params NewChainedStruct<T>[] values) : this((uint)values.Length)
     {
         _chainable = true;
         _chainedStructs = values;
@@ -44,7 +45,7 @@ public unsafe class NativeArray<T> : IDisposable
         foreach (var val in values)
         {
             // Copy in :)
-            *ptr = val.GetWithChain();
+            *ptr = val.Get();
             ptr++;
         }
     }

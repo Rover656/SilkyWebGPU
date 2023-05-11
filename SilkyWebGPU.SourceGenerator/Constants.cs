@@ -2,7 +2,7 @@
 
 namespace Rover656.SilkyWebGPU.SourceGenerators
 {
-    public class Constants
+    public static class Constants
     {
         /// <summary>
         /// The namespace of the generated class
@@ -21,7 +21,7 @@ namespace Rover656.SilkyWebGPU.SourceGenerators
         
         public const string NativeChainableArrayType = "NativeArray";
         public const string NativePointerArrayType = "NativePtrArray";
-        public const string ChainedStructBaseClass = "ChainedStruct";
+        public const string ChainedStructBaseClass = "NewNewChainedStruct";
         
         /// <summary>
         /// Native objects that are being treated like "classes"

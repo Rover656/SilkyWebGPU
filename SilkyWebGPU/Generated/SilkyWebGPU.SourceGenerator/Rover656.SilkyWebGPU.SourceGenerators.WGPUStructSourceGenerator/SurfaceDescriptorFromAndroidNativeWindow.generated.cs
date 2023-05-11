@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.SurfaceDescriptorFromAndroidNativeWindow"/>
-public class SurfaceDescriptorFromAndroidNativeWindow : ChainedStruct<Silk.NET.WebGPU.SurfaceDescriptorFromAndroidNativeWindow>
+public class SurfaceDescriptorFromAndroidNativeWindow : NewNewChainedStruct<Silk.NET.WebGPU.SurfaceDescriptorFromAndroidNativeWindow>
 {
 
     /// <summary>
@@ -32,5 +32,12 @@ public class SurfaceDescriptorFromAndroidNativeWindow : ChainedStruct<Silk.NET.W
         // Write anything to the console we deem writable. This might not be accurate but its good enough for debug purposes :)
         return $@"SurfaceDescriptorFromAndroidNativeWindow {{
 }}";
+    }
+    internal override SurfaceDescriptorFromAndroidNativeWindow Clone()
+    {
+        var clone = new SurfaceDescriptorFromAndroidNativeWindow();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

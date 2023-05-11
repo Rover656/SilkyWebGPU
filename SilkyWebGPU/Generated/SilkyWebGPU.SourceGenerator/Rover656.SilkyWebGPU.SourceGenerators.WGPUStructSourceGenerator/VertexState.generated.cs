@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.VertexState"/>
-public class VertexState : ChainedStruct<Silk.NET.WebGPU.VertexState>
+public class VertexState : NewNewChainedStruct<Silk.NET.WebGPU.VertexState>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.VertexState.Module" />
@@ -52,7 +52,7 @@ public class VertexState : ChainedStruct<Silk.NET.WebGPU.VertexState>
             // Dispose any existing object.
             _Constants?.Dispose();
 
-            // Allocate new chain -OR- set to default
+            // Set array
             if (value != null)
             {
                 Native.Constants = value.Ptr;
@@ -87,7 +87,7 @@ public class VertexState : ChainedStruct<Silk.NET.WebGPU.VertexState>
             // Dispose any existing object.
             _Buffers?.Dispose();
 
-            // Allocate new chain -OR- set to default
+            // Set array
             if (value != null)
             {
                 Native.Buffers = value.Ptr;
@@ -125,5 +125,13 @@ public class VertexState : ChainedStruct<Silk.NET.WebGPU.VertexState>
     {
         SilkMarshal.Free((nint) Native.EntryPoint);
         Native.EntryPoint = null;
+        base.ReleaseUnmanagedResources();
+    }
+    internal override VertexState Clone()
+    {
+        var clone = new VertexState();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

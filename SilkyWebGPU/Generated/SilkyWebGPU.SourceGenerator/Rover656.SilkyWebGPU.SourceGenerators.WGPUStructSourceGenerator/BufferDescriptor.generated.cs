@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.BufferDescriptor"/>
-public class BufferDescriptor : ChainedStruct<Silk.NET.WebGPU.BufferDescriptor>
+public class BufferDescriptor : NewNewChainedStruct<Silk.NET.WebGPU.BufferDescriptor>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.BufferDescriptor.Label" />
@@ -63,5 +63,13 @@ public class BufferDescriptor : ChainedStruct<Silk.NET.WebGPU.BufferDescriptor>
     {
         SilkMarshal.Free((nint) Native.Label);
         Native.Label = null;
+        base.ReleaseUnmanagedResources();
+    }
+    internal override BufferDescriptor Clone()
+    {
+        var clone = new BufferDescriptor();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

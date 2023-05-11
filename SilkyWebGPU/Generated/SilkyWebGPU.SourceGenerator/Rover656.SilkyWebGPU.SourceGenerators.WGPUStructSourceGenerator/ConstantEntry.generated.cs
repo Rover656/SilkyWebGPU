@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.ConstantEntry"/>
-public class ConstantEntry : ChainedStruct<Silk.NET.WebGPU.ConstantEntry>
+public class ConstantEntry : NewNewChainedStruct<Silk.NET.WebGPU.ConstantEntry>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.ConstantEntry.Key" />
@@ -47,5 +47,13 @@ public class ConstantEntry : ChainedStruct<Silk.NET.WebGPU.ConstantEntry>
     {
         SilkMarshal.Free((nint) Native.Key);
         Native.Key = null;
+        base.ReleaseUnmanagedResources();
+    }
+    internal override ConstantEntry Clone()
+    {
+        var clone = new ConstantEntry();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

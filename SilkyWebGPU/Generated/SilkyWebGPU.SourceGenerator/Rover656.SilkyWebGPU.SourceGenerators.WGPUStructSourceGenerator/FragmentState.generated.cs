@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.FragmentState"/>
-public class FragmentState : ChainedStruct<Silk.NET.WebGPU.FragmentState>
+public class FragmentState : NewNewChainedStruct<Silk.NET.WebGPU.FragmentState>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.FragmentState.Module" />
@@ -52,7 +52,7 @@ public class FragmentState : ChainedStruct<Silk.NET.WebGPU.FragmentState>
             // Dispose any existing object.
             _Constants?.Dispose();
 
-            // Allocate new chain -OR- set to default
+            // Set array
             if (value != null)
             {
                 Native.Constants = value.Ptr;
@@ -87,7 +87,7 @@ public class FragmentState : ChainedStruct<Silk.NET.WebGPU.FragmentState>
             // Dispose any existing object.
             _Targets?.Dispose();
 
-            // Allocate new chain -OR- set to default
+            // Set array
             if (value != null)
             {
                 Native.Targets = value.Ptr;
@@ -125,5 +125,13 @@ public class FragmentState : ChainedStruct<Silk.NET.WebGPU.FragmentState>
     {
         SilkMarshal.Free((nint) Native.EntryPoint);
         Native.EntryPoint = null;
+        base.ReleaseUnmanagedResources();
+    }
+    internal override FragmentState Clone()
+    {
+        var clone = new FragmentState();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

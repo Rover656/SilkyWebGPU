@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.DeviceDescriptor"/>
-public class DeviceDescriptor : ChainedStruct<Silk.NET.WebGPU.DeviceDescriptor>
+public class DeviceDescriptor : NewNewChainedStruct<Silk.NET.WebGPU.DeviceDescriptor>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.DeviceDescriptor.Label" />
@@ -45,7 +45,7 @@ public class DeviceDescriptor : ChainedStruct<Silk.NET.WebGPU.DeviceDescriptor>
             // Dispose any existing object.
             _RequiredFeatures?.Dispose();
 
-            // Allocate new chain -OR- set to default
+            // Set array
             if (value != null)
             {
                 Native.RequiredFeatures = value.Ptr;
@@ -84,13 +84,12 @@ public class DeviceDescriptor : ChainedStruct<Silk.NET.WebGPU.DeviceDescriptor>
             // Release any existing native pointer.
             if (Native.RequiredLimits != null)
             {
-                ChainHelper.FreeChain((ChainedStruct*) Native.RequiredLimits);
-                SilkMarshal.Free((nint) Native.RequiredLimits);
+                ChainHelper.DestroyChained((ChainedStruct*) Native.RequiredLimits);
             }
 
             // Allocate new!
             if (value != null)
-                Native.RequiredLimits = value.Alloc();
+                Native.RequiredLimits = (Silk.NET.WebGPU.RequiredLimits*)value.Alloc();
             else Native.RequiredLimits = null;
         }
     }
@@ -107,24 +106,41 @@ public class DeviceDescriptor : ChainedStruct<Silk.NET.WebGPU.DeviceDescriptor>
     /// </remarks>
     public unsafe QueueDescriptor DefaultQueue
     {
-        // TODO: Due to limitations, these are only writeable for now... Use the Raw field instead for reading.
-        //get => Native.DefaultQueue;
+        get
+        {
+            // This hasn't been set.
+            // A chainable will never be allocated on the library side, so it must be set from managed code before being fetched.
+            if (_DefaultQueue == null)
+                return null;
+            
+            // Load the current native value back into the managed clone
+            fixed (Silk.NET.WebGPU.QueueDescriptor* native = &_DefaultQueue.Native)
+            {
+                _DefaultQueue.Update((ChainedStruct*) native);
+            }
+
+            // Return a clone (so modifications don't break this).
+            return (QueueDescriptor) _DefaultQueue.Clone();
+        }
 
         set
         {
             // Dispose any existing object.
             _DefaultQueue?.Dispose();
+            
+            // Save a clone. This clone will manage its own memory separate to the value passed
+            _DefaultQueue = value != null ? (QueueDescriptor) value.Clone() : null;
+
+            // Dispose the value, it has been consumed
+            value?.Dispose();
 
             // Attempt to free any existing chains
             ChainHelper.FreeChain(ref Native.DefaultQueue);
 
             // Allocate new chain -OR- set to default
             if (value != null)
-                Native.DefaultQueue = value.GetWithChain();
+                Native.DefaultQueue = value.Get();
             else Native.DefaultQueue = default;
-
-            // Save
-            _DefaultQueue = value;
         }
     }
  
@@ -154,5 +170,13 @@ public class DeviceDescriptor : ChainedStruct<Silk.NET.WebGPU.DeviceDescriptor>
         Native.Label = null;
         SilkMarshal.Free((nint) Native.RequiredLimits);
         Native.RequiredLimits = null;
+        base.ReleaseUnmanagedResources();
+    }
+    internal override DeviceDescriptor Clone()
+    {
+        var clone = new DeviceDescriptor();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

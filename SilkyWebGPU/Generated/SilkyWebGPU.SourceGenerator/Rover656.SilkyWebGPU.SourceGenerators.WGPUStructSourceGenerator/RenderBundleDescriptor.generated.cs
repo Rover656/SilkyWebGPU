@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.RenderBundleDescriptor"/>
-public class RenderBundleDescriptor : ChainedStruct<Silk.NET.WebGPU.RenderBundleDescriptor>
+public class RenderBundleDescriptor : NewNewChainedStruct<Silk.NET.WebGPU.RenderBundleDescriptor>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.RenderBundleDescriptor.Label" />
@@ -39,5 +39,13 @@ public class RenderBundleDescriptor : ChainedStruct<Silk.NET.WebGPU.RenderBundle
     {
         SilkMarshal.Free((nint) Native.Label);
         Native.Label = null;
+        base.ReleaseUnmanagedResources();
+    }
+    internal override RenderBundleDescriptor Clone()
+    {
+        var clone = new RenderBundleDescriptor();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

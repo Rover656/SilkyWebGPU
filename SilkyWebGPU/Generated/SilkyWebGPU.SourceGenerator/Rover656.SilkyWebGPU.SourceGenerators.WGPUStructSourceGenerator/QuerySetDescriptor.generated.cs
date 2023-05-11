@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.QuerySetDescriptor"/>
-public class QuerySetDescriptor : ChainedStruct<Silk.NET.WebGPU.QuerySetDescriptor>
+public class QuerySetDescriptor : NewNewChainedStruct<Silk.NET.WebGPU.QuerySetDescriptor>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.QuerySetDescriptor.Label" />
@@ -59,7 +59,7 @@ public class QuerySetDescriptor : ChainedStruct<Silk.NET.WebGPU.QuerySetDescript
             // Dispose any existing object.
             _PipelineStatistics?.Dispose();
 
-            // Allocate new chain -OR- set to default
+            // Set array
             if (value != null)
             {
                 Native.PipelineStatistics = value.Ptr;
@@ -97,5 +97,13 @@ public class QuerySetDescriptor : ChainedStruct<Silk.NET.WebGPU.QuerySetDescript
     {
         SilkMarshal.Free((nint) Native.Label);
         Native.Label = null;
+        base.ReleaseUnmanagedResources();
+    }
+    internal override QuerySetDescriptor Clone()
+    {
+        var clone = new QuerySetDescriptor();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

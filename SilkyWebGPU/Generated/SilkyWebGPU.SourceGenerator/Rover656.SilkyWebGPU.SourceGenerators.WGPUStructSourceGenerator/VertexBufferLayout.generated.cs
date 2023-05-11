@@ -51,7 +51,7 @@ public class VertexBufferLayout : WrappedStruct<Silk.NET.WebGPU.VertexBufferLayo
             // Dispose any existing object.
             _Attributes?.Dispose();
 
-            // Allocate new chain -OR- set to default
+            // Set array
             if (value != null)
             {
                 Native.Attributes = value.Ptr;

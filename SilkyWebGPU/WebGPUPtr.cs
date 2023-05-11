@@ -10,10 +10,18 @@
 public unsafe class WebGPUPtr<T> : IDisposable
     where T : unmanaged
 {
+    /// <summary>
+    /// The native pointer.
+    /// </summary>
     private T* _ptr;
+    
+    /// <summary>
+    /// If this is a weak pointer, we don't dispose, we're a reference.
+    /// </summary>
     private bool _weak;
     
-    internal WebGPUPtr(T* ptr)
+    // TODO: RETURN TO INTERNAL
+    public WebGPUPtr(T* ptr)
     {
         _ptr = ptr;
         _weak = false;

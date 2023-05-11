@@ -284,25 +284,27 @@ public static partial class {ClassName}
                     if (parameter.RefKind == RefKind.Ref)
                     {
                         // ref types cannot be null so we can write straight to them, then call mutate.
-                        stringBuilder.AppendLine($@"var {parameter.Name}Chained = {parameter.Name}.GetWithChain();
-        var {parameter.Name}{ChainableUnmanagedSuffix} = &{parameter.Name}Chained;");
+        //                 stringBuilder.AppendLine($@"var {parameter.Name}Chained = {parameter.Name}.GetWithChain();
+        // var {parameter.Name}{ChainableUnmanagedSuffix} = &{parameter.Name}Chained;");
+                            stringBuilder.AppendLine($"var {parameter.Name}{ChainableUnmanagedSuffix} = {parameter.Name}.GetRef();");
                     }
                     else
                     {
                         if (chainableCount == 1)
                         {
-                            stringBuilder.AppendLine($@"if ({parameter.Name} == null) {{
-{body.Replace("return", "ret =").Replace($"{parameter.Name}{ChainableUnmanagedSuffix}", "null")}
-        }}
-        else
-        {{
-        var {parameter.Name}{ChainableUnmanagedSuffix} = {parameter.Name}.GetWithChain();");
+//                             stringBuilder.AppendLine($@"if ({parameter.Name} == null) {{
+// {body.Replace("return", "ret =").Replace($"{parameter.Name}{ChainableUnmanagedSuffix}", "null")}
+//         }}
+//         else
+//         {{
+//         var {parameter.Name}{ChainableUnmanagedSuffix} = {parameter.Name}.GetWithChain();");
+//                         }
+//                         else
+//                         {
+//                             stringBuilder.AppendLine($@"// ISSUE: This wouldn't have generated when the generator was designed. This is an ugly and slow way of not slowing down the source generator.
+//         var {parameter.Name}{ChainableUnmanagedSuffix} = {parameter.Name} != null ? {parameter.Name}.Alloc() : null;");
                         }
-                        else
-                        {
-                            stringBuilder.AppendLine($@"// ISSUE: This wouldn't have generated when the generator was designed. This is an ugly and slow way of not slowing down the source generator.
-        var {parameter.Name}{ChainableUnmanagedSuffix} = {parameter.Name} != null ? {parameter.Name}.Alloc() : null;");
-                        }
+                        stringBuilder.AppendLine($"var {parameter.Name}{ChainableUnmanagedSuffix} = {parameter.Name} != null ? {parameter.Name}.Get() : default;");
                     }
                 }
             }
@@ -317,20 +319,20 @@ public static partial class {ClassName}
                     if (parameter.RefKind == RefKind.Ref)
                     {
                         // Now propagate mutations through the chain
-                        stringBuilder.AppendLine($@"        {parameter.Name}.Mutate(((ChainedStruct*){parameter.Name}{ChainableUnmanagedSuffix}));
-        ChainHelper.FreeChain(ref {parameter.Name}Chained);");
+        //                 stringBuilder.AppendLine($@"        {parameter.Name}.Mutate(((ChainedStruct*){parameter.Name}{ChainableUnmanagedSuffix}));
+        // ChainHelper.FreeChain(ref {parameter.Name}Chained);");
                     }
                     else
                     {
-                        if (chainableCount == 1)
-                        {
-                            stringBuilder.AppendLine($@"        ChainHelper.FreeChain(ref {parameter.Name}{ChainableUnmanagedSuffix});
-        }}");
-                        }
-                        else
-                        {
-                            stringBuilder.AppendLine($"        {parameter.Name}?.Free({parameter.Name}{ChainableUnmanagedSuffix});");
-                        }
+        //                 if (chainableCount == 1)
+        //                 {
+        //                     stringBuilder.AppendLine($@"        ChainHelper.FreeChain(ref {parameter.Name}{ChainableUnmanagedSuffix});
+        // }}");
+        //                 }
+        //                 else
+        //                 {
+        //                     stringBuilder.AppendLine($"        {parameter.Name}?.Free({parameter.Name}{ChainableUnmanagedSuffix});");
+        //                 }
                     }
                 }
             }
@@ -405,7 +407,7 @@ public static partial class {ClassName}
             }
         }
 
-        private string GetArgumentSuffix(IParameterSymbol parameterSymbol)
+        private string GetArgumentSuffix(IParameterSymbol parameterSymbol, bool resolveChainable)
         {
             // For references to pointers.
             // TODO: This needs fixed as it's creating false-positives for Queue.Submit accepting multiple command buffers. Need to detect arrays instead.
@@ -472,7 +474,7 @@ public static partial class {ClassName}
                     parameterName = nullChainables ? "null" : $"{parameter.Name}{ChainableUnmanagedSuffix}";
                 else parameterName = parameter.Name;
                 
-                argumentList.Append($", {GetArgumentPrefix(parameter, resolveChainable)}{parameterName}{GetArgumentSuffix(parameter)}");
+                argumentList.Append($", {GetArgumentPrefix(parameter, resolveChainable)}{parameterName}{GetArgumentSuffix(parameter, resolveChainable)}");
             }
 
             return argumentList;

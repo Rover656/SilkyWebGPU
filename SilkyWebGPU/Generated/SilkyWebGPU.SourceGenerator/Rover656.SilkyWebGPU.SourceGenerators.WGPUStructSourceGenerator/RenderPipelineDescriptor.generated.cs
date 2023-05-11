@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.RenderPipelineDescriptor"/>
-public class RenderPipelineDescriptor : ChainedStruct<Silk.NET.WebGPU.RenderPipelineDescriptor>
+public class RenderPipelineDescriptor : NewNewChainedStruct<Silk.NET.WebGPU.RenderPipelineDescriptor>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.RenderPipelineDescriptor.Label" />
@@ -46,24 +46,41 @@ public class RenderPipelineDescriptor : ChainedStruct<Silk.NET.WebGPU.RenderPipe
     /// </remarks>
     public unsafe VertexState Vertex
     {
-        // TODO: Due to limitations, these are only writeable for now... Use the Raw field instead for reading.
-        //get => Native.Vertex;
+        get
+        {
+            // This hasn't been set.
+            // A chainable will never be allocated on the library side, so it must be set from managed code before being fetched.
+            if (_Vertex == null)
+                return null;
+            
+            // Load the current native value back into the managed clone
+            fixed (Silk.NET.WebGPU.VertexState* native = &_Vertex.Native)
+            {
+                _Vertex.Update((ChainedStruct*) native);
+            }
+
+            // Return a clone (so modifications don't break this).
+            return (VertexState) _Vertex.Clone();
+        }
 
         set
         {
             // Dispose any existing object.
             _Vertex?.Dispose();
+            
+            // Save a clone. This clone will manage its own memory separate to the value passed
+            _Vertex = value != null ? (VertexState) value.Clone() : null;
+
+            // Dispose the value, it has been consumed
+            value?.Dispose();
 
             // Attempt to free any existing chains
             ChainHelper.FreeChain(ref Native.Vertex);
 
             // Allocate new chain -OR- set to default
             if (value != null)
-                Native.Vertex = value.GetWithChain();
+                Native.Vertex = value.Get();
             else Native.Vertex = default;
-
-            // Save
-            _Vertex = value;
         }
     }
  
@@ -79,24 +96,41 @@ public class RenderPipelineDescriptor : ChainedStruct<Silk.NET.WebGPU.RenderPipe
     /// </remarks>
     public unsafe PrimitiveState Primitive
     {
-        // TODO: Due to limitations, these are only writeable for now... Use the Raw field instead for reading.
-        //get => Native.Primitive;
+        get
+        {
+            // This hasn't been set.
+            // A chainable will never be allocated on the library side, so it must be set from managed code before being fetched.
+            if (_Primitive == null)
+                return null;
+            
+            // Load the current native value back into the managed clone
+            fixed (Silk.NET.WebGPU.PrimitiveState* native = &_Primitive.Native)
+            {
+                _Primitive.Update((ChainedStruct*) native);
+            }
+
+            // Return a clone (so modifications don't break this).
+            return (PrimitiveState) _Primitive.Clone();
+        }
 
         set
         {
             // Dispose any existing object.
             _Primitive?.Dispose();
+            
+            // Save a clone. This clone will manage its own memory separate to the value passed
+            _Primitive = value != null ? (PrimitiveState) value.Clone() : null;
+
+            // Dispose the value, it has been consumed
+            value?.Dispose();
 
             // Attempt to free any existing chains
             ChainHelper.FreeChain(ref Native.Primitive);
 
             // Allocate new chain -OR- set to default
             if (value != null)
-                Native.Primitive = value.GetWithChain();
+                Native.Primitive = value.Get();
             else Native.Primitive = default;
-
-            // Save
-            _Primitive = value;
         }
     }
  
@@ -122,13 +156,12 @@ public class RenderPipelineDescriptor : ChainedStruct<Silk.NET.WebGPU.RenderPipe
             // Release any existing native pointer.
             if (Native.DepthStencil != null)
             {
-                ChainHelper.FreeChain((ChainedStruct*) Native.DepthStencil);
-                SilkMarshal.Free((nint) Native.DepthStencil);
+                ChainHelper.DestroyChained((ChainedStruct*) Native.DepthStencil);
             }
 
             // Allocate new!
             if (value != null)
-                Native.DepthStencil = value.Alloc();
+                Native.DepthStencil = (Silk.NET.WebGPU.DepthStencilState*)value.Alloc();
             else Native.DepthStencil = null;
         }
     }
@@ -145,24 +178,41 @@ public class RenderPipelineDescriptor : ChainedStruct<Silk.NET.WebGPU.RenderPipe
     /// </remarks>
     public unsafe MultisampleState Multisample
     {
-        // TODO: Due to limitations, these are only writeable for now... Use the Raw field instead for reading.
-        //get => Native.Multisample;
+        get
+        {
+            // This hasn't been set.
+            // A chainable will never be allocated on the library side, so it must be set from managed code before being fetched.
+            if (_Multisample == null)
+                return null;
+            
+            // Load the current native value back into the managed clone
+            fixed (Silk.NET.WebGPU.MultisampleState* native = &_Multisample.Native)
+            {
+                _Multisample.Update((ChainedStruct*) native);
+            }
+
+            // Return a clone (so modifications don't break this).
+            return (MultisampleState) _Multisample.Clone();
+        }
 
         set
         {
             // Dispose any existing object.
             _Multisample?.Dispose();
+            
+            // Save a clone. This clone will manage its own memory separate to the value passed
+            _Multisample = value != null ? (MultisampleState) value.Clone() : null;
+
+            // Dispose the value, it has been consumed
+            value?.Dispose();
 
             // Attempt to free any existing chains
             ChainHelper.FreeChain(ref Native.Multisample);
 
             // Allocate new chain -OR- set to default
             if (value != null)
-                Native.Multisample = value.GetWithChain();
+                Native.Multisample = value.Get();
             else Native.Multisample = default;
-
-            // Save
-            _Multisample = value;
         }
     }
  
@@ -188,13 +238,12 @@ public class RenderPipelineDescriptor : ChainedStruct<Silk.NET.WebGPU.RenderPipe
             // Release any existing native pointer.
             if (Native.Fragment != null)
             {
-                ChainHelper.FreeChain((ChainedStruct*) Native.Fragment);
-                SilkMarshal.Free((nint) Native.Fragment);
+                ChainHelper.DestroyChained((ChainedStruct*) Native.Fragment);
             }
 
             // Allocate new!
             if (value != null)
-                Native.Fragment = value.Alloc();
+                Native.Fragment = (Silk.NET.WebGPU.FragmentState*)value.Alloc();
             else Native.Fragment = null;
         }
     }
@@ -233,5 +282,13 @@ public class RenderPipelineDescriptor : ChainedStruct<Silk.NET.WebGPU.RenderPipe
         Native.DepthStencil = null;
         SilkMarshal.Free((nint) Native.Fragment);
         Native.Fragment = null;
+        base.ReleaseUnmanagedResources();
+    }
+    internal override RenderPipelineDescriptor Clone()
+    {
+        var clone = new RenderPipelineDescriptor();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

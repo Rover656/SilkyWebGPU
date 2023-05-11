@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.ShaderModuleWGSLDescriptor"/>
-public class ShaderModuleWGSLDescriptor : ChainedStruct<Silk.NET.WebGPU.ShaderModuleWGSLDescriptor>
+public class ShaderModuleWGSLDescriptor : NewNewChainedStruct<Silk.NET.WebGPU.ShaderModuleWGSLDescriptor>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.ShaderModuleWGSLDescriptor.Code" />
@@ -39,5 +39,13 @@ public class ShaderModuleWGSLDescriptor : ChainedStruct<Silk.NET.WebGPU.ShaderMo
     {
         SilkMarshal.Free((nint) Native.Code);
         Native.Code = null;
+        base.ReleaseUnmanagedResources();
+    }
+    internal override ShaderModuleWGSLDescriptor Clone()
+    {
+        var clone = new ShaderModuleWGSLDescriptor();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.BindGroupLayoutEntry"/>
-public class BindGroupLayoutEntry : ChainedStruct<Silk.NET.WebGPU.BindGroupLayoutEntry>
+public class BindGroupLayoutEntry : NewNewChainedStruct<Silk.NET.WebGPU.BindGroupLayoutEntry>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.BindGroupLayoutEntry.Binding" />
@@ -40,24 +40,41 @@ public class BindGroupLayoutEntry : ChainedStruct<Silk.NET.WebGPU.BindGroupLayou
     /// </remarks>
     public unsafe BufferBindingLayout Buffer
     {
-        // TODO: Due to limitations, these are only writeable for now... Use the Raw field instead for reading.
-        //get => Native.Buffer;
+        get
+        {
+            // This hasn't been set.
+            // A chainable will never be allocated on the library side, so it must be set from managed code before being fetched.
+            if (_Buffer == null)
+                return null;
+            
+            // Load the current native value back into the managed clone
+            fixed (Silk.NET.WebGPU.BufferBindingLayout* native = &_Buffer.Native)
+            {
+                _Buffer.Update((ChainedStruct*) native);
+            }
+
+            // Return a clone (so modifications don't break this).
+            return (BufferBindingLayout) _Buffer.Clone();
+        }
 
         set
         {
             // Dispose any existing object.
             _Buffer?.Dispose();
+            
+            // Save a clone. This clone will manage its own memory separate to the value passed
+            _Buffer = value != null ? (BufferBindingLayout) value.Clone() : null;
+
+            // Dispose the value, it has been consumed
+            value?.Dispose();
 
             // Attempt to free any existing chains
             ChainHelper.FreeChain(ref Native.Buffer);
 
             // Allocate new chain -OR- set to default
             if (value != null)
-                Native.Buffer = value.GetWithChain();
+                Native.Buffer = value.Get();
             else Native.Buffer = default;
-
-            // Save
-            _Buffer = value;
         }
     }
  
@@ -73,24 +90,41 @@ public class BindGroupLayoutEntry : ChainedStruct<Silk.NET.WebGPU.BindGroupLayou
     /// </remarks>
     public unsafe SamplerBindingLayout Sampler
     {
-        // TODO: Due to limitations, these are only writeable for now... Use the Raw field instead for reading.
-        //get => Native.Sampler;
+        get
+        {
+            // This hasn't been set.
+            // A chainable will never be allocated on the library side, so it must be set from managed code before being fetched.
+            if (_Sampler == null)
+                return null;
+            
+            // Load the current native value back into the managed clone
+            fixed (Silk.NET.WebGPU.SamplerBindingLayout* native = &_Sampler.Native)
+            {
+                _Sampler.Update((ChainedStruct*) native);
+            }
+
+            // Return a clone (so modifications don't break this).
+            return (SamplerBindingLayout) _Sampler.Clone();
+        }
 
         set
         {
             // Dispose any existing object.
             _Sampler?.Dispose();
+            
+            // Save a clone. This clone will manage its own memory separate to the value passed
+            _Sampler = value != null ? (SamplerBindingLayout) value.Clone() : null;
+
+            // Dispose the value, it has been consumed
+            value?.Dispose();
 
             // Attempt to free any existing chains
             ChainHelper.FreeChain(ref Native.Sampler);
 
             // Allocate new chain -OR- set to default
             if (value != null)
-                Native.Sampler = value.GetWithChain();
+                Native.Sampler = value.Get();
             else Native.Sampler = default;
-
-            // Save
-            _Sampler = value;
         }
     }
  
@@ -106,24 +140,41 @@ public class BindGroupLayoutEntry : ChainedStruct<Silk.NET.WebGPU.BindGroupLayou
     /// </remarks>
     public unsafe TextureBindingLayout Texture
     {
-        // TODO: Due to limitations, these are only writeable for now... Use the Raw field instead for reading.
-        //get => Native.Texture;
+        get
+        {
+            // This hasn't been set.
+            // A chainable will never be allocated on the library side, so it must be set from managed code before being fetched.
+            if (_Texture == null)
+                return null;
+            
+            // Load the current native value back into the managed clone
+            fixed (Silk.NET.WebGPU.TextureBindingLayout* native = &_Texture.Native)
+            {
+                _Texture.Update((ChainedStruct*) native);
+            }
+
+            // Return a clone (so modifications don't break this).
+            return (TextureBindingLayout) _Texture.Clone();
+        }
 
         set
         {
             // Dispose any existing object.
             _Texture?.Dispose();
+            
+            // Save a clone. This clone will manage its own memory separate to the value passed
+            _Texture = value != null ? (TextureBindingLayout) value.Clone() : null;
+
+            // Dispose the value, it has been consumed
+            value?.Dispose();
 
             // Attempt to free any existing chains
             ChainHelper.FreeChain(ref Native.Texture);
 
             // Allocate new chain -OR- set to default
             if (value != null)
-                Native.Texture = value.GetWithChain();
+                Native.Texture = value.Get();
             else Native.Texture = default;
-
-            // Save
-            _Texture = value;
         }
     }
  
@@ -139,24 +190,41 @@ public class BindGroupLayoutEntry : ChainedStruct<Silk.NET.WebGPU.BindGroupLayou
     /// </remarks>
     public unsafe StorageTextureBindingLayout StorageTexture
     {
-        // TODO: Due to limitations, these are only writeable for now... Use the Raw field instead for reading.
-        //get => Native.StorageTexture;
+        get
+        {
+            // This hasn't been set.
+            // A chainable will never be allocated on the library side, so it must be set from managed code before being fetched.
+            if (_StorageTexture == null)
+                return null;
+            
+            // Load the current native value back into the managed clone
+            fixed (Silk.NET.WebGPU.StorageTextureBindingLayout* native = &_StorageTexture.Native)
+            {
+                _StorageTexture.Update((ChainedStruct*) native);
+            }
+
+            // Return a clone (so modifications don't break this).
+            return (StorageTextureBindingLayout) _StorageTexture.Clone();
+        }
 
         set
         {
             // Dispose any existing object.
             _StorageTexture?.Dispose();
+            
+            // Save a clone. This clone will manage its own memory separate to the value passed
+            _StorageTexture = value != null ? (StorageTextureBindingLayout) value.Clone() : null;
+
+            // Dispose the value, it has been consumed
+            value?.Dispose();
 
             // Attempt to free any existing chains
             ChainHelper.FreeChain(ref Native.StorageTexture);
 
             // Allocate new chain -OR- set to default
             if (value != null)
-                Native.StorageTexture = value.GetWithChain();
+                Native.StorageTexture = value.Get();
             else Native.StorageTexture = default;
-
-            // Save
-            _StorageTexture = value;
         }
     }
  
@@ -188,5 +256,13 @@ public class BindGroupLayoutEntry : ChainedStruct<Silk.NET.WebGPU.BindGroupLayou
         ChainHelper.FreeChain(ref Native.Sampler);
         ChainHelper.FreeChain(ref Native.Texture);
         ChainHelper.FreeChain(ref Native.StorageTexture);
+        base.ReleaseUnmanagedResources();
+    }
+    internal override BindGroupLayoutEntry Clone()
+    {
+        var clone = new BindGroupLayoutEntry();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

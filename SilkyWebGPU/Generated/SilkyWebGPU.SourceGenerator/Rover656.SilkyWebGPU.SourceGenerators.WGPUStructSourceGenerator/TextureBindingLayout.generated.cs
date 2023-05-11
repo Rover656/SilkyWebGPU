@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.TextureBindingLayout"/>
-public class TextureBindingLayout : ChainedStruct<Silk.NET.WebGPU.TextureBindingLayout>
+public class TextureBindingLayout : NewNewChainedStruct<Silk.NET.WebGPU.TextureBindingLayout>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.TextureBindingLayout.SampleType" />
@@ -43,5 +43,12 @@ public class TextureBindingLayout : ChainedStruct<Silk.NET.WebGPU.TextureBinding
     ViewDimension = ""{ViewDimension}""
     Multisampled = ""{Multisampled}""
 }}";
+    }
+    internal override TextureBindingLayout Clone()
+    {
+        var clone = new TextureBindingLayout();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

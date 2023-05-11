@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.ImageCopyTexture"/>
-public class ImageCopyTexture : ChainedStruct<Silk.NET.WebGPU.ImageCopyTexture>
+public class ImageCopyTexture : NewNewChainedStruct<Silk.NET.WebGPU.ImageCopyTexture>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.ImageCopyTexture.Texture" />
@@ -50,5 +50,12 @@ public class ImageCopyTexture : ChainedStruct<Silk.NET.WebGPU.ImageCopyTexture>
     Origin = ""{Origin}""
     Aspect = ""{Aspect}""
 }}";
+    }
+    internal override ImageCopyTexture Clone()
+    {
+        var clone = new ImageCopyTexture();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

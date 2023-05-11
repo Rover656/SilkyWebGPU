@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.SurfaceDescriptorFromCanvasHTMLSelector"/>
-public class SurfaceDescriptorFromCanvasHTMLSelector : ChainedStruct<Silk.NET.WebGPU.SurfaceDescriptorFromCanvasHTMLSelector>
+public class SurfaceDescriptorFromCanvasHTMLSelector : NewNewChainedStruct<Silk.NET.WebGPU.SurfaceDescriptorFromCanvasHTMLSelector>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.SurfaceDescriptorFromCanvasHTMLSelector.Selector" />
@@ -39,5 +39,13 @@ public class SurfaceDescriptorFromCanvasHTMLSelector : ChainedStruct<Silk.NET.We
     {
         SilkMarshal.Free((nint) Native.Selector);
         Native.Selector = null;
+        base.ReleaseUnmanagedResources();
+    }
+    internal override SurfaceDescriptorFromCanvasHTMLSelector Clone()
+    {
+        var clone = new SurfaceDescriptorFromCanvasHTMLSelector();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

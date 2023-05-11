@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.Extensions.WGPU.AdapterExtras"/>
-public class AdapterExtras : ChainedStruct<Silk.NET.WebGPU.Extensions.WGPU.AdapterExtras>
+public class AdapterExtras : NewNewChainedStruct<Silk.NET.WebGPU.Extensions.WGPU.AdapterExtras>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.Extensions.WGPU.AdapterExtras.Backend" />
@@ -27,5 +27,12 @@ public class AdapterExtras : ChainedStruct<Silk.NET.WebGPU.Extensions.WGPU.Adapt
         return $@"AdapterExtras {{
     Backend = ""{Backend}""
 }}";
+    }
+    internal override AdapterExtras Clone()
+    {
+        var clone = new AdapterExtras();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

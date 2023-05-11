@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.CompilationMessage"/>
-public class CompilationMessage : ChainedStruct<Silk.NET.WebGPU.CompilationMessage>
+public class CompilationMessage : NewNewChainedStruct<Silk.NET.WebGPU.CompilationMessage>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.CompilationMessage.Message" />
@@ -103,5 +103,13 @@ public class CompilationMessage : ChainedStruct<Silk.NET.WebGPU.CompilationMessa
     {
         SilkMarshal.Free((nint) Native.Message);
         Native.Message = null;
+        base.ReleaseUnmanagedResources();
+    }
+    internal override CompilationMessage Clone()
+    {
+        var clone = new CompilationMessage();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

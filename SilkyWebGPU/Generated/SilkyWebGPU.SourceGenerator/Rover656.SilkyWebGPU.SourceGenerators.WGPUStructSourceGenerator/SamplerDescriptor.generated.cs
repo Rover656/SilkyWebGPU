@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.SamplerDescriptor"/>
-public class SamplerDescriptor : ChainedStruct<Silk.NET.WebGPU.SamplerDescriptor>
+public class SamplerDescriptor : NewNewChainedStruct<Silk.NET.WebGPU.SamplerDescriptor>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.SamplerDescriptor.Label" />
@@ -119,5 +119,13 @@ public class SamplerDescriptor : ChainedStruct<Silk.NET.WebGPU.SamplerDescriptor
     {
         SilkMarshal.Free((nint) Native.Label);
         Native.Label = null;
+        base.ReleaseUnmanagedResources();
+    }
+    internal override SamplerDescriptor Clone()
+    {
+        var clone = new SamplerDescriptor();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

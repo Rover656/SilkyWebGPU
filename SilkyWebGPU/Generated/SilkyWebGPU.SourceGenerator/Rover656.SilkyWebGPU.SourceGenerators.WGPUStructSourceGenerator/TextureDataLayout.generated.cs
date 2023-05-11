@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.TextureDataLayout"/>
-public class TextureDataLayout : ChainedStruct<Silk.NET.WebGPU.TextureDataLayout>
+public class TextureDataLayout : NewNewChainedStruct<Silk.NET.WebGPU.TextureDataLayout>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.TextureDataLayout.Offset" />
@@ -43,5 +43,12 @@ public class TextureDataLayout : ChainedStruct<Silk.NET.WebGPU.TextureDataLayout
     BytesPerRow = ""{BytesPerRow}""
     RowsPerImage = ""{RowsPerImage}""
 }}";
+    }
+    internal override TextureDataLayout Clone()
+    {
+        var clone = new TextureDataLayout();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

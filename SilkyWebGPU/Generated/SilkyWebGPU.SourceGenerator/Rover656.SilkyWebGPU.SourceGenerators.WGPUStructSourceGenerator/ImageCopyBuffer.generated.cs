@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.ImageCopyBuffer"/>
-public class ImageCopyBuffer : ChainedStruct<Silk.NET.WebGPU.ImageCopyBuffer>
+public class ImageCopyBuffer : NewNewChainedStruct<Silk.NET.WebGPU.ImageCopyBuffer>
 {
 
     // Keep a copy around for disposal.
@@ -26,24 +26,41 @@ public class ImageCopyBuffer : ChainedStruct<Silk.NET.WebGPU.ImageCopyBuffer>
     /// </remarks>
     public unsafe TextureDataLayout Layout
     {
-        // TODO: Due to limitations, these are only writeable for now... Use the Raw field instead for reading.
-        //get => Native.Layout;
+        get
+        {
+            // This hasn't been set.
+            // A chainable will never be allocated on the library side, so it must be set from managed code before being fetched.
+            if (_Layout == null)
+                return null;
+            
+            // Load the current native value back into the managed clone
+            fixed (Silk.NET.WebGPU.TextureDataLayout* native = &_Layout.Native)
+            {
+                _Layout.Update((ChainedStruct*) native);
+            }
+
+            // Return a clone (so modifications don't break this).
+            return (TextureDataLayout) _Layout.Clone();
+        }
 
         set
         {
             // Dispose any existing object.
             _Layout?.Dispose();
+            
+            // Save a clone. This clone will manage its own memory separate to the value passed
+            _Layout = value != null ? (TextureDataLayout) value.Clone() : null;
+
+            // Dispose the value, it has been consumed
+            value?.Dispose();
 
             // Attempt to free any existing chains
             ChainHelper.FreeChain(ref Native.Layout);
 
             // Allocate new chain -OR- set to default
             if (value != null)
-                Native.Layout = value.GetWithChain();
+                Native.Layout = value.Get();
             else Native.Layout = default;
-
-            // Save
-            _Layout = value;
         }
     }
  
@@ -71,5 +88,13 @@ public class ImageCopyBuffer : ChainedStruct<Silk.NET.WebGPU.ImageCopyBuffer>
     protected override unsafe void ReleaseUnmanagedResources()
     {
         ChainHelper.FreeChain(ref Native.Layout);
+        base.ReleaseUnmanagedResources();
+    }
+    internal override ImageCopyBuffer Clone()
+    {
+        var clone = new ImageCopyBuffer();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

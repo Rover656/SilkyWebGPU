@@ -117,24 +117,41 @@ public class {Constants.ManagedStructPrefix}{structFriendlyName} : {baseClass}<{
     /// </remarks>
     public unsafe {Constants.ManagedStructPrefix}{field.Type.Name} {field.Name}
     {{
-        // TODO: Due to limitations, these are only writeable for now... Use the Raw field instead for reading.
-        //get => Native.{field.Name};
+        get
+        {{
+            // This hasn't been set.
+            // A chainable will never be allocated on the library side, so it must be set from managed code before being fetched.
+            if (_{field.Name} == null)
+                return null;
+            
+            // Load the current native value back into the managed clone
+            fixed ({field.Type}* native = &_{field.Name}.Native)
+            {{
+                _{field.Name}.Update((ChainedStruct*) native);
+            }}
+
+            // Return a clone (so modifications don't break this).
+            return ({Constants.ManagedStructPrefix}{field.Type.Name}) _{field.Name}.Clone();
+        }}
 
         set
         {{
             // Dispose any existing object.
             _{field.Name}?.Dispose();
+            
+            // Save a clone. This clone will manage its own memory separate to the value passed
+            _{field.Name} = value != null ? ({Constants.ManagedStructPrefix}{field.Type.Name}) value.Clone() : null;
+
+            // Dispose the value, it has been consumed
+            value?.Dispose();
 
             // Attempt to free any existing chains
             ChainHelper.FreeChain(ref Native.{field.Name});
 
             // Allocate new chain -OR- set to default
             if (value != null)
-                Native.{field.Name} = value.GetWithChain();
+                Native.{field.Name} = value.Get();
             else Native.{field.Name} = default;
-
-            // Save
-            _{field.Name} = value;
         }}
     }}
  ");
@@ -193,7 +210,7 @@ public class {Constants.ManagedStructPrefix}{structFriendlyName} : {baseClass}<{
             // Dispose any existing object.
             _{field.Name}?.Dispose();
 
-            // Allocate new chain -OR- set to default
+            // Set array
             if (value != null)
             {{
                 Native.{field.Name} = value.Ptr;
@@ -232,7 +249,7 @@ public class {Constants.ManagedStructPrefix}{structFriendlyName} : {baseClass}<{
             // Dispose any existing object.
             _{field.Name}?.Dispose();
 
-            // Allocate new chain -OR- set to default
+            // Set array
             if (value != null)
             {{
                 Native.{field.Name} = value.Ptr;
@@ -293,13 +310,12 @@ public class {Constants.ManagedStructPrefix}{structFriendlyName} : {baseClass}<{
             // Release any existing native pointer.
             if (Native.{field.Name} != null)
             {{
-                ChainHelper.FreeChain((ChainedStruct*) Native.{field.Name});
-                SilkMarshal.Free((nint) Native.{field.Name});
+                ChainHelper.DestroyChained((ChainedStruct*) Native.{field.Name});
             }}
 
             // Allocate new!
             if (value != null)
-                Native.{field.Name} = value.Alloc();
+                Native.{field.Name} = ({pointerType.PointedAtType}*)value.Alloc();
             else Native.{field.Name} = null;
         }}
     }}
@@ -482,7 +498,19 @@ public class {Constants.ManagedStructPrefix}{structFriendlyName} : {baseClass}<{
         Native.{fieldName} = null;");
                     }
 
-                    outputWriter.AppendLine(@"    }");
+                    outputWriter.AppendLine(@"        base.ReleaseUnmanagedResources();
+    }");
+                }
+
+                if (chainable)
+                {
+                    outputWriter.AppendLine($@"    internal override {Constants.ManagedStructPrefix}{structFriendlyName} Clone()
+    {{
+        var clone = new {Constants.ManagedStructPrefix}{structFriendlyName}();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
+    }}");
                 }
 
                 outputWriter.AppendLine("}");

@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.RequiredLimits"/>
-public class RequiredLimits : ChainedStruct<Silk.NET.WebGPU.RequiredLimits>
+public class RequiredLimits : NewNewChainedStruct<Silk.NET.WebGPU.RequiredLimits>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.RequiredLimits.Limits" />
@@ -27,5 +27,12 @@ public class RequiredLimits : ChainedStruct<Silk.NET.WebGPU.RequiredLimits>
         return $@"RequiredLimits {{
     Limits = ""{Limits}""
 }}";
+    }
+    internal override RequiredLimits Clone()
+    {
+        var clone = new RequiredLimits();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

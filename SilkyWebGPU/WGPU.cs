@@ -18,9 +18,7 @@ public static class WGPU
             Disposal = new WebGPUDisposal(API);
         }
 
-        var descriptorUnmanaged = descriptor.GetWithChain();
-        var ret = new WebGPUPtr<Instance>(API.CreateInstance(descriptorUnmanaged));
-        ChainHelper.FreeChain(ref descriptorUnmanaged);
+        var ret = new WebGPUPtr<Instance>(API.CreateInstance(descriptor.Get()));
         return ret;
     }
 
@@ -54,7 +52,7 @@ public static class WGPU
                 Disposal.Dispose(commandBuffer);
                 break;
             case WebGPUPtr<CommandEncoder> commandEncoder:
-                Disposal.Dispose(commandEncoder);
+                // Disposal.Dispose(commandEncoder); // TODO: Causes the entire program to fail pog.
                 break;
             // case WebGpuPtr<RenderPassEncoder> renderPassEncoder:
             //     Disposal.Dispose(renderPassEncoder);

@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.CommandEncoderDescriptor"/>
-public class CommandEncoderDescriptor : ChainedStruct<Silk.NET.WebGPU.CommandEncoderDescriptor>
+public class CommandEncoderDescriptor : NewNewChainedStruct<Silk.NET.WebGPU.CommandEncoderDescriptor>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.CommandEncoderDescriptor.Label" />
@@ -39,5 +39,13 @@ public class CommandEncoderDescriptor : ChainedStruct<Silk.NET.WebGPU.CommandEnc
     {
         SilkMarshal.Free((nint) Native.Label);
         Native.Label = null;
+        base.ReleaseUnmanagedResources();
+    }
+    internal override CommandEncoderDescriptor Clone()
+    {
+        var clone = new CommandEncoderDescriptor();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

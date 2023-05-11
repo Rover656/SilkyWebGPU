@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
 using Silk.NET.WebGPU.Extensions.WGPU;
@@ -27,6 +28,32 @@ public static class ChainHelper
         // Add as the next in the chain.
         self->Next = (ChainedStruct*)allocatedMem;
         return chain;
+    }
+    
+    /**
+     * Incredibly unsafe if used incorrectly.
+     * <typeparam name="T">Must be a chainable struct.</typeparam>
+     */
+    internal static unsafe ChainedStruct* CreateChained<T>(T toAdd) where T : unmanaged
+    {
+        // Allocate memory for this piece to go.
+        var allocatedMem = SilkMarshal.Allocate(Marshal.SizeOf<T>());
+        *(T*)allocatedMem = toAdd;
+
+        // Set SType.
+        var chain = (ChainedStruct*)allocatedMem;
+        chain->SType = GetSType(toAdd);
+        
+        return (ChainedStruct*)allocatedMem;
+    }
+
+    internal static unsafe void DestroyChained(ChainedStruct* toDestroy)
+    {
+        // Destroy the chain
+        FreeChain(toDestroy);
+        
+        // Delete the chain
+        SilkMarshal.Free((nint) toDestroy);
     }
 
     /// <inheritdoc cref="FreeChain(ChainedStruct*)"/>
@@ -62,31 +89,31 @@ public static class ChainHelper
         chain->Next = null;
     }
 
-    internal static SType GetSType<T>(ChainedStruct<T> chainedStruct) where T : unmanaged
+    internal static SType GetSType<T>(T native) where T : unmanaged
     {
-        return chainedStruct switch
+        return native switch
         {
-            ChainedStruct<Silk.NET.WebGPU.SurfaceDescriptorFromMetalLayer> => SType.SurfaceDescriptorFromMetalLayer,
-            ChainedStruct<Silk.NET.WebGPU.SurfaceDescriptorFromWindowsHWND> => SType.SurfaceDescriptorFromWindowsHwnd,
-            ChainedStruct<Silk.NET.WebGPU.SurfaceDescriptorFromXlibWindow> => SType.SurfaceDescriptorFromXlibWindow,
-            ChainedStruct<Silk.NET.WebGPU.SurfaceDescriptorFromCanvasHTMLSelector> => SType.SurfaceDescriptorFromCanvasHtmlselector,
-            ChainedStruct<Silk.NET.WebGPU.ShaderModuleSPIRVDescriptor> => SType.ShaderModuleSpirvdescriptor,
-            ChainedStruct<Silk.NET.WebGPU.ShaderModuleWGSLDescriptor> => SType.ShaderModuleWgsldescriptor,
-            ChainedStruct<Silk.NET.WebGPU.PrimitiveDepthClipControl> => SType.PrimitiveDepthClipControl,
-            ChainedStruct<Silk.NET.WebGPU.SurfaceDescriptorFromWaylandSurface> => SType.SurfaceDescriptorFromWaylandSurface,
-            ChainedStruct<Silk.NET.WebGPU.SurfaceDescriptorFromAndroidNativeWindow> => SType.SurfaceDescriptorFromAndroidNativeWindow,
-            ChainedStruct<Silk.NET.WebGPU.SurfaceDescriptorFromXcbWindow> => SType.SurfaceDescriptorFromXcbWindow,
-            ChainedStruct<Silk.NET.WebGPU.RenderPassDescriptorMaxDrawCount> => SType.RenderPassDescriptorMaxDrawCount,
+            Silk.NET.WebGPU.SurfaceDescriptorFromMetalLayer => SType.SurfaceDescriptorFromMetalLayer,
+            Silk.NET.WebGPU.SurfaceDescriptorFromWindowsHWND => SType.SurfaceDescriptorFromWindowsHwnd,
+            Silk.NET.WebGPU.SurfaceDescriptorFromXlibWindow => SType.SurfaceDescriptorFromXlibWindow,
+            Silk.NET.WebGPU.SurfaceDescriptorFromCanvasHTMLSelector => SType.SurfaceDescriptorFromCanvasHtmlselector,
+            Silk.NET.WebGPU.ShaderModuleSPIRVDescriptor => SType.ShaderModuleSpirvdescriptor,
+            Silk.NET.WebGPU.ShaderModuleWGSLDescriptor => SType.ShaderModuleWgsldescriptor,
+            Silk.NET.WebGPU.PrimitiveDepthClipControl => SType.PrimitiveDepthClipControl,
+            Silk.NET.WebGPU.SurfaceDescriptorFromWaylandSurface => SType.SurfaceDescriptorFromWaylandSurface,
+            Silk.NET.WebGPU.SurfaceDescriptorFromAndroidNativeWindow => SType.SurfaceDescriptorFromAndroidNativeWindow,
+            Silk.NET.WebGPU.SurfaceDescriptorFromXcbWindow => SType.SurfaceDescriptorFromXcbWindow,
+            Silk.NET.WebGPU.RenderPassDescriptorMaxDrawCount => SType.RenderPassDescriptorMaxDrawCount,
             
             // WGPU Extensions
-            ChainedStruct<Silk.NET.WebGPU.Extensions.WGPU.DeviceExtras> => (SType)NativeSType.STypeDeviceExtras,
-            ChainedStruct<Silk.NET.WebGPU.Extensions.WGPU.AdapterExtras> => (SType)NativeSType.STypeAdapterExtras,
-            ChainedStruct<Silk.NET.WebGPU.Extensions.WGPU.RequiredLimitsExtras> => (SType)NativeSType.STypeRequiredLimitsExtras,
-            ChainedStruct<Silk.NET.WebGPU.Extensions.WGPU.SupportedLimitsExtras> => (SType)NativeSType.STypeSupportedLimitsExtras,
-            ChainedStruct<Silk.NET.WebGPU.Extensions.WGPU.PipelineLayoutExtras> => (SType)NativeSType.STypePipelineLayoutExtras,
-            ChainedStruct<Silk.NET.WebGPU.Extensions.WGPU.ShaderModuleGLSLDescriptor> => (SType)NativeSType.STypeShaderModuleGlsldescriptor,
-            ChainedStruct<Silk.NET.WebGPU.Extensions.WGPU.InstanceExtras> => (SType)NativeSType.STypeInstanceExtras,
-            ChainedStruct<Silk.NET.WebGPU.Extensions.WGPU.SwapChainDescriptorExtras> => (SType)NativeSType.STypeSwapChainDescriptorExtras,
+            Silk.NET.WebGPU.Extensions.WGPU.DeviceExtras => (SType)NativeSType.STypeDeviceExtras,
+            Silk.NET.WebGPU.Extensions.WGPU.AdapterExtras => (SType)NativeSType.STypeAdapterExtras,
+            Silk.NET.WebGPU.Extensions.WGPU.RequiredLimitsExtras => (SType)NativeSType.STypeRequiredLimitsExtras,
+            Silk.NET.WebGPU.Extensions.WGPU.SupportedLimitsExtras => (SType)NativeSType.STypeSupportedLimitsExtras,
+            Silk.NET.WebGPU.Extensions.WGPU.PipelineLayoutExtras => (SType)NativeSType.STypePipelineLayoutExtras,
+            Silk.NET.WebGPU.Extensions.WGPU.ShaderModuleGLSLDescriptor => (SType)NativeSType.STypeShaderModuleGlsldescriptor,
+            Silk.NET.WebGPU.Extensions.WGPU.InstanceExtras => (SType)NativeSType.STypeInstanceExtras,
+            Silk.NET.WebGPU.Extensions.WGPU.SwapChainDescriptorExtras => (SType)NativeSType.STypeSwapChainDescriptorExtras,
             _ => SType.Invalid
         };
     }

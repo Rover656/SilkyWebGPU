@@ -1,6 +1,8 @@
-﻿using Silk.NET.Core.Native;
+﻿using Rover656.SilkyWebGPU.Native.Chain;
+using Silk.NET.Core.Native;
 using Silk.NET.Maths;
 using Silk.NET.WebGPU;
+using Silk.NET.WebGPU.Extensions.Disposal;
 using Silk.NET.WebGPU.Extensions.WGPU;
 using Silk.NET.Windowing;
 
@@ -68,7 +70,7 @@ fn fs_main() -> @location(0) vec4<f32> {
         };
         
         _Instance = WGPU.CreateInstance(descriptor);
-        
+
         // Create surface from window
         _Surface = _window.CreateWebGPUSurface(_Instance);
 
@@ -76,10 +78,10 @@ fn fs_main() -> @location(0) vec4<f32> {
         using var requestAdapterOptions = new RequestAdapterOptions
         {
             CompatibleSurface = _Surface,
-            Next = new AdapterExtras
-            {
-                Backend = BackendType.D3D12
-            }
+            // Next = new AdapterExtras
+            // {
+                // Backend = BackendType.D3D12
+            // }
         };
         
         _Adapter = await _Instance.RequestAdapter(requestAdapterOptions);
@@ -102,6 +104,7 @@ fn fs_main() -> @location(0) vec4<f32> {
 
         {
             var properties = new AdapterProperties();
+            properties.Next = new AdapterExtras();
             _Adapter.GetProperties(ref properties);
             Console.WriteLine(properties);
             Console.WriteLine(properties.Next);
@@ -136,7 +139,7 @@ fn fs_main() -> @location(0) vec4<f32> {
         _SwapChainFormat = _Surface.GetPreferredFormat(_Adapter);
 
         // Create render pipeline
-        var blendState = new BlendState
+        using var blendState = new BlendState
         {
             Color = new BlendComponent
             {
@@ -186,9 +189,11 @@ fn fs_main() -> @location(0) vec4<f32> {
                 Mask                   = ~0u,
                 AlphaToCoverageEnabled = false
             },
-            Fragment     = fragmentState,
+            // Fragment     = fragmentState,
             DepthStencil = null
         };
+
+        renderPipelineDescriptor.Fragment = fragmentState;
 
         _Pipeline = _Device.CreateRenderPipeline(renderPipelineDescriptor);
 
@@ -270,7 +275,7 @@ fn fs_main() -> @location(0) vec4<f32> {
             DepthStencilAttachment = null
         };
 
-        var renderPass = encoder.BeginRenderPass(renderPassDescriptor);
+        using var renderPass = encoder.BeginRenderPass(renderPassDescriptor);
 
         renderPass.SetPipeline(_Pipeline);
         renderPass.Draw(3, 1, 0, 0);
@@ -283,6 +288,7 @@ fn fs_main() -> @location(0) vec4<f32> {
 
         queue.Submit(1, ref commandBuffer);
         _SwapChain.Present();
+        encoder.Dispose();
         _window.SwapBuffers();
     }
     

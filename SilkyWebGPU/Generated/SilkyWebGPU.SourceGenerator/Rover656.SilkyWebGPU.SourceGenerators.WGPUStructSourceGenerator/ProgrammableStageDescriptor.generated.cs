@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.ProgrammableStageDescriptor"/>
-public class ProgrammableStageDescriptor : ChainedStruct<Silk.NET.WebGPU.ProgrammableStageDescriptor>
+public class ProgrammableStageDescriptor : NewNewChainedStruct<Silk.NET.WebGPU.ProgrammableStageDescriptor>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.ProgrammableStageDescriptor.Module" />
@@ -52,7 +52,7 @@ public class ProgrammableStageDescriptor : ChainedStruct<Silk.NET.WebGPU.Program
             // Dispose any existing object.
             _Constants?.Dispose();
 
-            // Allocate new chain -OR- set to default
+            // Set array
             if (value != null)
             {
                 Native.Constants = value.Ptr;
@@ -88,5 +88,13 @@ public class ProgrammableStageDescriptor : ChainedStruct<Silk.NET.WebGPU.Program
     {
         SilkMarshal.Free((nint) Native.EntryPoint);
         Native.EntryPoint = null;
+        base.ReleaseUnmanagedResources();
+    }
+    internal override ProgrammableStageDescriptor Clone()
+    {
+        var clone = new ProgrammableStageDescriptor();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

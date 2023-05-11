@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.PrimitiveDepthClipControl"/>
-public class PrimitiveDepthClipControl : ChainedStruct<Silk.NET.WebGPU.PrimitiveDepthClipControl>
+public class PrimitiveDepthClipControl : NewNewChainedStruct<Silk.NET.WebGPU.PrimitiveDepthClipControl>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.PrimitiveDepthClipControl.UnclippedDepth" />
@@ -27,5 +27,12 @@ public class PrimitiveDepthClipControl : ChainedStruct<Silk.NET.WebGPU.Primitive
         return $@"PrimitiveDepthClipControl {{
     UnclippedDepth = ""{UnclippedDepth}""
 }}";
+    }
+    internal override PrimitiveDepthClipControl Clone()
+    {
+        var clone = new PrimitiveDepthClipControl();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

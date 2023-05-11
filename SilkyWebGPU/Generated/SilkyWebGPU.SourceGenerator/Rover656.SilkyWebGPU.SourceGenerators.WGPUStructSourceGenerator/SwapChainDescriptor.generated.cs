@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.SwapChainDescriptor"/>
-public class SwapChainDescriptor : ChainedStruct<Silk.NET.WebGPU.SwapChainDescriptor>
+public class SwapChainDescriptor : NewNewChainedStruct<Silk.NET.WebGPU.SwapChainDescriptor>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.SwapChainDescriptor.Label" />
@@ -79,5 +79,13 @@ public class SwapChainDescriptor : ChainedStruct<Silk.NET.WebGPU.SwapChainDescri
     {
         SilkMarshal.Free((nint) Native.Label);
         Native.Label = null;
+        base.ReleaseUnmanagedResources();
+    }
+    internal override SwapChainDescriptor Clone()
+    {
+        var clone = new SwapChainDescriptor();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.ShaderModuleSPIRVDescriptor"/>
-public class ShaderModuleSPIRVDescriptor : ChainedStruct<Silk.NET.WebGPU.ShaderModuleSPIRVDescriptor>
+public class ShaderModuleSPIRVDescriptor : NewNewChainedStruct<Silk.NET.WebGPU.ShaderModuleSPIRVDescriptor>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.ShaderModuleSPIRVDescriptor.CodeSize" />
@@ -62,5 +62,13 @@ public class ShaderModuleSPIRVDescriptor : ChainedStruct<Silk.NET.WebGPU.ShaderM
     {
         SilkMarshal.Free((nint) Native.Code);
         Native.Code = null;
+        base.ReleaseUnmanagedResources();
+    }
+    internal override ShaderModuleSPIRVDescriptor Clone()
+    {
+        var clone = new ShaderModuleSPIRVDescriptor();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

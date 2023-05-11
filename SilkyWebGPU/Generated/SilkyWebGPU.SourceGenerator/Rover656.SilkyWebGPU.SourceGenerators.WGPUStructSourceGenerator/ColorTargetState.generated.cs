@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.ColorTargetState"/>
-public class ColorTargetState : ChainedStruct<Silk.NET.WebGPU.ColorTargetState>
+public class ColorTargetState : NewNewChainedStruct<Silk.NET.WebGPU.ColorTargetState>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.ColorTargetState.Format" />
@@ -71,5 +71,13 @@ public class ColorTargetState : ChainedStruct<Silk.NET.WebGPU.ColorTargetState>
     {
         SilkMarshal.Free((nint) Native.Blend);
         Native.Blend = null;
+        base.ReleaseUnmanagedResources();
+    }
+    internal override ColorTargetState Clone()
+    {
+        var clone = new ColorTargetState();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

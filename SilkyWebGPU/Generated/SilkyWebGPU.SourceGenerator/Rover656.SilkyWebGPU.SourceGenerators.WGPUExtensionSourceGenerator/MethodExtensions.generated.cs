@@ -91,11 +91,8 @@ public static partial class MethodExtensions
     public static unsafe Silk.NET.Core.Bool32 GetLimits(this WebGPUPtr<Silk.NET.WebGPU.Adapter> adapter, ref SupportedLimits limits) 
     {
         Silk.NET.Core.Bool32 ret;
-        var limitsChained = limits.GetWithChain();
-        var limitsUnmanaged = &limitsChained;
+        var limitsUnmanaged = limits.GetRef();
         ret = WGPU.API.AdapterGetLimits(adapter, limitsUnmanaged);
-        limits.Mutate(((ChainedStruct*)limitsUnmanaged));
-        ChainHelper.FreeChain(ref limitsChained);
         return ret;
 
     }
@@ -107,11 +104,8 @@ public static partial class MethodExtensions
     /// </summary>
     public static unsafe void GetProperties(this WebGPUPtr<Silk.NET.WebGPU.Adapter> adapter, ref AdapterProperties properties) 
     {
-        var propertiesChained = properties.GetWithChain();
-        var propertiesUnmanaged = &propertiesChained;
+        var propertiesUnmanaged = properties.GetRef();
         WGPU.API.AdapterGetProperties(adapter, propertiesUnmanaged);
-        properties.Mutate(((ChainedStruct*)propertiesUnmanaged));
-        ChainHelper.FreeChain(ref propertiesChained);
 
     }
 
@@ -132,15 +126,8 @@ public static partial class MethodExtensions
     /// </summary>
     public static unsafe void RequestDevice(this WebGPUPtr<Silk.NET.WebGPU.Adapter> adapter, in DeviceDescriptor descriptor, Silk.NET.WebGPU.PfnRequestDeviceCallback callback, void* userdata) 
     {
-        if (descriptor == null) {
-        WGPU.API.AdapterRequestDevice(adapter, null, callback, userdata);
-        }
-        else
-        {
-        var descriptorUnmanaged = descriptor.GetWithChain();
+        var descriptorUnmanaged = descriptor != null ? descriptor.Get() : default;
         WGPU.API.AdapterRequestDevice(adapter, descriptorUnmanaged, callback, userdata);
-        ChainHelper.FreeChain(ref descriptorUnmanaged);
-        }
 
     }
 
@@ -152,15 +139,8 @@ public static partial class MethodExtensions
     public static unsafe void RequestDevice<T0>(this WebGPUPtr<Silk.NET.WebGPU.Adapter> adapter, in DeviceDescriptor descriptor, Silk.NET.WebGPU.PfnRequestDeviceCallback callback, ref T0 userdata) 
         where T0 : unmanaged
     {
-        if (descriptor == null) {
-        WGPU.API.AdapterRequestDevice(adapter, null, callback, ref userdata);
-        }
-        else
-        {
-        var descriptorUnmanaged = descriptor.GetWithChain();
+        var descriptorUnmanaged = descriptor != null ? descriptor.Get() : default;
         WGPU.API.AdapterRequestDevice(adapter, descriptorUnmanaged, callback, ref userdata);
-        ChainHelper.FreeChain(ref descriptorUnmanaged);
-        }
 
     }
 
@@ -383,15 +363,8 @@ public static partial class MethodExtensions
     public static unsafe WebGPUPtr<Silk.NET.WebGPU.ComputePassEncoder> BeginComputePass(this WebGPUPtr<Silk.NET.WebGPU.CommandEncoder> commandEncoder, in ComputePassDescriptor descriptor) 
     {
         WebGPUPtr<Silk.NET.WebGPU.ComputePassEncoder> ret;
-        if (descriptor == null) {
-        ret = new WebGPUPtr<Silk.NET.WebGPU.ComputePassEncoder>(WGPU.API.CommandEncoderBeginComputePass(commandEncoder, null));
-        }
-        else
-        {
-        var descriptorUnmanaged = descriptor.GetWithChain();
+        var descriptorUnmanaged = descriptor != null ? descriptor.Get() : default;
         ret = new WebGPUPtr<Silk.NET.WebGPU.ComputePassEncoder>(WGPU.API.CommandEncoderBeginComputePass(commandEncoder, descriptorUnmanaged));
-        ChainHelper.FreeChain(ref descriptorUnmanaged);
-        }
         return ret;
 
     }
@@ -404,15 +377,8 @@ public static partial class MethodExtensions
     public static unsafe WebGPUPtr<Silk.NET.WebGPU.RenderPassEncoder> BeginRenderPass(this WebGPUPtr<Silk.NET.WebGPU.CommandEncoder> commandEncoder, in RenderPassDescriptor descriptor) 
     {
         WebGPUPtr<Silk.NET.WebGPU.RenderPassEncoder> ret;
-        if (descriptor == null) {
-        ret = new WebGPUPtr<Silk.NET.WebGPU.RenderPassEncoder>(WGPU.API.CommandEncoderBeginRenderPass(commandEncoder, null));
-        }
-        else
-        {
-        var descriptorUnmanaged = descriptor.GetWithChain();
+        var descriptorUnmanaged = descriptor != null ? descriptor.Get() : default;
         ret = new WebGPUPtr<Silk.NET.WebGPU.RenderPassEncoder>(WGPU.API.CommandEncoderBeginRenderPass(commandEncoder, descriptorUnmanaged));
-        ChainHelper.FreeChain(ref descriptorUnmanaged);
-        }
         return ret;
 
     }
@@ -444,13 +410,9 @@ public static partial class MethodExtensions
     /// </summary>
     public static unsafe void CopyBufferToTexture(this WebGPUPtr<Silk.NET.WebGPU.CommandEncoder> commandEncoder, in ImageCopyBuffer source, in ImageCopyTexture destination, in Extent3D copySize) 
     {
-        // ISSUE: This wouldn't have generated when the generator was designed. This is an ugly and slow way of not slowing down the source generator.
-        var sourceUnmanaged = source != null ? source.Alloc() : null;
-        // ISSUE: This wouldn't have generated when the generator was designed. This is an ugly and slow way of not slowing down the source generator.
-        var destinationUnmanaged = destination != null ? destination.Alloc() : null;
+        var sourceUnmanaged = source != null ? source.Get() : default;
+        var destinationUnmanaged = destination != null ? destination.Get() : default;
         WGPU.API.CommandEncoderCopyBufferToTexture(commandEncoder, sourceUnmanaged, destinationUnmanaged, copySize);
-        source?.Free(sourceUnmanaged);
-        destination?.Free(destinationUnmanaged);
 
     }
 
@@ -461,13 +423,9 @@ public static partial class MethodExtensions
     /// </summary>
     public static unsafe void CopyTextureToBuffer(this WebGPUPtr<Silk.NET.WebGPU.CommandEncoder> commandEncoder, in ImageCopyTexture source, in ImageCopyBuffer destination, in Extent3D copySize) 
     {
-        // ISSUE: This wouldn't have generated when the generator was designed. This is an ugly and slow way of not slowing down the source generator.
-        var sourceUnmanaged = source != null ? source.Alloc() : null;
-        // ISSUE: This wouldn't have generated when the generator was designed. This is an ugly and slow way of not slowing down the source generator.
-        var destinationUnmanaged = destination != null ? destination.Alloc() : null;
+        var sourceUnmanaged = source != null ? source.Get() : default;
+        var destinationUnmanaged = destination != null ? destination.Get() : default;
         WGPU.API.CommandEncoderCopyTextureToBuffer(commandEncoder, sourceUnmanaged, destinationUnmanaged, copySize);
-        source?.Free(sourceUnmanaged);
-        destination?.Free(destinationUnmanaged);
 
     }
 
@@ -478,13 +436,9 @@ public static partial class MethodExtensions
     /// </summary>
     public static unsafe void CopyTextureToTexture(this WebGPUPtr<Silk.NET.WebGPU.CommandEncoder> commandEncoder, in ImageCopyTexture source, in ImageCopyTexture destination, in Extent3D copySize) 
     {
-        // ISSUE: This wouldn't have generated when the generator was designed. This is an ugly and slow way of not slowing down the source generator.
-        var sourceUnmanaged = source != null ? source.Alloc() : null;
-        // ISSUE: This wouldn't have generated when the generator was designed. This is an ugly and slow way of not slowing down the source generator.
-        var destinationUnmanaged = destination != null ? destination.Alloc() : null;
+        var sourceUnmanaged = source != null ? source.Get() : default;
+        var destinationUnmanaged = destination != null ? destination.Get() : default;
         WGPU.API.CommandEncoderCopyTextureToTexture(commandEncoder, sourceUnmanaged, destinationUnmanaged, copySize);
-        source?.Free(sourceUnmanaged);
-        destination?.Free(destinationUnmanaged);
 
     }
 
@@ -496,15 +450,8 @@ public static partial class MethodExtensions
     public static unsafe WebGPUPtr<Silk.NET.WebGPU.CommandBuffer> Finish(this WebGPUPtr<Silk.NET.WebGPU.CommandEncoder> commandEncoder, in CommandBufferDescriptor descriptor) 
     {
         WebGPUPtr<Silk.NET.WebGPU.CommandBuffer> ret;
-        if (descriptor == null) {
-        ret = new WebGPUPtr<Silk.NET.WebGPU.CommandBuffer>(WGPU.API.CommandEncoderFinish(commandEncoder, null));
-        }
-        else
-        {
-        var descriptorUnmanaged = descriptor.GetWithChain();
+        var descriptorUnmanaged = descriptor != null ? descriptor.Get() : default;
         ret = new WebGPUPtr<Silk.NET.WebGPU.CommandBuffer>(WGPU.API.CommandEncoderFinish(commandEncoder, descriptorUnmanaged));
-        ChainHelper.FreeChain(ref descriptorUnmanaged);
-        }
         return ret;
 
     }
@@ -857,15 +804,8 @@ public static partial class MethodExtensions
     public static unsafe WebGPUPtr<Silk.NET.WebGPU.BindGroup> CreateBindGroup(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in BindGroupDescriptor descriptor) 
     {
         WebGPUPtr<Silk.NET.WebGPU.BindGroup> ret;
-        if (descriptor == null) {
-        ret = new WebGPUPtr<Silk.NET.WebGPU.BindGroup>(WGPU.API.DeviceCreateBindGroup(device, null));
-        }
-        else
-        {
-        var descriptorUnmanaged = descriptor.GetWithChain();
+        var descriptorUnmanaged = descriptor != null ? descriptor.Get() : default;
         ret = new WebGPUPtr<Silk.NET.WebGPU.BindGroup>(WGPU.API.DeviceCreateBindGroup(device, descriptorUnmanaged));
-        ChainHelper.FreeChain(ref descriptorUnmanaged);
-        }
         return ret;
 
     }
@@ -878,15 +818,8 @@ public static partial class MethodExtensions
     public static unsafe WebGPUPtr<Silk.NET.WebGPU.BindGroupLayout> CreateBindGroupLayout(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in BindGroupLayoutDescriptor descriptor) 
     {
         WebGPUPtr<Silk.NET.WebGPU.BindGroupLayout> ret;
-        if (descriptor == null) {
-        ret = new WebGPUPtr<Silk.NET.WebGPU.BindGroupLayout>(WGPU.API.DeviceCreateBindGroupLayout(device, null));
-        }
-        else
-        {
-        var descriptorUnmanaged = descriptor.GetWithChain();
+        var descriptorUnmanaged = descriptor != null ? descriptor.Get() : default;
         ret = new WebGPUPtr<Silk.NET.WebGPU.BindGroupLayout>(WGPU.API.DeviceCreateBindGroupLayout(device, descriptorUnmanaged));
-        ChainHelper.FreeChain(ref descriptorUnmanaged);
-        }
         return ret;
 
     }
@@ -899,15 +832,8 @@ public static partial class MethodExtensions
     public static unsafe WebGPUPtr<Silk.NET.WebGPU.Buffer> CreateBuffer(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in BufferDescriptor descriptor) 
     {
         WebGPUPtr<Silk.NET.WebGPU.Buffer> ret;
-        if (descriptor == null) {
-        ret = new WebGPUPtr<Silk.NET.WebGPU.Buffer>(WGPU.API.DeviceCreateBuffer(device, null));
-        }
-        else
-        {
-        var descriptorUnmanaged = descriptor.GetWithChain();
+        var descriptorUnmanaged = descriptor != null ? descriptor.Get() : default;
         ret = new WebGPUPtr<Silk.NET.WebGPU.Buffer>(WGPU.API.DeviceCreateBuffer(device, descriptorUnmanaged));
-        ChainHelper.FreeChain(ref descriptorUnmanaged);
-        }
         return ret;
 
     }
@@ -920,15 +846,8 @@ public static partial class MethodExtensions
     public static unsafe WebGPUPtr<Silk.NET.WebGPU.CommandEncoder> CreateCommandEncoder(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in CommandEncoderDescriptor descriptor) 
     {
         WebGPUPtr<Silk.NET.WebGPU.CommandEncoder> ret;
-        if (descriptor == null) {
-        ret = new WebGPUPtr<Silk.NET.WebGPU.CommandEncoder>(WGPU.API.DeviceCreateCommandEncoder(device, null));
-        }
-        else
-        {
-        var descriptorUnmanaged = descriptor.GetWithChain();
+        var descriptorUnmanaged = descriptor != null ? descriptor.Get() : default;
         ret = new WebGPUPtr<Silk.NET.WebGPU.CommandEncoder>(WGPU.API.DeviceCreateCommandEncoder(device, descriptorUnmanaged));
-        ChainHelper.FreeChain(ref descriptorUnmanaged);
-        }
         return ret;
 
     }
@@ -941,15 +860,8 @@ public static partial class MethodExtensions
     public static unsafe WebGPUPtr<Silk.NET.WebGPU.ComputePipeline> CreateComputePipeline(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in ComputePipelineDescriptor descriptor) 
     {
         WebGPUPtr<Silk.NET.WebGPU.ComputePipeline> ret;
-        if (descriptor == null) {
-        ret = new WebGPUPtr<Silk.NET.WebGPU.ComputePipeline>(WGPU.API.DeviceCreateComputePipeline(device, null));
-        }
-        else
-        {
-        var descriptorUnmanaged = descriptor.GetWithChain();
+        var descriptorUnmanaged = descriptor != null ? descriptor.Get() : default;
         ret = new WebGPUPtr<Silk.NET.WebGPU.ComputePipeline>(WGPU.API.DeviceCreateComputePipeline(device, descriptorUnmanaged));
-        ChainHelper.FreeChain(ref descriptorUnmanaged);
-        }
         return ret;
 
     }
@@ -961,15 +873,8 @@ public static partial class MethodExtensions
     /// </summary>
     public static unsafe void CreateComputePipelineAsync(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in ComputePipelineDescriptor descriptor, Silk.NET.WebGPU.PfnCreateComputePipelineAsyncCallback callback, void* userdata) 
     {
-        if (descriptor == null) {
-        WGPU.API.DeviceCreateComputePipelineAsync(device, null, callback, userdata);
-        }
-        else
-        {
-        var descriptorUnmanaged = descriptor.GetWithChain();
+        var descriptorUnmanaged = descriptor != null ? descriptor.Get() : default;
         WGPU.API.DeviceCreateComputePipelineAsync(device, descriptorUnmanaged, callback, userdata);
-        ChainHelper.FreeChain(ref descriptorUnmanaged);
-        }
 
     }
 
@@ -981,15 +886,8 @@ public static partial class MethodExtensions
     public static unsafe void CreateComputePipelineAsync<T0>(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in ComputePipelineDescriptor descriptor, Silk.NET.WebGPU.PfnCreateComputePipelineAsyncCallback callback, ref T0 userdata) 
         where T0 : unmanaged
     {
-        if (descriptor == null) {
-        WGPU.API.DeviceCreateComputePipelineAsync(device, null, callback, ref userdata);
-        }
-        else
-        {
-        var descriptorUnmanaged = descriptor.GetWithChain();
+        var descriptorUnmanaged = descriptor != null ? descriptor.Get() : default;
         WGPU.API.DeviceCreateComputePipelineAsync(device, descriptorUnmanaged, callback, ref userdata);
-        ChainHelper.FreeChain(ref descriptorUnmanaged);
-        }
 
     }
 
@@ -1001,15 +899,8 @@ public static partial class MethodExtensions
     public static unsafe WebGPUPtr<Silk.NET.WebGPU.PipelineLayout> CreatePipelineLayout(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in PipelineLayoutDescriptor descriptor) 
     {
         WebGPUPtr<Silk.NET.WebGPU.PipelineLayout> ret;
-        if (descriptor == null) {
-        ret = new WebGPUPtr<Silk.NET.WebGPU.PipelineLayout>(WGPU.API.DeviceCreatePipelineLayout(device, null));
-        }
-        else
-        {
-        var descriptorUnmanaged = descriptor.GetWithChain();
+        var descriptorUnmanaged = descriptor != null ? descriptor.Get() : default;
         ret = new WebGPUPtr<Silk.NET.WebGPU.PipelineLayout>(WGPU.API.DeviceCreatePipelineLayout(device, descriptorUnmanaged));
-        ChainHelper.FreeChain(ref descriptorUnmanaged);
-        }
         return ret;
 
     }
@@ -1022,15 +913,8 @@ public static partial class MethodExtensions
     public static unsafe WebGPUPtr<Silk.NET.WebGPU.QuerySet> CreateQuerySet(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in QuerySetDescriptor descriptor) 
     {
         WebGPUPtr<Silk.NET.WebGPU.QuerySet> ret;
-        if (descriptor == null) {
-        ret = new WebGPUPtr<Silk.NET.WebGPU.QuerySet>(WGPU.API.DeviceCreateQuerySet(device, null));
-        }
-        else
-        {
-        var descriptorUnmanaged = descriptor.GetWithChain();
+        var descriptorUnmanaged = descriptor != null ? descriptor.Get() : default;
         ret = new WebGPUPtr<Silk.NET.WebGPU.QuerySet>(WGPU.API.DeviceCreateQuerySet(device, descriptorUnmanaged));
-        ChainHelper.FreeChain(ref descriptorUnmanaged);
-        }
         return ret;
 
     }
@@ -1043,15 +927,8 @@ public static partial class MethodExtensions
     public static unsafe WebGPUPtr<Silk.NET.WebGPU.RenderBundleEncoder> CreateRenderBundleEncoder(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in RenderBundleEncoderDescriptor descriptor) 
     {
         WebGPUPtr<Silk.NET.WebGPU.RenderBundleEncoder> ret;
-        if (descriptor == null) {
-        ret = new WebGPUPtr<Silk.NET.WebGPU.RenderBundleEncoder>(WGPU.API.DeviceCreateRenderBundleEncoder(device, null));
-        }
-        else
-        {
-        var descriptorUnmanaged = descriptor.GetWithChain();
+        var descriptorUnmanaged = descriptor != null ? descriptor.Get() : default;
         ret = new WebGPUPtr<Silk.NET.WebGPU.RenderBundleEncoder>(WGPU.API.DeviceCreateRenderBundleEncoder(device, descriptorUnmanaged));
-        ChainHelper.FreeChain(ref descriptorUnmanaged);
-        }
         return ret;
 
     }
@@ -1064,15 +941,8 @@ public static partial class MethodExtensions
     public static unsafe WebGPUPtr<Silk.NET.WebGPU.RenderPipeline> CreateRenderPipeline(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in RenderPipelineDescriptor descriptor) 
     {
         WebGPUPtr<Silk.NET.WebGPU.RenderPipeline> ret;
-        if (descriptor == null) {
-        ret = new WebGPUPtr<Silk.NET.WebGPU.RenderPipeline>(WGPU.API.DeviceCreateRenderPipeline(device, null));
-        }
-        else
-        {
-        var descriptorUnmanaged = descriptor.GetWithChain();
+        var descriptorUnmanaged = descriptor != null ? descriptor.Get() : default;
         ret = new WebGPUPtr<Silk.NET.WebGPU.RenderPipeline>(WGPU.API.DeviceCreateRenderPipeline(device, descriptorUnmanaged));
-        ChainHelper.FreeChain(ref descriptorUnmanaged);
-        }
         return ret;
 
     }
@@ -1084,15 +954,8 @@ public static partial class MethodExtensions
     /// </summary>
     public static unsafe void CreateRenderPipelineAsync(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in RenderPipelineDescriptor descriptor, Silk.NET.WebGPU.PfnCreateRenderPipelineAsyncCallback callback, void* userdata) 
     {
-        if (descriptor == null) {
-        WGPU.API.DeviceCreateRenderPipelineAsync(device, null, callback, userdata);
-        }
-        else
-        {
-        var descriptorUnmanaged = descriptor.GetWithChain();
+        var descriptorUnmanaged = descriptor != null ? descriptor.Get() : default;
         WGPU.API.DeviceCreateRenderPipelineAsync(device, descriptorUnmanaged, callback, userdata);
-        ChainHelper.FreeChain(ref descriptorUnmanaged);
-        }
 
     }
 
@@ -1104,15 +967,8 @@ public static partial class MethodExtensions
     public static unsafe void CreateRenderPipelineAsync<T0>(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in RenderPipelineDescriptor descriptor, Silk.NET.WebGPU.PfnCreateRenderPipelineAsyncCallback callback, ref T0 userdata) 
         where T0 : unmanaged
     {
-        if (descriptor == null) {
-        WGPU.API.DeviceCreateRenderPipelineAsync(device, null, callback, ref userdata);
-        }
-        else
-        {
-        var descriptorUnmanaged = descriptor.GetWithChain();
+        var descriptorUnmanaged = descriptor != null ? descriptor.Get() : default;
         WGPU.API.DeviceCreateRenderPipelineAsync(device, descriptorUnmanaged, callback, ref userdata);
-        ChainHelper.FreeChain(ref descriptorUnmanaged);
-        }
 
     }
 
@@ -1124,15 +980,8 @@ public static partial class MethodExtensions
     public static unsafe WebGPUPtr<Silk.NET.WebGPU.Sampler> CreateSampler(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in SamplerDescriptor descriptor) 
     {
         WebGPUPtr<Silk.NET.WebGPU.Sampler> ret;
-        if (descriptor == null) {
-        ret = new WebGPUPtr<Silk.NET.WebGPU.Sampler>(WGPU.API.DeviceCreateSampler(device, null));
-        }
-        else
-        {
-        var descriptorUnmanaged = descriptor.GetWithChain();
+        var descriptorUnmanaged = descriptor != null ? descriptor.Get() : default;
         ret = new WebGPUPtr<Silk.NET.WebGPU.Sampler>(WGPU.API.DeviceCreateSampler(device, descriptorUnmanaged));
-        ChainHelper.FreeChain(ref descriptorUnmanaged);
-        }
         return ret;
 
     }
@@ -1145,15 +994,8 @@ public static partial class MethodExtensions
     public static unsafe WebGPUPtr<Silk.NET.WebGPU.ShaderModule> CreateShaderModule(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in ShaderModuleDescriptor descriptor) 
     {
         WebGPUPtr<Silk.NET.WebGPU.ShaderModule> ret;
-        if (descriptor == null) {
-        ret = new WebGPUPtr<Silk.NET.WebGPU.ShaderModule>(WGPU.API.DeviceCreateShaderModule(device, null));
-        }
-        else
-        {
-        var descriptorUnmanaged = descriptor.GetWithChain();
+        var descriptorUnmanaged = descriptor != null ? descriptor.Get() : default;
         ret = new WebGPUPtr<Silk.NET.WebGPU.ShaderModule>(WGPU.API.DeviceCreateShaderModule(device, descriptorUnmanaged));
-        ChainHelper.FreeChain(ref descriptorUnmanaged);
-        }
         return ret;
 
     }
@@ -1166,15 +1008,8 @@ public static partial class MethodExtensions
     public static unsafe WebGPUPtr<Silk.NET.WebGPU.SwapChain> CreateSwapChain(this WebGPUPtr<Silk.NET.WebGPU.Device> device, WebGPUPtr<Silk.NET.WebGPU.Surface> surface, in SwapChainDescriptor descriptor) 
     {
         WebGPUPtr<Silk.NET.WebGPU.SwapChain> ret;
-        if (descriptor == null) {
-        ret = new WebGPUPtr<Silk.NET.WebGPU.SwapChain>(WGPU.API.DeviceCreateSwapChain(device, surface, null));
-        }
-        else
-        {
-        var descriptorUnmanaged = descriptor.GetWithChain();
+        var descriptorUnmanaged = descriptor != null ? descriptor.Get() : default;
         ret = new WebGPUPtr<Silk.NET.WebGPU.SwapChain>(WGPU.API.DeviceCreateSwapChain(device, surface, descriptorUnmanaged));
-        ChainHelper.FreeChain(ref descriptorUnmanaged);
-        }
         return ret;
 
     }
@@ -1187,15 +1022,8 @@ public static partial class MethodExtensions
     public static unsafe WebGPUPtr<Silk.NET.WebGPU.Texture> CreateTexture(this WebGPUPtr<Silk.NET.WebGPU.Device> device, in TextureDescriptor descriptor) 
     {
         WebGPUPtr<Silk.NET.WebGPU.Texture> ret;
-        if (descriptor == null) {
-        ret = new WebGPUPtr<Silk.NET.WebGPU.Texture>(WGPU.API.DeviceCreateTexture(device, null));
-        }
-        else
-        {
-        var descriptorUnmanaged = descriptor.GetWithChain();
+        var descriptorUnmanaged = descriptor != null ? descriptor.Get() : default;
         ret = new WebGPUPtr<Silk.NET.WebGPU.Texture>(WGPU.API.DeviceCreateTexture(device, descriptorUnmanaged));
-        ChainHelper.FreeChain(ref descriptorUnmanaged);
-        }
         return ret;
 
     }
@@ -1238,11 +1066,8 @@ public static partial class MethodExtensions
     public static unsafe Silk.NET.Core.Bool32 GetLimits(this WebGPUPtr<Silk.NET.WebGPU.Device> device, ref SupportedLimits limits) 
     {
         Silk.NET.Core.Bool32 ret;
-        var limitsChained = limits.GetWithChain();
-        var limitsUnmanaged = &limitsChained;
+        var limitsUnmanaged = limits.GetRef();
         ret = WGPU.API.DeviceGetLimits(device, limitsUnmanaged);
-        limits.Mutate(((ChainedStruct*)limitsUnmanaged));
-        ChainHelper.FreeChain(ref limitsChained);
         return ret;
 
     }
@@ -1378,15 +1203,8 @@ public static partial class MethodExtensions
     public static unsafe WebGPUPtr<Silk.NET.WebGPU.Surface> CreateSurface(this WebGPUPtr<Silk.NET.WebGPU.Instance> instance, in SurfaceDescriptor descriptor) 
     {
         WebGPUPtr<Silk.NET.WebGPU.Surface> ret;
-        if (descriptor == null) {
-        ret = new WebGPUPtr<Silk.NET.WebGPU.Surface>(WGPU.API.InstanceCreateSurface(instance, null));
-        }
-        else
-        {
-        var descriptorUnmanaged = descriptor.GetWithChain();
+        var descriptorUnmanaged = descriptor != null ? descriptor.Get() : default;
         ret = new WebGPUPtr<Silk.NET.WebGPU.Surface>(WGPU.API.InstanceCreateSurface(instance, descriptorUnmanaged));
-        ChainHelper.FreeChain(ref descriptorUnmanaged);
-        }
         return ret;
 
     }
@@ -1408,15 +1226,8 @@ public static partial class MethodExtensions
     /// </summary>
     public static unsafe void RequestAdapter(this WebGPUPtr<Silk.NET.WebGPU.Instance> instance, in RequestAdapterOptions options, Silk.NET.WebGPU.PfnRequestAdapterCallback callback, void* userdata) 
     {
-        if (options == null) {
-        WGPU.API.InstanceRequestAdapter(instance, null, callback, userdata);
-        }
-        else
-        {
-        var optionsUnmanaged = options.GetWithChain();
+        var optionsUnmanaged = options != null ? options.Get() : default;
         WGPU.API.InstanceRequestAdapter(instance, optionsUnmanaged, callback, userdata);
-        ChainHelper.FreeChain(ref optionsUnmanaged);
-        }
 
     }
 
@@ -1428,15 +1239,8 @@ public static partial class MethodExtensions
     public static unsafe void RequestAdapter<T0>(this WebGPUPtr<Silk.NET.WebGPU.Instance> instance, in RequestAdapterOptions options, Silk.NET.WebGPU.PfnRequestAdapterCallback callback, ref T0 userdata) 
         where T0 : unmanaged
     {
-        if (options == null) {
-        WGPU.API.InstanceRequestAdapter(instance, null, callback, ref userdata);
-        }
-        else
-        {
-        var optionsUnmanaged = options.GetWithChain();
+        var optionsUnmanaged = options != null ? options.Get() : default;
         WGPU.API.InstanceRequestAdapter(instance, optionsUnmanaged, callback, ref userdata);
-        ChainHelper.FreeChain(ref optionsUnmanaged);
-        }
 
     }
 
@@ -1629,13 +1433,9 @@ public static partial class MethodExtensions
     /// </summary>
     public static unsafe void WriteTexture(this WebGPUPtr<Silk.NET.WebGPU.Queue> queue, in ImageCopyTexture destination, void* data, nuint dataSize, in TextureDataLayout dataLayout, in Extent3D writeSize) 
     {
-        // ISSUE: This wouldn't have generated when the generator was designed. This is an ugly and slow way of not slowing down the source generator.
-        var destinationUnmanaged = destination != null ? destination.Alloc() : null;
-        // ISSUE: This wouldn't have generated when the generator was designed. This is an ugly and slow way of not slowing down the source generator.
-        var dataLayoutUnmanaged = dataLayout != null ? dataLayout.Alloc() : null;
+        var destinationUnmanaged = destination != null ? destination.Get() : default;
+        var dataLayoutUnmanaged = dataLayout != null ? dataLayout.Get() : default;
         WGPU.API.QueueWriteTexture(queue, destinationUnmanaged, data, dataSize, dataLayoutUnmanaged, writeSize);
-        destination?.Free(destinationUnmanaged);
-        dataLayout?.Free(dataLayoutUnmanaged);
 
     }
 
@@ -1647,13 +1447,9 @@ public static partial class MethodExtensions
     public static unsafe void WriteTexture<T0>(this WebGPUPtr<Silk.NET.WebGPU.Queue> queue, in ImageCopyTexture destination, in T0 data, nuint dataSize, in TextureDataLayout dataLayout, in Extent3D writeSize) 
         where T0 : unmanaged
     {
-        // ISSUE: This wouldn't have generated when the generator was designed. This is an ugly and slow way of not slowing down the source generator.
-        var destinationUnmanaged = destination != null ? destination.Alloc() : null;
-        // ISSUE: This wouldn't have generated when the generator was designed. This is an ugly and slow way of not slowing down the source generator.
-        var dataLayoutUnmanaged = dataLayout != null ? dataLayout.Alloc() : null;
+        var destinationUnmanaged = destination != null ? destination.Get() : default;
+        var dataLayoutUnmanaged = dataLayout != null ? dataLayout.Get() : default;
         WGPU.API.QueueWriteTexture(queue, destinationUnmanaged, data, dataSize, dataLayoutUnmanaged, writeSize);
-        destination?.Free(destinationUnmanaged);
-        dataLayout?.Free(dataLayoutUnmanaged);
 
     }
 
@@ -1705,15 +1501,8 @@ public static partial class MethodExtensions
     public static unsafe WebGPUPtr<Silk.NET.WebGPU.RenderBundle> Finish(this WebGPUPtr<Silk.NET.WebGPU.RenderBundleEncoder> renderBundleEncoder, in RenderBundleDescriptor descriptor) 
     {
         WebGPUPtr<Silk.NET.WebGPU.RenderBundle> ret;
-        if (descriptor == null) {
-        ret = new WebGPUPtr<Silk.NET.WebGPU.RenderBundle>(WGPU.API.RenderBundleEncoderFinish(renderBundleEncoder, null));
-        }
-        else
-        {
-        var descriptorUnmanaged = descriptor.GetWithChain();
+        var descriptorUnmanaged = descriptor != null ? descriptor.Get() : default;
         ret = new WebGPUPtr<Silk.NET.WebGPU.RenderBundle>(WGPU.API.RenderBundleEncoderFinish(renderBundleEncoder, descriptorUnmanaged));
-        ChainHelper.FreeChain(ref descriptorUnmanaged);
-        }
         return ret;
 
     }
@@ -2327,15 +2116,8 @@ public static partial class MethodExtensions
     public static unsafe WebGPUPtr<Silk.NET.WebGPU.TextureView> CreateView(this WebGPUPtr<Silk.NET.WebGPU.Texture> texture, in TextureViewDescriptor descriptor) 
     {
         WebGPUPtr<Silk.NET.WebGPU.TextureView> ret;
-        if (descriptor == null) {
-        ret = new WebGPUPtr<Silk.NET.WebGPU.TextureView>(WGPU.API.TextureCreateView(texture, null));
-        }
-        else
-        {
-        var descriptorUnmanaged = descriptor.GetWithChain();
+        var descriptorUnmanaged = descriptor != null ? descriptor.Get() : default;
         ret = new WebGPUPtr<Silk.NET.WebGPU.TextureView>(WGPU.API.TextureCreateView(texture, descriptorUnmanaged));
-        ChainHelper.FreeChain(ref descriptorUnmanaged);
-        }
         return ret;
 
     }

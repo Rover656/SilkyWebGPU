@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.RequestAdapterOptions"/>
-public class RequestAdapterOptions : ChainedStruct<Silk.NET.WebGPU.RequestAdapterOptions>
+public class RequestAdapterOptions : NewNewChainedStruct<Silk.NET.WebGPU.RequestAdapterOptions>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.RequestAdapterOptions.CompatibleSurface" />
@@ -42,5 +42,12 @@ public class RequestAdapterOptions : ChainedStruct<Silk.NET.WebGPU.RequestAdapte
     PowerPreference = ""{PowerPreference}""
     ForceFallbackAdapter = ""{ForceFallbackAdapter}""
 }}";
+    }
+    internal override RequestAdapterOptions Clone()
+    {
+        var clone = new RequestAdapterOptions();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

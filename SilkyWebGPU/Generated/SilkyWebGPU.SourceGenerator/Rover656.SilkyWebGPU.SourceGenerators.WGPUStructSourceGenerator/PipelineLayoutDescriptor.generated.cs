@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.PipelineLayoutDescriptor"/>
-public class PipelineLayoutDescriptor : ChainedStruct<Silk.NET.WebGPU.PipelineLayoutDescriptor>
+public class PipelineLayoutDescriptor : NewNewChainedStruct<Silk.NET.WebGPU.PipelineLayoutDescriptor>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.PipelineLayoutDescriptor.Label" />
@@ -45,7 +45,7 @@ public class PipelineLayoutDescriptor : ChainedStruct<Silk.NET.WebGPU.PipelineLa
             // Dispose any existing object.
             _BindGroupLayouts?.Dispose();
 
-            // Allocate new chain -OR- set to default
+            // Set array
             if (value != null)
             {
                 Native.BindGroupLayouts = value.Ptr;
@@ -74,5 +74,13 @@ public class PipelineLayoutDescriptor : ChainedStruct<Silk.NET.WebGPU.PipelineLa
     {
         SilkMarshal.Free((nint) Native.Label);
         Native.Label = null;
+        base.ReleaseUnmanagedResources();
+    }
+    internal override PipelineLayoutDescriptor Clone()
+    {
+        var clone = new PipelineLayoutDescriptor();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

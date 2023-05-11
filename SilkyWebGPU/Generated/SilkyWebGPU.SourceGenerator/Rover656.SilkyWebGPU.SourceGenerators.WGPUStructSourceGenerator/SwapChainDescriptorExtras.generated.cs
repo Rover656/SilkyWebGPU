@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.Extensions.WGPU.SwapChainDescriptorExtras"/>
-public class SwapChainDescriptorExtras : ChainedStruct<Silk.NET.WebGPU.Extensions.WGPU.SwapChainDescriptorExtras>
+public class SwapChainDescriptorExtras : NewNewChainedStruct<Silk.NET.WebGPU.Extensions.WGPU.SwapChainDescriptorExtras>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.Extensions.WGPU.SwapChainDescriptorExtras.AlphaMode" />
@@ -39,7 +39,7 @@ public class SwapChainDescriptorExtras : ChainedStruct<Silk.NET.WebGPU.Extension
             // Dispose any existing object.
             _ViewFormats?.Dispose();
 
-            // Allocate new chain -OR- set to default
+            // Set array
             if (value != null)
             {
                 Native.ViewFormats = value.Ptr;
@@ -69,5 +69,12 @@ public class SwapChainDescriptorExtras : ChainedStruct<Silk.NET.WebGPU.Extension
         _ViewFormats?.Dispose();
         _ViewFormats = null;
         base.Dispose();
+    }
+    internal override SwapChainDescriptorExtras Clone()
+    {
+        var clone = new SwapChainDescriptorExtras();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

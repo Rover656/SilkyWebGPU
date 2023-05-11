@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.SurfaceDescriptorFromWindowsHWND"/>
-public class SurfaceDescriptorFromWindowsHWND : ChainedStruct<Silk.NET.WebGPU.SurfaceDescriptorFromWindowsHWND>
+public class SurfaceDescriptorFromWindowsHWND : NewNewChainedStruct<Silk.NET.WebGPU.SurfaceDescriptorFromWindowsHWND>
 {
 
     /// <summary>
@@ -45,5 +45,12 @@ public class SurfaceDescriptorFromWindowsHWND : ChainedStruct<Silk.NET.WebGPU.Su
         // Write anything to the console we deem writable. This might not be accurate but its good enough for debug purposes :)
         return $@"SurfaceDescriptorFromWindowsHWND {{
 }}";
+    }
+    internal override SurfaceDescriptorFromWindowsHWND Clone()
+    {
+        var clone = new SurfaceDescriptorFromWindowsHWND();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

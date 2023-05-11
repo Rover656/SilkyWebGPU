@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.StorageTextureBindingLayout"/>
-public class StorageTextureBindingLayout : ChainedStruct<Silk.NET.WebGPU.StorageTextureBindingLayout>
+public class StorageTextureBindingLayout : NewNewChainedStruct<Silk.NET.WebGPU.StorageTextureBindingLayout>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.StorageTextureBindingLayout.Access" />
@@ -43,5 +43,12 @@ public class StorageTextureBindingLayout : ChainedStruct<Silk.NET.WebGPU.Storage
     Format = ""{Format}""
     ViewDimension = ""{ViewDimension}""
 }}";
+    }
+    internal override StorageTextureBindingLayout Clone()
+    {
+        var clone = new StorageTextureBindingLayout();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

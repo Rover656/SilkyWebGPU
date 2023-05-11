@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.BindGroupDescriptor"/>
-public class BindGroupDescriptor : ChainedStruct<Silk.NET.WebGPU.BindGroupDescriptor>
+public class BindGroupDescriptor : NewNewChainedStruct<Silk.NET.WebGPU.BindGroupDescriptor>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.BindGroupDescriptor.Label" />
@@ -52,7 +52,7 @@ public class BindGroupDescriptor : ChainedStruct<Silk.NET.WebGPU.BindGroupDescri
             // Dispose any existing object.
             _Entries?.Dispose();
 
-            // Allocate new chain -OR- set to default
+            // Set array
             if (value != null)
             {
                 Native.Entries = value.Ptr;
@@ -88,5 +88,13 @@ public class BindGroupDescriptor : ChainedStruct<Silk.NET.WebGPU.BindGroupDescri
     {
         SilkMarshal.Free((nint) Native.Label);
         Native.Label = null;
+        base.ReleaseUnmanagedResources();
+    }
+    internal override BindGroupDescriptor Clone()
+    {
+        var clone = new BindGroupDescriptor();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

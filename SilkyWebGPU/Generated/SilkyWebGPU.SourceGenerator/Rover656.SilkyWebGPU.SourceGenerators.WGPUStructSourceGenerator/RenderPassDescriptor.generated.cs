@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.RenderPassDescriptor"/>
-public class RenderPassDescriptor : ChainedStruct<Silk.NET.WebGPU.RenderPassDescriptor>
+public class RenderPassDescriptor : NewNewChainedStruct<Silk.NET.WebGPU.RenderPassDescriptor>
 {
 
     /// <seealso cref="Silk.NET.WebGPU.RenderPassDescriptor.Label" />
@@ -45,7 +45,7 @@ public class RenderPassDescriptor : ChainedStruct<Silk.NET.WebGPU.RenderPassDesc
             // Dispose any existing object.
             _ColorAttachments?.Dispose();
 
-            // Allocate new chain -OR- set to default
+            // Set array
             if (value != null)
             {
                 Native.ColorAttachments = value.Ptr;
@@ -116,7 +116,7 @@ public class RenderPassDescriptor : ChainedStruct<Silk.NET.WebGPU.RenderPassDesc
             // Dispose any existing object.
             _TimestampWrites?.Dispose();
 
-            // Allocate new chain -OR- set to default
+            // Set array
             if (value != null)
             {
                 Native.TimestampWrites = value.Ptr;
@@ -157,5 +157,13 @@ public class RenderPassDescriptor : ChainedStruct<Silk.NET.WebGPU.RenderPassDesc
         Native.Label = null;
         SilkMarshal.Free((nint) Native.DepthStencilAttachment);
         Native.DepthStencilAttachment = null;
+        base.ReleaseUnmanagedResources();
+    }
+    internal override RenderPassDescriptor Clone()
+    {
+        var clone = new RenderPassDescriptor();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }

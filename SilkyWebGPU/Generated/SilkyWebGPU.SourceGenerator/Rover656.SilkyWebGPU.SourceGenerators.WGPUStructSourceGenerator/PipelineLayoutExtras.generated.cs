@@ -11,7 +11,7 @@ using Silk.NET.WebGPU.Extensions.WGPU;
 namespace Rover656.SilkyWebGPU;
 
 /// <seealso cref="Silk.NET.WebGPU.Extensions.WGPU.PipelineLayoutExtras"/>
-public class PipelineLayoutExtras : ChainedStruct<Silk.NET.WebGPU.Extensions.WGPU.PipelineLayoutExtras>
+public class PipelineLayoutExtras : NewNewChainedStruct<Silk.NET.WebGPU.Extensions.WGPU.PipelineLayoutExtras>
 {
 
     // Keep a copy around for disposal.
@@ -32,7 +32,7 @@ public class PipelineLayoutExtras : ChainedStruct<Silk.NET.WebGPU.Extensions.WGP
             // Dispose any existing object.
             _PushConstantRanges?.Dispose();
 
-            // Allocate new chain -OR- set to default
+            // Set array
             if (value != null)
             {
                 Native.PushConstantRanges = value.Ptr;
@@ -61,5 +61,12 @@ public class PipelineLayoutExtras : ChainedStruct<Silk.NET.WebGPU.Extensions.WGP
         _PushConstantRanges?.Dispose();
         _PushConstantRanges = null;
         base.Dispose();
+    }
+    internal override PipelineLayoutExtras Clone()
+    {
+        var clone = new PipelineLayoutExtras();
+        clone.Native = Native;
+        clone.Next = Next;
+        return clone;
     }
 }
