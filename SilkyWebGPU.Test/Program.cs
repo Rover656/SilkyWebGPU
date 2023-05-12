@@ -1,4 +1,5 @@
-﻿using Rover656.SilkyWebGPU.Native.Chain;
+﻿using Rover656.SilkyWebGPU.Native;
+using Rover656.SilkyWebGPU.Native.Chain;
 using Silk.NET.Core.Native;
 using Silk.NET.Maths;
 using Silk.NET.WebGPU;
@@ -43,7 +44,7 @@ fn fs_main() -> @location(0) vec4<f32> {
             ShouldSwapAutomatically = false,
             IsContextControlDisabled = true
         };
-
+        
         _window = Window.Create(options);
         _window.Load += WindowOnLoad;
         _window.Closing += WindowClosing;
@@ -58,7 +59,7 @@ fn fs_main() -> @location(0) vec4<f32> {
         CreateSwapChain();
     }
 
-    private static async void WindowOnLoad()
+    private static void WindowOnLoad()
     {
         // Create instance
         using var descriptor = new InstanceDescriptor
@@ -69,7 +70,7 @@ fn fs_main() -> @location(0) vec4<f32> {
             }
         };
         
-        _Instance = WGPU.CreateInstance(descriptor);
+        _Instance = WebGPU.CreateInstance(descriptor);
 
         // Create surface from window
         _Surface = _window.CreateWebGPUSurface(_Instance);
@@ -84,7 +85,7 @@ fn fs_main() -> @location(0) vec4<f32> {
             // }
         };
         
-        _Adapter = await _Instance.RequestAdapter(requestAdapterOptions);
+        _Adapter = _Instance.RequestAdapter(requestAdapterOptions);
 
         {
             // Create limits object to populate
@@ -94,7 +95,7 @@ fn fs_main() -> @location(0) vec4<f32> {
             };
 
             // Get limits
-            _Adapter.GetLimits(ref limits);
+            _Adapter.GetLimits(ref limits.GetRef().GetPinnableReference());
 
             Console.WriteLine(limits);
 
@@ -105,7 +106,7 @@ fn fs_main() -> @location(0) vec4<f32> {
         {
             var properties = new AdapterProperties();
             properties.Next = new AdapterExtras();
-            _Adapter.GetProperties(ref properties);
+            _Adapter.GetProperties(ref properties.GetRef().GetPinnableReference());
             Console.WriteLine(properties);
             Console.WriteLine(properties.Next);
             properties.Dispose(); // We can't use a "using" directive here as that makes it immutable.
@@ -115,13 +116,13 @@ fn fs_main() -> @location(0) vec4<f32> {
         PrintAdapterFeatures();
         
         // Get device
-        _Device = await _Adapter.RequestDevice();
+        _Device = _Adapter.RequestDevice();
 
         // TODO: Device callbacks
         unsafe
         {
-            _Device.SetUncapturedErrorCallback(new PfnErrorCallback(UncapturedError), null);
-            _Device.SetLostCallback(new PfnDeviceLostCallback(DeviceLost), null);
+            // _Device.SetUncapturedErrorCallback(new PfnErrorCallback(UncapturedError), null);
+            // _Device.SetLostCallback(new PfnDeviceLostCallback(DeviceLost), null);
         }
 
         // Load shader
@@ -211,6 +212,13 @@ fn fs_main() -> @location(0) vec4<f32> {
 
     private static void CreateSwapChain()
     {
+        if (_window.FramebufferSize.X <= 0 || _window.FramebufferSize.Y <= 0)
+        {
+            Console.WriteLine("Invalid framebuffer size, setting swap chain to null.");
+            _SwapChain = null;
+            return;
+        }
+
         using var swapChainDescriptor = new SwapChainDescriptor
         {
             Usage = TextureUsage.RenderAttachment,
@@ -228,13 +236,15 @@ fn fs_main() -> @location(0) vec4<f32> {
 
     private static void WindowOnRender(double delta)
     {
-        WebGPUPtr<TextureView> nextTexture = null;
+        if (!_window.IsVisible || _SwapChain.IsNull())
+            return;
+        WebGPUPtr<TextureView> nextTexture = default;
 
         for (var attempt = 0; attempt < 2; attempt++)
         {
             nextTexture = _SwapChain.GetCurrentTextureView();
-
-            if (attempt == 0 && (nextTexture == null || nextTexture.IsNull()))
+        
+            if (attempt == 0 && nextTexture.IsNull())
             {
                 Console.WriteLine("wgpu.SwapChainGetCurrentTextureView() failed; trying to create a new swap chain...\n");
                 CreateSwapChain();
@@ -243,8 +253,8 @@ fn fs_main() -> @location(0) vec4<f32> {
 
             break;
         }
-
-        if (nextTexture == null || nextTexture.IsNull())
+        
+        if (nextTexture.IsNull())
         {
             Console.WriteLine("wgpu.SwapChainGetCurrentTextureView() failed after multiple attempts; giving up.\n");
             return;
@@ -253,11 +263,10 @@ fn fs_main() -> @location(0) vec4<f32> {
         using var commandEncoderDescriptor = new CommandEncoderDescriptor();
 
         var encoder = _Device.CreateCommandEncoder(commandEncoderDescriptor);
-
+        
         using var colorAttachment = new RenderPassColorAttachment
         {
             View          = nextTexture,
-            ResolveTarget = null,
             LoadOp        = LoadOp.Clear,
             StoreOp       = StoreOp.Store,
             ClearValue = new Color
@@ -274,22 +283,30 @@ fn fs_main() -> @location(0) vec4<f32> {
             ColorAttachments = new[] {colorAttachment},
             DepthStencilAttachment = null
         };
-
+        
         using var renderPass = encoder.BeginRenderPass(renderPassDescriptor);
-
+        
         renderPass.SetPipeline(_Pipeline);
         renderPass.Draw(3, 1, 0, 0);
         renderPass.End();
         nextTexture.Dispose();
 
         var queue = _Device.GetQueue();
-
-        var commandBuffer = encoder.Finish(new CommandBufferDescriptor()); // This new object is fine, as an empty class won't allocate anything :)
-
-        queue.Submit(1, ref commandBuffer);
+        
+        // NEW DISCOVERY: We should recommend avoiding passing objects into methods like this.
+        //                This is because the allocated memory won't be disposed until the GC gets around to it.
+        //                Need to discover if there's anything that can be done to stop this, or if this is up education of users.
+        using var commandBufferDescriptor = new CommandBufferDescriptor();
+        var commandBuffer = encoder.Finish(commandBufferDescriptor);
+        
+        queue.Submit(1, new[] {commandBuffer});
         _SwapChain.Present();
         encoder.Dispose();
         _window.SwapBuffers();
+        
+        commandBuffer.Dispose();
+        
+        GC.Collect();
     }
     
     private static void PrintAdapterFeatures()

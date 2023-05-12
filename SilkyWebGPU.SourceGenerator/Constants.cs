@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 
-namespace Rover656.SilkyWebGPU.SourceGenerators
+namespace Rover656.SilkyWebGPU.SourceGenerator
 {
     public static class Constants
     {
@@ -8,11 +8,16 @@ namespace Rover656.SilkyWebGPU.SourceGenerators
         /// The namespace of the generated class
         /// </summary>
         public const string ExtensionNS = "Rover656.SilkyWebGPU";
+
+        public const string APIHandle = $"{ExtensionNS}.WebGPU.WebGPUAPI";
         
         /// <summary>
         /// The WebGPU binding namespace.
         /// </summary>
         public const string WebGpuNS = "Silk.NET.WebGPU";
+        
+        public const string WgpuNS = "Silk.NET.WebGPU.Extensions.WGPU";
+        public const string DawnNS = "Silk.NET.WebGPU.Extensions.WGPU";
 
         /// <summary>
         /// The native pointer type used for wrapping Web GPU native objects.
@@ -21,7 +26,8 @@ namespace Rover656.SilkyWebGPU.SourceGenerators
         
         public const string NativeChainableArrayType = "NativeArray";
         public const string NativePointerArrayType = "NativePtrArray";
-        public const string ChainedStructBaseClass = "NewNewChainedStruct";
+        public const string ChainedStructBaseClass = "ChainedStruct";
+        public const string WrappedStructBaseClass = "WrappedStruct";
         
         /// <summary>
         /// Native objects that are being treated like "classes"
@@ -30,8 +36,8 @@ namespace Rover656.SilkyWebGPU.SourceGenerators
         {
             "Adapter", "BindGroup", "BindGroupLayout", "Buffer", "CommandBuffer", "CommandEncoder",
             "ComputePassEncoder", "ComputePipeline", "Device", "Instance", "PipelineLayout", "QuerySet", "Queue",
-            "RenderBundleEncoder", "RenderPassEncoder", "RenderPipeline", "Sampler", "ShaderModule", "Surface",
-            "SwapChain", "Texture", "TextureView"
+            "RenderBundle", "RenderBundleEncoder", "RenderPassEncoder", "RenderPipeline", "Sampler", "ShaderModule",
+            "Surface", "SwapChain", "Texture", "TextureView"
         };
 
         public static readonly string ManagedStructPrefix = "";//""Managed";

@@ -1,6 +1,6 @@
-﻿using Rover656.SilkyWebGPU.Native.Chain;
+﻿using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Silk.NET.Core.Native;
-using Silk.NET.WebGPU;
 
 namespace Rover656.SilkyWebGPU.Native;
 
@@ -8,39 +8,49 @@ namespace Rover656.SilkyWebGPU.Native;
 /// An immutable unmanaged array.
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public unsafe class NativeArray<T> : IDisposable
+public sealed unsafe class NativeArray<T> : IDisposable
     where T : unmanaged
 {
-    public uint Count { get; }
+    /// <summary>
+    /// The unmanaged array pointer.
+    /// </summary>
     internal T* Ptr { get; private set; }
-    private readonly bool _chainable;
-    private readonly NewChainedStruct<T>[]? _chainedStructs;
-    private readonly WrappedStruct<T>[]? _wrappedStructs;
+    
+    /// <summary>
+    /// The number of elements in the array.
+    /// </summary>
+    public int Count { get; }
+    
+    /// <summary>
+    /// Disposable handles for this memory.
+    /// </summary>
+    private readonly List<IDisposable>? _disposables;
     private readonly bool _owner;
 
-    // public static implicit operator NativeArray<T>(ChainedStruct<T>[] arr) => new(arr);
-    public static implicit operator NativeArray<T>(NewChainedStruct<T>[] arr) => new(arr);
-    public static implicit operator NativeArray<T>(WrappedStruct<T>[] arr) => new(arr);
+    public static implicit operator NativeArray<T>(INativeWrapper<T>[] arr) => new(arr);
     public static implicit operator NativeArray<T>(T[] arr) => new(arr);
 
-    internal NativeArray(uint count, T* ptr)
+    // Just in case its needed :)
+    public static implicit operator Span<T>(NativeArray<T> arr) =>
+        MemoryMarshal.CreateSpan(ref Unsafe.AsRef<T>(arr.Ptr), arr.Count);
+
+    internal NativeArray(int count, T* ptr)
     {
         _owner = false;
         Count = count;
         Ptr = ptr;
     }
 
-    private NativeArray(uint count)
+    private NativeArray(int count)
     {
         _owner = true;
         Count = count;
-        Ptr = (T*)SilkMarshal.Allocate((int)(sizeof(T) * count));
+        Ptr = (T*)SilkMarshal.Allocate(Marshal.SizeOf<T>() * count);
     }
 
-    public NativeArray(params NewChainedStruct<T>[] values) : this((uint)values.Length)
+    public NativeArray(params INativeWrapper<T>[] values) : this(values.Length)
     {
-        _chainable = true;
-        _chainedStructs = values;
+        _disposables = new List<IDisposable>(values);
         var ptr = Ptr;
         foreach (var val in values)
         {
@@ -50,22 +60,8 @@ public unsafe class NativeArray<T> : IDisposable
         }
     }
 
-    public NativeArray(params WrappedStruct<T>[] values) : this((uint)values.Length)
+    public NativeArray(params T[] values) : this(values.Length)
     {
-        _chainable = false;
-        _wrappedStructs = values;
-        var ptr = Ptr;
-        foreach (var val in values)
-        {
-            // Copy in :)
-            *ptr = val;
-            ptr++;
-        }
-    }
-
-    public NativeArray(params T[] values) : this((uint)values.Length)
-    {
-        _chainable = false;
         var ptr = Ptr;
         foreach (var val in values)
         {
@@ -83,45 +79,34 @@ public unsafe class NativeArray<T> : IDisposable
                 throw new IndexOutOfRangeException();
             return *(Ptr + index);
         }
-    }
-
-    private void ReleaseUnmanagedResources()
-    {
-        if (!_owner || Ptr == null) return;
-        var ptr = Ptr;
-        if (_chainable)
+        set
         {
-            for (var i = 0; i < Count; i++)
-            {
-                ChainHelper.FreeChain((ChainedStruct*)ptr);
-                ptr++;
-            }
+            if (index >= Count)
+                throw new IndexOutOfRangeException();
+            *(Ptr + index) = value;
         }
-
-        SilkMarshal.Free((nint)Ptr);
-        Ptr = null;
     }
-
-    ~NativeArray() => ReleaseUnmanagedResources();
+    
+    ~NativeArray() => Dispose(false);
 
     public void Dispose()
     {
-        ReleaseUnmanagedResources();
-        if (_chainedStructs != null)
-        {
-            foreach (var chainedStruct in _chainedStructs)
-            {
-                chainedStruct.Dispose();
-            }
-        }
-        else if (_wrappedStructs != null)
-        {
-            foreach (var wrappedStruct in _wrappedStructs)
-            {
-                wrappedStruct.Dispose();
-            }
-        }
-
+        Dispose(true);
         GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (disposing && _disposables != null)
+        {
+            foreach (var disposable in _disposables)
+            {
+                disposable.Dispose();
+            }
+        }
+        
+        if (!_owner || Ptr == null) return;
+        SilkMarshal.Free((nint)Ptr);
+        Ptr = null;
     }
 }

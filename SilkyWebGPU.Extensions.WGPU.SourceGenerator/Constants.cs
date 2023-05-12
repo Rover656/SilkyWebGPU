@@ -1,7 +1,6 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 
-namespace SilkyWebGPU.Extensions.WGPU.SourceGenerator
+namespace Rover656.SilkyWebGPU.Extensions.WGPU.SourceGenerator
 {
     public class Constants
     {
@@ -9,11 +8,13 @@ namespace SilkyWebGPU.Extensions.WGPU.SourceGenerator
         /// The namespace of the generated class
         /// </summary>
         public const string ExtensionNS = "Rover656.SilkyWebGPU.Extensions.WGPU";
+        
+        public const string APIHandle = $"{ExtensionNS}.WGPU.WGPUAPI";
 
         /// <summary>
         /// The WebGPU binding namespace.
         /// </summary>
-        public const string WebGpuNS = "Silk.NET.WebGPU.Extensions.WGPU";
+        public const string WGPUNS = "Silk.NET.WebGPU.Extensions.WGPU";
 
         /// <summary>
         /// All structs that are wrapped by a managed type for handling chaining.
@@ -34,7 +35,5 @@ namespace SilkyWebGPU.Extensions.WGPU.SourceGenerator
             "GlobalReport", "HubReport", "PushConstantRange", "ShaderDefine",
             "StorageReport", "SurfaceCapabilities", "WrappedSubmissionIndex",
         };
-
-        public static readonly string[] ManagedStructs = ChainedStructs.Concat(WrappedStructs).ToArray();
     }
 }

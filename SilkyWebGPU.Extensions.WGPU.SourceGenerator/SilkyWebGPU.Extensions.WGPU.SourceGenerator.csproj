@@ -1,11 +1,25 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<IsRoslynComponent>true</IsRoslynComponent>
+		<RootNamespace>Rover656.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+		<LangVersion>latest</LangVersion>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\SilkyWebGPU.Extensions.WGPU\SilkyWebGPU.Extensions.WGPU.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.5.0" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.1" PrivateAssets="all" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\SilkyWebGPU.SourceGenerator\SilkyWebGPU.SourceGenerator.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Include="..\SilkyWebGPU.SourceGenerator\Base\BaseExtensionMethodGenerator.cs">
+	    <Link>Base\BaseExtensionMethodGenerator.cs</Link>
+	  </Compile>
+	</ItemGroup>
 
 </Project>

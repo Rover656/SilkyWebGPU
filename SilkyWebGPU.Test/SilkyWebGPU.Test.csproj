@@ -18,6 +18,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\SilkyWebGPU.Extensions.WGPU\SilkyWebGPU.Extensions.WGPU.csproj" />
       <ProjectReference Include="..\SilkyWebGPU\SilkyWebGPU.csproj" />
     </ItemGroup>
 

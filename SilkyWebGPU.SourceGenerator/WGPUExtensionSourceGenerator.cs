@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
 
-namespace Rover656.SilkyWebGPU.SourceGenerators
+namespace Rover656.SilkyWebGPU.SourceGenerator
 {
-    [Generator]
+    // [Generator]
     public class WGPUExtensionSourceGenerator : ISourceGenerator
     {
         /// <summary>
@@ -304,7 +304,8 @@ public static partial class {ClassName}
 //                             stringBuilder.AppendLine($@"// ISSUE: This wouldn't have generated when the generator was designed. This is an ugly and slow way of not slowing down the source generator.
 //         var {parameter.Name}{ChainableUnmanagedSuffix} = {parameter.Name} != null ? {parameter.Name}.Alloc() : null;");
                         }
-                        stringBuilder.AppendLine($"var {parameter.Name}{ChainableUnmanagedSuffix} = {parameter.Name} != null ? {parameter.Name}.Get() : default;");
+                        // stringBuilder.AppendLine($"var {parameter.Name}{ChainableUnmanagedSuffix} = {parameter.Name} != null ? {parameter.Name}.Get() : default;");
+                        stringBuilder.AppendLine();
                     }
                 }
             }
@@ -379,7 +380,7 @@ public static partial class {ClassName}
                     return $"{Constants.ManagedStructPrefix}{pointerType.PointedAtType.Name}";
                 }
             }
-            else if (resolveChainable && Constants.ManagedStructs.Contains(parameter.Type.Name))
+            else if (parameter.RefKind == RefKind.Ref && resolveChainable && Constants.ManagedStructs.Contains(parameter.Type.Name))
             {
                 // return $"{ChainableSafetyInterface}<{parameter.Type}>";
                 return $"{Constants.ManagedStructPrefix}{parameter.Type.Name}";
@@ -470,7 +471,7 @@ public static partial class {ClassName}
                 var parameter = method.Parameters[i];
                 
                 string parameterName;
-                if (resolveChainable && IsChainableParameter(parameter))
+                if (resolveChainable && IsChainableParameter(parameter) && parameter.RefKind == RefKind.Ref)
                     parameterName = nullChainables ? "null" : $"{parameter.Name}{ChainableUnmanagedSuffix}";
                 else parameterName = parameter.Name;
                 

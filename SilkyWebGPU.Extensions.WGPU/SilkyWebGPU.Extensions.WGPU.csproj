@@ -1,9 +1,31 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+		<Title>Rover656.SilkyWebGPU.Extensions.WGPU</Title>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+		<CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
+		<RootNamespace>Rover656.SilkyWebGPU.Extensions.WGPU</RootNamespace>
     </PropertyGroup>
+
+	<ItemGroup>
+		<Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\SilkyWebGPU.Extensions.WGPU.SourceGenerator\SilkyWebGPU.Extensions.WGPU.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+	</ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\SilkyWebGPU\SilkyWebGPU.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Silk.NET.WebGPU" Version="2.17.1-build3398.0" />
+      <PackageReference Include="Silk.NET.WebGPU.Extensions.WGPU" Version="2.17.1-build3398.0" />
+    </ItemGroup>
 
 </Project>
