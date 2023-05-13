@@ -15,7 +15,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Generators", "Generators", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{072F9CE9-4368-4053-9B21-23FBA48D4904}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SilkyWebGPU.Extensions.WGPU.SourceGenerator", "SilkyWebGPU.Extensions.WGPU.SourceGenerator\SilkyWebGPU.Extensions.WGPU.SourceGenerator.csproj", "{9ABC64AF-7471-40EF-9DDB-85865A19A1C6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SilkyWebGPU.Extensions.WGPU.SourceGenerator", "SilkyWebGPU.Extensions.WGPU.SourceGenerator\SilkyWebGPU.Extensions.WGPU.SourceGenerator.csproj", "{9ABC64AF-7471-40EF-9DDB-85865A19A1C6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -85,6 +85,7 @@ public unsafe class ChainableStruct<T> : IChainableStruct, INativeWrapper<T>
 
     public void Dispose()
     {
+        // TODO: Solve this...
         if (Disposed || Native == null) // Shouldn't be necessary, but weird bug :/
             return;
         Dispose(true);

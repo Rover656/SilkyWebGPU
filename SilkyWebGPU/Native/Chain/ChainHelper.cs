@@ -8,6 +8,7 @@ namespace Rover656.SilkyWebGPU.Native.Chain;
  */
 public static class ChainHelper
 {
+    // TODO: Put these definitions into the generator.
     internal static SType GetSType<T>(T native) where T : unmanaged
     {
         return native switch

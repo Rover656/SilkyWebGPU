@@ -12,14 +12,4 @@
 		<PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.1" PrivateAssets="all" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <ProjectReference Include="..\SilkyWebGPU.SourceGenerator\SilkyWebGPU.SourceGenerator.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Compile Include="..\SilkyWebGPU.SourceGenerator\Base\BaseExtensionMethodGenerator.cs">
-	    <Link>Base\BaseExtensionMethodGenerator.cs</Link>
-	  </Compile>
-	</ItemGroup>
-
 </Project>

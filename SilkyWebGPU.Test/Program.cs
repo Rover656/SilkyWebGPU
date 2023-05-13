@@ -190,12 +190,10 @@ fn fs_main() -> @location(0) vec4<f32> {
                 Mask                   = ~0u,
                 AlphaToCoverageEnabled = false
             },
-            // Fragment     = fragmentState,
+            Fragment     = fragmentState,
             DepthStencil = null
         };
-
-        renderPipelineDescriptor.Fragment = fragmentState;
-
+        
         _Pipeline = _Device.CreateRenderPipeline(renderPipelineDescriptor);
 
         CreateSwapChain();
@@ -212,13 +210,6 @@ fn fs_main() -> @location(0) vec4<f32> {
 
     private static void CreateSwapChain()
     {
-        if (_window.FramebufferSize.X <= 0 || _window.FramebufferSize.Y <= 0)
-        {
-            Console.WriteLine("Invalid framebuffer size, setting swap chain to null.");
-            _SwapChain = null;
-            return;
-        }
-
         using var swapChainDescriptor = new SwapChainDescriptor
         {
             Usage = TextureUsage.RenderAttachment,
@@ -238,6 +229,7 @@ fn fs_main() -> @location(0) vec4<f32> {
     {
         if (!_window.IsVisible || _SwapChain.IsNull())
             return;
+        
         WebGPUPtr<TextureView> nextTexture = default;
 
         for (var attempt = 0; attempt < 2; attempt++)
@@ -300,6 +292,7 @@ fn fs_main() -> @location(0) vec4<f32> {
         var commandBuffer = encoder.Finish(commandBufferDescriptor);
         
         queue.Submit(1, new[] {commandBuffer});
+
         _SwapChain.Present();
         encoder.Dispose();
         _window.SwapBuffers();
